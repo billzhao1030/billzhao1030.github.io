@@ -1,0 +1,249 @@
+---
+---
+{% assign data = site.data.home %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ data.site.title }}</title>
+  {% if data.site.description and data.site.description != empty %}
+  <meta name="description" content="{{ data.site.description }}">
+  {% endif %}
+  <meta property="og:title" content="{{ data.site.title }}">
+  {% if data.site.description and data.site.description != empty %}
+  <meta property="og:description" content="{{ data.site.description }}">
+  {% endif %}
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ data.site.url }}">
+  <meta name="theme-color" content="{{ data.site.theme_color }}">
+  <link rel="stylesheet" href="{{ '/assets/site.css' | relative_url }}">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav" aria-label="Primary navigation">
+      <a class="brand" href="#">{{ data.profile.name }}</a>
+      <ul class="nav-links">
+        {% for item in data.nav %}
+        <li><a href="{{ item.url }}">{{ item.label }}</a></li>
+        {% endfor %}
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <div class="page-layout">
+      <aside class="sidebar" aria-label="Profile summary">
+        <div class="profile-card">
+          <div class="profile-photo" aria-label="Profile photo">
+            <img src="{{ data.profile.photo | relative_url }}" alt="{{ data.profile.photo_alt }}" onerror="this.remove();">
+            <span>{{ data.profile.initials }}</span>
+          </div>
+          <div>
+            <h2>{{ data.profile.name }}</h2>
+            <p>{{ data.profile.title }}</p>
+            <p>{{ data.profile.affiliation }}</p>
+            <ul class="contact-list">
+              <li class="contact-location">
+                {% include icon.html name="location" %}
+                <span>{{ data.profile.location }}</span>
+              </li>
+              {% for link in data.profile.links %}
+              <li class="contact-link">
+                <a href="{{ link.url }}" aria-label="{{ data.profile.name }} {{ link.label }}">
+                  {% include icon.html name=link.icon %}
+                  <span>{{ link.label }}</span>
+                </a>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </aside>
+
+      <div class="content-column">
+        <section class="about-section" id="about">
+          <div class="section-header">
+            <h2>{{ data.about.heading }}</h2>
+          </div>
+          <div class="about-body">
+            {% for paragraph in data.about.paragraphs %}
+            <p>{{ paragraph }}</p>
+            {% endfor %}
+          </div>
+        </section>
+
+        <section id="news">
+          <div class="section-header">
+            <h2>{{ data.news.heading }}</h2>
+            {% if data.news.description and data.news.description != empty %}
+            <p>{{ data.news.description }}</p>
+            {% endif %}
+          </div>
+          <ul class="news-list">
+            {% for item in data.news.items %}
+            <li class="news-item">
+              <span class="date">{{ item.date }}</span>
+              <p>{{ item.text }}</p>
+            </li>
+            {% endfor %}
+          </ul>
+        </section>
+
+        <section id="research">
+          <div class="section-header">
+            <h2>{{ data.research.heading }}</h2>
+            {% if data.research.description and data.research.description != empty %}
+            <p>{{ data.research.description }}</p>
+            {% endif %}
+          </div>
+          <div class="research-grid">
+            {% for topic in data.research.topics %}
+            <article class="topic">
+              <h3>{{ topic.title }}</h3>
+              <p>{{ topic.text }}</p>
+            </article>
+            {% endfor %}
+          </div>
+        </section>
+
+        <section id="publications">
+          <div class="section-header">
+            <h2>{{ data.projects.heading }}</h2>
+            {% if data.projects.description and data.projects.description != empty %}
+            <p>{{ data.projects.description }}</p>
+            {% endif %}
+          </div>
+          <ul class="publication-list">
+            {% for project in data.projects.items %}
+            <li class="publication">
+              <div class="project-thumb">
+                <img src="{{ project.image | relative_url }}" alt="{{ project.image_alt }}">
+              </div>
+              <div>
+                <span class="venue">{{ project.venue }}</span>
+                <h3>{{ project.title }}</h3>
+                <p class="authors">{{ project.authors }}</p>
+                {% if project.note and project.note != empty %}
+                <p class="project-note">{{ project.note }}</p>
+                {% endif %}
+                {% if project.description and project.description != empty %}
+                <p>{{ project.description }}</p>
+                {% endif %}
+                <div class="links">
+                  {% for link in project.links %}
+                  <a href="{{ link.url }}">{{ link.label }}</a>
+                  {% endfor %}
+                </div>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+        </section>
+
+        {% assign professional_items = data.experience.professional.items %}
+        {% assign teaching_items = data.experience.teaching.items %}
+        {% assign conference_categories = data.experience.services.conference.categories %}
+        {% assign journal_items = data.experience.services.journal.items %}
+        {% assign has_professional = false %}
+        {% assign has_teaching = false %}
+        {% assign has_conference = false %}
+        {% assign has_journal = false %}
+        {% if professional_items and professional_items != empty %}
+          {% assign has_professional = true %}
+        {% endif %}
+        {% if teaching_items and teaching_items != empty %}
+          {% assign has_teaching = true %}
+        {% endif %}
+        {% if conference_categories and conference_categories != empty %}
+          {% assign has_conference = true %}
+        {% endif %}
+        {% if journal_items and journal_items != empty %}
+          {% assign has_journal = true %}
+        {% endif %}
+        {% if has_professional or has_teaching or has_conference or has_journal %}
+        <section id="experience">
+          <div class="section-header">
+            <h2>{{ data.experience.heading }}</h2>
+            {% if data.experience.description and data.experience.description != empty %}
+            <p>{{ data.experience.description }}</p>
+            {% endif %}
+          </div>
+          <div class="experience-stack">
+            {% if has_professional %}
+            <section class="experience-subsection" id="professional">
+              <h3>{{ data.experience.professional.heading | default: "Professional" }}</h3>
+              <ul class="experience-list">
+                {% for item in professional_items %}
+                <li class="experience">
+                  <span class="role-meta">{{ item.period }}</span>
+                  <div>
+                    <h4>{{ item.organization }}</h4>
+                    <p>{{ item.role }}</p>
+                    <p>{{ item.location }}</p>
+                  </div>
+                </li>
+                {% endfor %}
+              </ul>
+            </section>
+            {% endif %}
+
+            {% if has_teaching %}
+            <section class="experience-subsection" id="teaching">
+              <h3>{{ data.experience.teaching.heading | default: "Teaching" }}</h3>
+              <ul class="teaching-list">
+                {% for item in teaching_items %}
+                <li class="teaching-item">
+                  <span class="role">{{ item.role }}</span>
+                  <div>
+                    <p class="course">{{ item.course }}</p>
+                    <p class="meta">{{ item.meta }}</p>
+                  </div>
+                </li>
+                {% endfor %}
+              </ul>
+            </section>
+            {% endif %}
+
+            {% if has_conference or has_journal %}
+            <section class="experience-subsection" id="services">
+              <h3>{{ data.experience.services.heading | default: "Services" }}</h3>
+              {% if has_conference %}
+              <div class="service-section">
+                <h4>{{ data.experience.services.conference.heading | default: "Conference Reviewer" }}</h4>
+                {% for category in conference_categories %}
+                <div class="service-category">
+                  <span class="category-label">{{ category.label }}</span>
+                  <div class="service-badges">
+                    {% for item in category.items %}
+                    <span class="service-badge">{{ item }}</span>
+                    {% endfor %}
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% endif %}
+              {% if has_journal %}
+              <div class="service-section">
+                <h4>{{ data.experience.services.journal.heading | default: "Journal Reviewer" }}</h4>
+                <div class="service-badges">
+                  {% for item in journal_items %}
+                  <span class="service-badge">{{ item }}</span>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
+            </section>
+            {% endif %}
+          </div>
+        </section>
+        {% endif %}
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>{{ data.footer }}</p>
+  </footer>
+</body>
+</html>

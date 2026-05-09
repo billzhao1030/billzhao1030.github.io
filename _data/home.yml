@@ -1,0 +1,173 @@
+site:
+  title: "Xunyi Zhao"
+  url: "https://billzhao1030.github.io/"
+  theme_color: "#f6f3ee"
+
+nav:
+  - label: "About"
+    url: "#about"
+  - label: "News"
+    url: "#news"
+  - label: "Research"
+    url: "#research"
+  - label: "Publications"
+    url: "#publications"
+  - label: "Experience"
+    url: "#experience"
+
+profile:
+  name: "Xunyi Zhao"
+  initials: "BZ"
+  photo: "assets/profile.jpg"
+  photo_alt: "Xunyi Zhao"
+  title: "Ph.D. Researcher"
+  affiliation: "University of Adelaide"
+  location: "Adelaide, Australia"
+  links:
+    - label: "Email"
+      icon: "email"
+      url: "mailto:billzhao1030@gmail.com"
+    - label: "GitHub"
+      icon: "github"
+      url: "https://github.com/billzhao1030"
+    - label: "Scholar"
+      icon: "scholar"
+      url: "https://scholar.google.com/citations?user=nMSCtlEAAAAJ"
+    - label: "Twitter"
+      icon: "twitter"
+      url: "https://x.com/zhaoxunyi1"
+    - label: "LinkedIn"
+      icon: "linkedin"
+      url: "https://www.linkedin.com/in/xunyi-zhao-170a791b9/"
+    - label: "ResearchGate"
+      icon: "researchgate"
+      url: "#"
+
+about:
+  heading: "About Me"
+  paragraphs:
+    - "Hi, I am a first-year Ph.D. student at the <a href='https://www.adelaide.edu.au/aiml/'>Australian Institute for Machine Learning (AIML)</a>, <a href='https://www.adelaide.edu.au/'>Adelaide University</a>, supervised by <a href='http://www.qi-wu.me/'>A/Prof. Qi Wu</a> and <a href='https://people.csiro.au/L/J/ryan-liu'>A/Prof. Jiajun Liu</a>. I am a member of the <a href='https://v3alab.github.io/'>Vision and Visualisation for Autonomous AI Lab (V3A Lab)</a>, where I work on embodied AI, vision-language reasoning, and autonomous agents."
+    - "Prior to my Ph.D. studies, I received my Master’s degree from the University of Adelaide, now Adelaide University, where I was mentored by <a href='https://gengzezhou.github.io/'>Dr. Gengze Zhou</a>. Since 2026, I have been focusing on agentic AI for embodied AI tasks under the mentorship of <a href='https://gengzezhou.github.io/'>Dr. Gengze Zhou</a> and <a href='https://sihaoevery.github.io/'>Dr. Sihao Lin</a>. I also collaborate closely with Zerui Li and <a href='https://sj-li.com/'>Dr. Shijie Li</a>."
+    - "My research focuses on building explainable and embodied AI systems for autonomous agents that can perceive, reason, learn, and navigate in complex 3D environments. I am particularly interested in evaluating and improving multimodal large language models for 3D understanding, spatial reasoning, lifelong learning, and ultra-long-horizon vision-and-language navigation. Recently, I have been exploring agentic AI frameworks for embodied tasks such as VLN, aiming to integrate perception, reasoning, memory, and decision-making into unified autonomous systems. More broadly, I am dedicated to bridging the gap between simulator-based embodied AI research and real-world robotic applications."
+
+news:
+  heading: "News"
+  items:
+    - date: "2026.04"
+      text: "My first Research Paper <a href='https://arxiv.org/abs/2512.24851'>VLN-MME</a> is accepted to ACL 2026! Many thanks to my mentor Gengze, for his invaluable guidance and support."
+    - date: "2025.12"
+      text: "My first co-authored project, <a href='https://sihaoevery.github.io/vlnverse/'>VLNVerse</a> is now released!"
+    - date: "2025.10"
+      text: "I have started my PhD at the University of Adelaide."
+
+research:
+  heading: "Research"
+  topics:
+    - title: "Embodied AI"
+      text: "Navigation agents that combine perception, memory, reasoning, and action in interactive environments."
+    - title: "Multimodal Reasoning"
+      text: "Large vision-language models for long-horizon planning, question answering, and scene understanding."
+    - title: "Agentic AI"
+      text: "Vision-language navigation agents that use multimodal observations, natural-language instructions, and step-by-step reasoning to plan actions in embodied environments."
+
+projects:
+  heading: "Publications"
+  items:
+    - title: "VLN-MME: Diagnosing MLLMs as Language-guided Visual Navigation Agents"
+      venue: "Annual Meeting of the Association for Computational Linguistics (ACL), 2026"
+      authors: "Xunyi Zhao, Gengze Zhou<sup>†</sup>, Qi Wu"
+      note: "<sup>†</sup> Project Lead"
+      image: "assets/projects/vln-mme-tp.png"
+      image_alt: "VLN-MME project thumbnail"
+      placeholder: "VLN-MME"
+      links:
+        - label: "Paper"
+          url: "https://arxiv.org/abs/2512.24851"
+        - label: "Code"
+          url: "https://github.com/billzhao1030/VLN-MME"
+        - label: "Project"
+          url: "VLN-MME/"
+    - title: "Ask When It Pays: Cost-Aware Open-Ended Interaction for Instance Goal Navigation"
+      venue: "Preprint, 2026"
+      authors: "Xunyi Zhao*, Sihao Lin*, Gengze Zhou, Zerui Li, Shijie Li, Wei Tao, Jiajun Liu, Qi Wu"
+      note: "* Equal Contribution"
+      image: "assets/projects/ivln-tp.png"
+      image_alt: "IVLN thumbnail"
+      placeholder: "IVLN"
+      links:
+        - label: "Paper"
+          url: ""
+        - label: "Code"
+          url: ""
+        - label: "Project"
+          url: ""
+    - title: "VLNVerse: A Benchmark for Vision-Language Navigation with Versatile, Embodied, Realistic Simulation and Evaluation"
+      venue: "Preprint 2025"
+      authors: "Sihao Lin*, Zerui Li*, <strong>Xunyi Zhao</strong>*, Gengze Zhou, Liuyi Wang, Rong Wei, Rui Tang, Juncheng Li, Hanqing Wang, Jiangmiao Pang, Anton van den Hengel, Jiajun Liu, Qi Wu"
+      note: "* Equal Contribution"
+      image: "assets/projects/vlnverse-tp.png"
+      image_alt: "VLNVerse thumbnail"
+      placeholder: "VLNVerse"
+      links:
+        - label: "Paper"
+          url: "https://arxiv.org/abs/2512.19021"
+        - label: "Code"
+          url: "https://github.com/william13077/VLNTube"
+        - label: "Project"
+          url: "https://sihaoevery.github.io/vlnverse/"
+
+experience:
+  heading: "Experience"
+  # professional:
+  #   heading: "Professional"
+  #   items:
+  #     - organization: "Organization Name"
+  #       role: "Research Intern"
+  #       period: "Year - Year"
+  #       location: "City, Country"
+  #     - organization: "Organization Name"
+  #       role: "Research Intern"
+  #       period: "Year - Year"
+  #       location: "City, Country"
+  teaching:
+    heading: "Teaching"
+    items:
+      - role: "Teaching Assistant"
+        course: "COMP 6004 - Deep Learning Applications"
+        meta: "Adelaide University | 2026"
+
+  # services:
+  #   heading: "Services"
+  #   conference:
+  #     heading: "Conference Reviewer"
+  #     categories:
+  #       - label: "Computer Vision"
+  #         items:
+  #           - "CVPR '24 '25 '26"
+  #           - "ICCV '25"
+  #           - "ECCV '26"
+  #       - label: "Machine Learning"
+  #         items:
+  #           - "NeurIPS '25"
+  #           - "ICLR '25 '26"
+  #       - label: "Natural Language Processing"
+  #         items:
+  #           - "ACL '25"
+  #           - "NAACL '25"
+  #           - "EMNLP '24 '25"
+  #       - label: "Artificial Intelligence"
+  #         items:
+  #           - "AAAI '25"
+  #           - "MM '24"
+  #       - label: "Robotics"
+  #         items:
+  #           - "ICRA '25"
+  #           - "IROS '25"
+  #   journal:
+  #     heading: "Journal Reviewer"
+  #     items:
+  #       - "TPAMI"
+  #       - "TCSVT"
+  #       - "RAL"
+
+footer: "© 2026 Xunyi Zhao. Built with Jekyll and GitHub Pages."

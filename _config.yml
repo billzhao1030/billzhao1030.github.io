@@ -1,0 +1,10 @@
+title: "Xunyi Zhao"
+url: "https://billzhao1030.github.io"
+baseurl: ""
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+  - README.md
+  - SETUP.md
