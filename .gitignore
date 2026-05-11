@@ -5,3 +5,4 @@ vendor/
 .bundle/
 .DS_Store
 assets/.DS_Store
+VLN-MME/*.md

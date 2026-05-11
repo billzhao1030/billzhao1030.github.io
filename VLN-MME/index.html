@@ -1,0 +1,1393 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="VLN-MME: Diagnosing MLLMs as Language-guided Visual Navigation Agents.">
+  <meta name="keywords" content="VLN-MME, vision-language navigation, multimodal large language models, embodied agents, simulator-free evaluation">
+  <title>VLN-MME: Diagnosing MLLMs as Language-guided Visual Navigation Agents</title>
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --paper: #ffffff;
+      --ink: #172033;
+      --muted: #5f6b7a;
+      --line: #dfe4ec;
+      --blue: #1d4ed8;
+      --teal: #0f766e;
+      --rose: #be123c;
+      --amber: #b45309;
+      --soft-blue: #e8efff;
+      --soft-teal: #e8f5f3;
+      --soft-rose: #fff0f3;
+      --soft-amber: #fff6e5;
+      --shadow: 0 12px 36px rgba(23, 32, 51, 0.08);
+      --title-gradient: linear-gradient(90deg, rgb(128, 0, 128), rgb(210, 153, 153));
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(180deg, #f4f7fb 0%, #ffffff 420px, #f7f8fb 100%);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      body {
+        animation: pageFade 420ms ease-out both;
+      }
+    }
+
+    a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+    }
+
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid rgba(223, 228, 236, 0.9);
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+    }
+
+    .scroll-progress {
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 30;
+      width: 0;
+      height: 3px;
+      background: var(--title-gradient);
+      box-shadow: 0 0 16px rgba(128, 0, 128, 0.22);
+      transform-origin: left center;
+    }
+
+    .nav-inner {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      min-height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--ink);
+      font-weight: 800;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+
+    .brand-mark {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background:
+        var(--title-gradient);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.42);
+    }
+
+    .brand-name,
+    .title-accent {
+      background: var(--title-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-style: italic;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px 18px;
+      font-size: 0.88rem;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      font-weight: 650;
+    }
+
+    .nav-links a:hover {
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    main {
+      overflow: hidden;
+    }
+
+    .hero {
+      width: min(980px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 62px 0 54px;
+      text-align: center;
+    }
+
+    .tagline {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 5px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 980px;
+      margin-inline: auto;
+      color: var(--ink);
+      font-size: clamp(1.82rem, 3.9vw, 3.08rem);
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 20px 0 0;
+      max-width: 740px;
+      margin-inline: auto;
+      color: #344054;
+      font-size: clamp(0.92rem, 1.35vw, 1.03rem);
+      line-height: 1.55;
+    }
+
+    .authors {
+      margin: 20px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .authors strong {
+      color: var(--ink);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 8px 14px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      font-size: 0.86rem;
+      font-weight: 750;
+      color: var(--paper);
+      background: var(--ink);
+      box-shadow: 0 6px 18px rgba(23, 32, 51, 0.12);
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    }
+
+    .button:hover {
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
+    .button.secondary {
+      color: var(--ink);
+      background: var(--paper);
+      border-color: var(--line);
+      box-shadow: none;
+    }
+
+    .figure-panel {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+    }
+
+    .figure-panel img {
+      margin-inline: auto;
+    }
+
+    .framework-figure img {
+      width: min(424px, 100%);
+    }
+
+    .figure-panel:hover,
+    .card:hover,
+    .case-card:hover,
+    .figure-card:hover {
+      border-color: #c8d2e2;
+      box-shadow: 0 16px 44px rgba(23, 32, 51, 0.10);
+      transform: translateY(-2px);
+    }
+
+    figcaption {
+      padding: 12px 14px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.45;
+    }
+
+    section {
+      padding: 50px 0;
+      border-top: 1px solid rgba(223, 228, 236, 0.72);
+    }
+
+    .section-inner {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: minmax(0, 0.7fr) minmax(280px, 1fr);
+      gap: 30px;
+      align-items: end;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--teal);
+      font-size: 0.68rem;
+      font-weight: 850;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin: 0;
+      color: var(--ink);
+      font-size: clamp(1.18rem, 2.2vw, 1.72rem);
+      line-height: 1.18;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 0 0 10px;
+      color: var(--ink);
+      font-size: 0.94rem;
+      line-height: 1.25;
+    }
+
+    .section-lead {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      padding: 18px;
+      box-shadow: 0 8px 22px rgba(23, 32, 51, 0.04);
+      transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .card .metric {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--ink);
+      font-size: 1.22rem;
+      line-height: 1;
+      font-weight: 850;
+    }
+
+    .accent-blue {
+      border-top: 4px solid var(--blue);
+      background: linear-gradient(180deg, var(--soft-blue), var(--paper) 48%);
+    }
+
+    .accent-teal {
+      border-top: 4px solid var(--teal);
+      background: linear-gradient(180deg, var(--soft-teal), var(--paper) 48%);
+    }
+
+    .accent-rose {
+      border-top: 4px solid var(--rose);
+      background: linear-gradient(180deg, var(--soft-rose), var(--paper) 48%);
+    }
+
+    .accent-amber {
+      border-top: 4px solid var(--amber);
+      background: linear-gradient(180deg, var(--soft-amber), var(--paper) 48%);
+    }
+
+    .two-column {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(360px, 1.05fr);
+      gap: 28px;
+      align-items: center;
+    }
+
+    .two-column.reverse {
+      grid-template-columns: minmax(360px, 1.05fr) minmax(0, 0.95fr);
+    }
+
+    .body-copy p {
+      margin: 0 0 14px;
+      color: #344054;
+      font-size: 0.88rem;
+    }
+
+    .body-copy p:last-child {
+      margin-bottom: 0;
+    }
+
+    .body-copy .eyebrow {
+      margin: 0 0 8px;
+      color: var(--teal);
+      font-size: 0.68rem;
+    }
+
+    .bullets {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .bullet {
+      display: grid;
+      grid-template-columns: 18px minmax(0, 1fr);
+      gap: 10px;
+      color: #344054;
+      font-size: 0.86rem;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      margin-top: 8px;
+      border-radius: 999px;
+      background: var(--teal);
+    }
+
+    .wide-figure {
+      margin: 24px 0 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      box-shadow: 0 8px 24px rgba(23, 32, 51, 0.05);
+    }
+
+    .wide-figure img {
+      width: 100%;
+    }
+
+    .compact-figure {
+      width: min(390px, 100%);
+      margin: 0 auto;
+    }
+
+    .compact-figure img {
+      width: 100%;
+      background: #fff;
+    }
+
+    .small-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .result-table-wrap {
+      margin-top: 20px;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      box-shadow: 0 8px 24px rgba(23, 32, 51, 0.05);
+    }
+
+    .table-disclosure {
+      margin-top: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      box-shadow: 0 8px 24px rgba(23, 32, 51, 0.05);
+    }
+
+    .table-disclosure summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 13px 16px;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 820;
+      list-style: none;
+    }
+
+    .table-disclosure summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .table-disclosure summary::after {
+      content: "+";
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1;
+      flex: 0 0 auto;
+    }
+
+    .table-disclosure[open] summary {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .table-disclosure[open] summary::after {
+      content: "-";
+    }
+
+    .table-disclosure .result-table-wrap {
+      margin-top: 0;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .result-table {
+      width: 100%;
+      min-width: 1080px;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+      line-height: 1.32;
+    }
+
+    .result-table th,
+    .result-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .result-table th:first-child,
+    .result-table td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      background: #fff;
+      text-align: left;
+      font-weight: 760;
+    }
+
+    .result-table thead th {
+      background: #f2f5fa;
+      color: #344054;
+      font-weight: 820;
+    }
+
+    .result-table thead th:first-child {
+      background: #f2f5fa;
+      z-index: 2;
+    }
+
+    .result-table .group-row td {
+      background: #eef4ff;
+      color: var(--blue);
+      font-weight: 850;
+      text-align: left;
+    }
+
+    .result-table .agent-row td {
+      background: #f8fafc;
+      color: var(--muted);
+      font-weight: 820;
+      text-align: left;
+    }
+
+    .result-table .strong {
+      color: var(--ink);
+      font-weight: 850;
+    }
+
+    .mini-table .strong {
+      color: var(--ink);
+      font-weight: 850;
+    }
+
+    .table-note {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .study-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .study-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(23, 32, 51, 0.04);
+    }
+
+    .study-card p {
+      margin: 0 0 14px;
+      color: #344054;
+      font-size: 0.88rem;
+    }
+
+    .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    .mini-table th,
+    .mini-table td {
+      padding: 8px 9px;
+      border-bottom: 1px solid var(--line);
+      text-align: right;
+    }
+
+    .mini-table th:first-child,
+    .mini-table td:first-child {
+      text-align: left;
+    }
+
+    .mini-table th {
+      background: #f2f5fa;
+      color: #344054;
+    }
+
+    .figure-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+    }
+
+    .figure-card img {
+      width: 100%;
+      height: 280px;
+      object-fit: contain;
+      background: #fff;
+    }
+
+    .case-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .case-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      box-shadow: 0 8px 24px rgba(23, 32, 51, 0.04);
+      transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+    }
+
+    .case-card a {
+      display: block;
+      background: #fff;
+    }
+
+    .case-card img {
+      width: 100%;
+      height: 430px;
+      object-fit: contain;
+      background: #fff;
+    }
+
+    .case-text {
+      padding: 16px 18px 18px;
+    }
+
+    .case-text p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .quickstart {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(340px, 0.92fr);
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    pre {
+      margin: 0;
+      overflow-x: auto;
+      border: 1px solid #263243;
+      border-radius: 8px;
+      background: #101828;
+      color: #e6edf7;
+      padding: 18px;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      white-space: pre;
+    }
+
+    code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    .data-links {
+      display: grid;
+      gap: 10px;
+    }
+
+    .data-link {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      color: var(--ink);
+      font-size: 0.86rem;
+      font-weight: 700;
+      transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .data-link span {
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .data-link:hover {
+      text-decoration: none;
+      border-color: #b8c2d4;
+      box-shadow: 0 10px 26px rgba(23, 32, 51, 0.07);
+      transform: translateY(-1px);
+    }
+
+    .bibtex {
+      margin-top: 20px;
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 30px 0 42px;
+      color: var(--muted);
+      background: #ffffff;
+      font-size: 0.86rem;
+    }
+
+    .reveal {
+      opacity: 1;
+      transform: none;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .reveal {
+        opacity: 0;
+        transform: translateY(14px);
+        transition: opacity 520ms ease, transform 520ms ease;
+      }
+
+      .reveal.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .reveal.is-visible.figure-panel:hover,
+      .reveal.is-visible.card:hover,
+      .reveal.is-visible.case-card:hover,
+      .reveal.is-visible.figure-card:hover {
+        transform: translateY(-2px);
+      }
+
+      @keyframes pageFade {
+        from {
+          opacity: 0;
+        }
+
+        to {
+          opacity: 1;
+        }
+      }
+    }
+
+    .footer-inner {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 940px) {
+      .two-column,
+      .two-column.reverse,
+      .section-head,
+      .quickstart,
+      .study-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .small-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .nav-inner {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 12px 0;
+      }
+
+      .nav-links {
+        justify-content: flex-start;
+      }
+
+      .card-grid,
+      .case-grid,
+      .study-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .case-card img {
+        height: 330px;
+      }
+
+      .figure-card img {
+        height: 230px;
+      }
+
+      section {
+        padding: 44px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+  <nav class="site-nav" aria-label="Primary navigation">
+    <div class="nav-inner">
+      <a class="brand" href="#top" aria-label="VLN-MME home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">VLN-MME</span>
+      </a>
+      <div class="nav-links">
+        <a href="#framework">Framework</a>
+        <a href="#composition">Composition</a>
+        <a href="#benchmark">Benchmark</a>
+        <a href="#results">Results</a>
+        <a href="#diagnostics">Diagnostics</a>
+        <a href="#diagnostic-study">Study</a>
+        <a href="#cases">Cases</a>
+        <a href="#start">Start</a>
+      </div>
+    </div>
+  </nav>
+
+  <main id="top">
+    <header class="hero">
+      <div class="hero-copy">
+        <div class="tagline" aria-label="Project tags">
+          <span class="pill">ACL 2026</span>
+          <span class="pill">Simulator-free VLN</span>
+          <span class="pill">MLLM agent diagnosis</span>
+        </div>
+        <h1><span class="title-accent">VLN-MME</span>: Diagnosing MLLMs as Language-guided Visual Navigation Agents</h1>
+        <p class="subtitle">
+          A unified, modular, and simulator-free evaluation framework for probing multimodal large language models as zero-shot embodied navigation agents.
+        </p>
+        <p class="authors">
+          <strong>Xunyi Zhao</strong><sup>*</sup>, <strong>Gengze Zhou</strong><sup>*†</sup>, <strong>Qi Wu</strong><br>
+          Australian Institute for Machine Learning, University of Adelaide<br>
+          <span><sup>*</sup> Equal contribution. <sup>†</sup> Project Lead.</span>
+        </p>
+        <div class="hero-actions">
+          <a class="button" href="assets/vln-mme-paper.pdf">Paper</a>
+          <a class="button" href="https://github.com/billzhao1030/VLN-MME">Code</a>
+          <a class="button" href="https://huggingface.co/VLN-MME">Data</a>
+          <a class="button" href="#bibtex">BibTeX</a>
+        </div>
+      </div>
+    </header>
+
+    <section id="overview">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Overview</p>
+            <h2>Beyond leaderboard success rates</h2>
+          </div>
+          <p class="section-lead">
+            VLN-MME is designed to diagnose how MLLMs behave as language-guided visual navigation agents, not just whether they reach the goal.
+          </p>
+        </div>
+        <div class="card-grid">
+          <article class="card accent-blue">
+            <h3>Unified evaluation</h3>
+            <p>Models, agents, and tasks are treated as interchangeable components under one evaluation interface.</p>
+          </article>
+          <article class="card accent-teal">
+            <h3>Simulator-free</h3>
+            <p>Pre-rendered observations and graph metadata remove the need to install Matterport3D or Habitat simulators.</p>
+          </article>
+          <article class="card accent-rose">
+            <h3>Agent diagnosis</h3>
+            <p>The benchmark compares memory formats, CoT prompting, reflection, and MLLM backbones under consistent tasks.</p>
+          </article>
+          <article class="card accent-amber">
+            <h3>Failure analysis</h3>
+            <p>Step-level trajectory inspection reveals looping, weak historical grounding, and perception-action gaps.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="framework">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Framework</p>
+            <h2>Model, Agent, Task, and Runner</h2>
+          </div>
+          <p class="section-lead">
+            The implementation separates model APIs, agent prompting and memory, navigation tasks, environment loading, and evaluation logging.
+          </p>
+        </div>
+        <div class="two-column">
+          <div class="body-copy">
+            <p>
+              The <strong>Model</strong> interface handles open-weight and proprietary MLLMs. The <strong>Agent</strong> converts state into prompts, stores history, parses model output, and selects actions. The <strong>Task</strong> encapsulates dataset splits, maps, and evaluation metrics.
+            </p>
+            <p>
+              A central <strong>Runner</strong> coordinates loading, rollout, logging, and metric computation, allowing component-level comparisons without rewriting the evaluation loop.
+            </p>
+            <div class="bullets">
+              <div class="bullet"><span class="dot"></span><span>Memory variants include text summary agents and topological text-map agents.</span></div>
+              <div class="bullet"><span class="dot"></span><span>Reasoning variants include baseline prompting, CoT, reflection, and CoT + reflection.</span></div>
+              <div class="bullet"><span class="dot"></span><span>Adding a new model, agent, or task follows the same registry pattern used by the current codebase.</span></div>
+            </div>
+          </div>
+          <figure class="figure-panel framework-figure">
+            <img src="assets/framework.png" alt="VLN-MME modular framework diagram">
+            <figcaption>Framework overview from the paper.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section id="composition">
+      <div class="section-inner">
+        <div class="two-column reverse">
+          <figure class="figure-panel compact-figure">
+            <img src="assets/vlnmme.png" alt="VLN-MME composition across tasks, agents, models, and datasets">
+            <figcaption>VLN-MME composition over tasks, agents, models, and datasets.</figcaption>
+          </figure>
+          <div class="body-copy">
+            <p class="eyebrow">Composition</p>
+            <h2>One benchmark, multiple axes</h2>
+            <p>
+              VLN-MME is organized around the interaction between navigation tasks, agent architectures, and MLLM backbones. This makes it possible to diagnose whether a result comes from model capability, memory design, reasoning prompts, or task granularity.
+            </p>
+            <div class="bullets">
+              <div class="bullet"><span class="dot"></span><span><strong>Tasks:</strong> fine-grained, coarse-grained, object-oriented, and extensible navigation settings.</span></div>
+              <div class="bullet"><span class="dot"></span><span><strong>Agents:</strong> NavGPT-style memory, MapGPT-style memory, CoT, reflection, and combined variants.</span></div>
+              <div class="bullet"><span class="dot"></span><span><strong>Models:</strong> open-weight and proprietary MLLMs can be swapped under the same protocol.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="benchmark">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Benchmark</p>
+            <h2>Efficient coverage of navigation granularity</h2>
+          </div>
+          <p class="section-lead">
+            The paper evaluates representative navigation tasks across fine-grained instructions, coarse-grained referring expressions, and object-oriented navigation.
+          </p>
+        </div>
+        <div class="two-column reverse">
+          <figure class="figure-panel">
+            <img src="assets/distribution.png" alt="Distribution comparison between the curated subset and original R2R validation split">
+            <figcaption>The curated subset closely follows the original R2R val-unseen distribution.</figcaption>
+          </figure>
+          <div class="body-copy">
+            <p>
+              VLN-MME constructs compact but representative evaluation subsets so large MLLM agents can be compared without exhaustive simulator runs.
+            </p>
+            <div class="bullets">
+              <div class="bullet"><span class="dot"></span><span><strong>Fine-grained:</strong> R2R instruction following with step-by-step language guidance.</span></div>
+              <div class="bullet"><span class="dot"></span><span><strong>Coarse-grained:</strong> REVERIE navigation to remote, out-of-sight targets.</span></div>
+              <div class="bullet"><span class="dot"></span><span><strong>Object-oriented:</strong> ObjectNav-MP3D navigation from a target category.</span></div>
+              <div class="bullet"><span class="dot"></span><span>The released code also supports RXR-EN and CVDN for broader extensions.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="observation">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Observation</p>
+            <h2>Simulator-free visual grounding</h2>
+          </div>
+          <p class="section-lead">
+            VLN-MME replaces online simulator rendering with pre-rendered, agent-centric observations and semantic metadata.
+          </p>
+        </div>
+        <figure class="wide-figure">
+          <img src="assets/sample_scene.png" alt="Four-view panoramic observation with navigable markers">
+          <figcaption>Each step provides four 90-degree perspective views arranged as Left, Front, Right, and Back, with navigable markers overlaid.</figcaption>
+        </figure>
+        <div class="card-grid" style="margin-top: 18px;">
+          <article class="card accent-blue">
+            <span class="metric">4 views</span>
+            <p>Agent-centric panoramic input avoids dense image sweeps and distorted stitched panoramas.</p>
+          </article>
+          <article class="card accent-teal">
+            <span class="metric">~1.7GB</span>
+            <p>Runtime memory compared with about 10GB for simulator-based evaluation.</p>
+          </article>
+          <article class="card accent-rose">
+            <span class="metric">0.016s</span>
+            <p>Observation access compared with about 0.14s when rendering online.</p>
+          </article>
+          <article class="card accent-amber">
+            <span class="metric">~25s</span>
+            <p>Approximate per-episode time saved by avoiding simulator rendering overhead.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="results">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Results</p>
+            <h2>Reasoning prompts do not guarantee better navigation</h2>
+          </div>
+          <p class="section-lead">
+            The results expose a gap between formatted reasoning and usable embodied context awareness.
+          </p>
+        </div>
+        <div class="two-column">
+          <div class="body-copy">
+            <p>
+              Proprietary MLLMs such as GPT-5 and Gemini-2.5 Pro set the strongest zero-shot upper bound, while Qwen2.5-VL-7B is a robust open-weight baseline.
+            </p>
+            <p>
+              Counterintuitively, adding CoT or reflection often hurts navigation. For Qwen2.5-VL-7B on fine-grained navigation, CoT reduces success rate from 27.5% to 21.0%, indicating that explicit reasoning traces can fail to use historical context.
+            </p>
+            <div class="bullets">
+              <div class="bullet"><span class="dot"></span><span>CoT outputs can look structured while still relying on local visual cues.</span></div>
+              <div class="bullet"><span class="dot"></span><span>Text-map memory does not automatically solve spatial grounding.</span></div>
+              <div class="bullet"><span class="dot"></span><span>Object-oriented navigation is generally more tractable than coarse-grained navigation.</span></div>
+            </div>
+          </div>
+          <figure class="figure-panel">
+            <img src="assets/reasoning_compare.png" alt="Performance comparison under different reasoning strategies">
+            <figcaption>Reasoning strategy comparison for text-summary memory agents.</figcaption>
+          </figure>
+        </div>
+        <div class="body-copy" style="margin-top: 28px;">
+          <p class="eyebrow">Main Table</p>
+          <h2>Compact web view of main table</h2>
+          <p>
+            The paper table reports eight metrics for each navigation category. On the website, the same comparison is condensed to the most readable success-efficiency pair: <strong>SR</strong> and <strong>SPL</strong> for fine-grained, coarse-grained, and object-oriented navigation.
+          </p>
+          <p>
+            The pattern is consistent with the paper discussion: proprietary models define the upper bound, Qwen2.5-VL-7B is the strongest open-weight baseline in several settings, and explicit CoT/reflection often reduces navigation success rather than improving it.
+          </p>
+        </div>
+        <details class="table-disclosure">
+          <summary>Show compact main table: SR / SPL across tasks</summary>
+          <div class="result-table-wrap" aria-label="Compact main results table">
+          <table class="result-table">
+            <thead>
+              <tr>
+                <th>Agent / MLLM</th>
+                <th>Fine SR</th>
+                <th>Fine SPL</th>
+                <th>Coarse SR</th>
+                <th>Coarse SPL</th>
+                <th>Object SR</th>
+                <th>Object SPL</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="group-row"><td colspan="7">Text Summarization Memory Agents</td></tr>
+              <tr class="agent-row"><td colspan="7">NavGPT</td></tr>
+              <tr><td>GPT-5</td><td>38.50</td><td>29.23</td><td>30.00</td><td>20.76</td><td>48.00</td><td>23.84</td></tr>
+              <tr><td>Gemini-2.5 Pro</td><td class="strong">41.00</td><td class="strong">32.67</td><td class="strong">33.50</td><td class="strong">24.38</td><td class="strong">51.50</td><td class="strong">27.19</td></tr>
+              <tr><td>InternVL3-2B</td><td>13.50</td><td>5.46</td><td>7.33</td><td>2.50</td><td>21.50</td><td>3.57</td></tr>
+              <tr><td>InternVL3-8B</td><td>28.00</td><td>12.61</td><td>20.00</td><td>7.18</td><td>39.00</td><td>7.69</td></tr>
+              <tr><td>LLaVA-OV-7B</td><td>11.50</td><td>4.94</td><td>14.67</td><td>5.19</td><td>27.50</td><td>4.51</td></tr>
+              <tr><td>Qwen2.5-VL-7B</td><td>27.50</td><td>17.11</td><td>18.67</td><td>9.00</td><td>37.50</td><td>13.18</td></tr>
+              <tr class="agent-row"><td colspan="7">NavGPT w/ CoT</td></tr>
+              <tr><td>GPT-5</td><td>36.00</td><td>27.31</td><td>28.50</td><td>20.42</td><td>46.50</td><td>23.67</td></tr>
+              <tr><td>Gemini-2.5 Pro</td><td>32.50</td><td>23.88</td><td>24.00</td><td>16.93</td><td>42.00</td><td>19.27</td></tr>
+              <tr><td>InternVL3-2B</td><td>8.00</td><td>4.47</td><td>5.33</td><td>3.24</td><td>25.00</td><td>6.66</td></tr>
+              <tr><td>InternVL3-8B</td><td>19.00</td><td>10.95</td><td>15.33</td><td>9.31</td><td>34.50</td><td>12.67</td></tr>
+              <tr><td>LLaVA-OV-7B</td><td>12.50</td><td>5.41</td><td>14.00</td><td>5.90</td><td>33.50</td><td>7.31</td></tr>
+              <tr><td>Qwen2.5-VL-7B</td><td>21.00</td><td>11.41</td><td>15.67</td><td>8.10</td><td>33.00</td><td>13.25</td></tr>
+              <tr class="agent-row"><td colspan="7">NavGPT w/ Reflection</td></tr>
+              <tr><td>GPT-5</td><td>33.00</td><td>24.18</td><td>25.00</td><td>17.34</td><td>43.00</td><td>20.62</td></tr>
+              <tr><td>Gemini-2.5 Pro</td><td>37.50</td><td>28.73</td><td>29.00</td><td>21.68</td><td>47.50</td><td>25.14</td></tr>
+              <tr><td>InternVL3-2B</td><td>8.00</td><td>5.20</td><td>8.50</td><td>4.80</td><td>28.00</td><td>7.83</td></tr>
+              <tr><td>InternVL3-8B</td><td>12.00</td><td>9.53</td><td>11.00</td><td>5.97</td><td>32.50</td><td>9.12</td></tr>
+              <tr><td>LLaVA-OV-7B</td><td>10.50</td><td>9.44</td><td>9.33</td><td>5.82</td><td>34.00</td><td>7.90</td></tr>
+              <tr><td>Qwen2.5-VL-7B</td><td>24.00</td><td>14.95</td><td>12.00</td><td>7.97</td><td>35.50</td><td>14.67</td></tr>
+              <tr class="agent-row"><td colspan="7">NavGPT w/ CoT &amp; Reflection</td></tr>
+              <tr><td>GPT-5</td><td>38.50</td><td>29.81</td><td>30.00</td><td>22.17</td><td>48.50</td><td>25.92</td></tr>
+              <tr><td>Gemini-2.5 Pro</td><td>34.00</td><td>25.74</td><td>25.50</td><td>18.36</td><td>43.50</td><td>21.28</td></tr>
+              <tr><td>InternVL3-2B</td><td>4.50</td><td>1.70</td><td>9.33</td><td>4.63</td><td>24.50</td><td>7.26</td></tr>
+              <tr><td>InternVL3-8B</td><td>22.00</td><td>15.33</td><td>17.33</td><td>10.07</td><td>32.50</td><td>8.14</td></tr>
+              <tr><td>LLaVA-OV-7B</td><td>10.00</td><td>5.83</td><td>14.00</td><td>6.78</td><td>28.50</td><td>7.25</td></tr>
+              <tr><td>Qwen2.5-VL-7B</td><td>25.50</td><td>17.68</td><td>11.67</td><td>7.89</td><td>36.00</td><td>13.67</td></tr>
+              <tr class="group-row"><td colspan="7">Text Map Memory Agents</td></tr>
+              <tr class="agent-row"><td colspan="7">MapGPT</td></tr>
+              <tr><td>GPT-5</td><td>34.00</td><td>25.83</td><td>26.00</td><td>18.29</td><td>44.00</td><td>20.91</td></tr>
+              <tr><td>Gemini-2.5 Pro</td><td class="strong">39.50</td><td class="strong">30.72</td><td class="strong">31.50</td><td class="strong">23.16</td><td class="strong">49.50</td><td class="strong">26.24</td></tr>
+              <tr><td>InternVL3-2B</td><td>11.00</td><td>3.71</td><td>12.00</td><td>4.41</td><td>27.50</td><td>4.41</td></tr>
+              <tr><td>InternVL3-8B</td><td>18.00</td><td>12.46</td><td>13.67</td><td>7.87</td><td>31.50</td><td>11.61</td></tr>
+              <tr><td>LLaVA-OV-7B</td><td>8.50</td><td>5.59</td><td>14.67</td><td>6.48</td><td>22.50</td><td>4.28</td></tr>
+              <tr><td>Qwen2.5-VL-7B</td><td>26.00</td><td>17.31</td><td>21.67</td><td>8.96</td><td>36.50</td><td>11.05</td></tr>
+              <tr class="agent-row"><td colspan="7">MapGPT w/ CoT</td></tr>
+              <tr><td>GPT-5</td><td>32.50</td><td>27.14</td><td>24.50</td><td>19.68</td><td>44.50</td><td>23.21</td></tr>
+              <tr><td>Gemini-2.5 Pro</td><td>31.00</td><td>23.37</td><td>23.00</td><td>15.84</td><td>39.50</td><td>18.76</td></tr>
+              <tr><td>InternVL3-2B</td><td>6.50</td><td>4.12</td><td>4.00</td><td>1.58</td><td>20.00</td><td>4.76</td></tr>
+              <tr><td>InternVL3-8B</td><td>12.00</td><td>9.66</td><td>13.33</td><td>8.77</td><td>34.00</td><td>12.33</td></tr>
+              <tr><td>LLaVA-OV-7B</td><td>8.50</td><td>2.83</td><td>8.67</td><td>3.38</td><td>16.00</td><td>4.14</td></tr>
+              <tr><td>Qwen2.5-VL-7B</td><td>17.00</td><td>10.47</td><td>16.33</td><td>10.61</td><td>32.00</td><td>9.95</td></tr>
+              <tr class="agent-row"><td colspan="7">MapGPT w/ Reflection</td></tr>
+              <tr><td>GPT-5</td><td>36.50</td><td>28.19</td><td>25.50</td><td>20.73</td><td>45.50</td><td>23.65</td></tr>
+              <tr><td>Gemini-2.5 Pro</td><td>32.00</td><td>24.31</td><td>24.00</td><td>16.88</td><td>41.00</td><td>19.94</td></tr>
+              <tr><td>InternVL3-2B</td><td>4.00</td><td>3.26</td><td>3.67</td><td>3.31</td><td>25.00</td><td>4.50</td></tr>
+              <tr><td>InternVL3-8B</td><td>16.50</td><td>10.89</td><td>12.67</td><td>6.64</td><td>30.00</td><td>10.36</td></tr>
+              <tr><td>LLaVA-OV-7B</td><td>10.00</td><td>5.50</td><td>11.00</td><td>6.00</td><td>15.50</td><td>2.02</td></tr>
+              <tr><td>Qwen2.5-VL-7B</td><td>26.50</td><td>10.12</td><td>15.67</td><td>6.00</td><td>33.50</td><td>7.41</td></tr>
+              <tr class="agent-row"><td colspan="7">MapGPT w/ CoT &amp; Reflection</td></tr>
+              <tr><td>GPT-5</td><td>34.50</td><td>26.13</td><td>24.50</td><td>18.67</td><td>42.50</td><td>21.79</td></tr>
+              <tr><td>Gemini-2.5 Pro</td><td>30.00</td><td>22.28</td><td>22.00</td><td>15.41</td><td>38.00</td><td>17.86</td></tr>
+              <tr><td>InternVL3-2B</td><td>9.00</td><td>4.88</td><td>4.67</td><td>1.61</td><td>18.00</td><td>4.74</td></tr>
+              <tr><td>InternVL3-8B</td><td>18.00</td><td>10.84</td><td>13.00</td><td>6.06</td><td>33.50</td><td>8.01</td></tr>
+              <tr><td>LLaVA-OV-7B</td><td>13.00</td><td>5.81</td><td>9.00</td><td>4.53</td><td>24.50</td><td>5.45</td></tr>
+              <tr><td>Qwen2.5-VL-7B</td><td>14.00</td><td>7.12</td><td>10.67</td><td>6.68</td><td>25.50</td><td>6.78</td></tr>
+            </tbody>
+          </table>
+        </div>
+          <p class="table-note">Compact rendering of `Tab/main_table.tex`: SR and SPL are retained for readability; the paper PDF contains TL, NE, nDTW, SDTW, CLS, and OSR as well.</p>
+        </details>
+      </div>
+    </section>
+
+    <section id="diagnostics">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Diagnostics</p>
+            <h2>Looping reveals the perception-action gap</h2>
+          </div>
+          <p class="section-lead">
+            VLN-MME turns aggregate failure into interpretable behavioral patterns at the trajectory level.
+          </p>
+        </div>
+        <div class="two-column reverse">
+          <figure class="figure-panel">
+            <img src="assets/total.png" alt="Sankey diagram of successes and failures in VLN-MME">
+            <figcaption>Failure and success flow over 200 analyzed trajectories.</figcaption>
+          </figure>
+          <div class="body-copy">
+            <p>
+              Among 200 analyzed trajectories, 148 fail and 52 succeed. Of the failures, 131 are incorrect navigation rather than generation-format errors, and 106 involve looping.
+            </p>
+            <p>
+              Even successful episodes are often inefficient: 42 of 52 successes include looping behavior before reaching or stopping near the target. This points to weak state tracking, poor historical grounding, and incomplete translation from perception to action.
+            </p>
+            <div class="bullets">
+              <div class="bullet"><span class="dot"></span><span>Common failure causes include region recognition, vertical movement, and object grounding.</span></div>
+              <div class="bullet"><span class="dot"></span><span>The agent can recognize visual evidence but still choose actions that repeat prior mistakes.</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="small-grid">
+          <figure class="figure-card">
+            <img src="assets/fail.png" alt="Failure analysis pie chart">
+            <figcaption>Failure sources: incorrect navigation dominates malformed generation.</figcaption>
+          </figure>
+          <figure class="figure-card">
+            <img src="assets/success.png" alt="Success behavior analysis pie chart">
+            <figcaption>Most successful trajectories are still inefficient.</figcaption>
+          </figure>
+          <article class="card accent-teal">
+            <span class="metric">106 loops</span>
+            <p>Looping is the dominant incorrect-navigation pattern, reflecting unstable spatial memory and weak long-horizon correction.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="diagnostic-study">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Diagnostic Study</p>
+            <h2>What fixes the hard negatives?</h2>
+          </div>
+          <p class="section-lead">
+            The paper revisits 25 fine-grained hard-negative trajectories where all open-weight models failed with the standard text-summary agent.
+          </p>
+        </div>
+        <div class="study-grid">
+          <article class="study-card">
+            <h3>Oracle-guided navigation</h3>
+            <p>
+              A stronger Qwen3VL oracle assistant provides high-level reasoning guidance when the navigator loops, enters a wrong region, or moves in a critically wrong direction. The jump from 0% SR to 52% SR suggests the base navigator has some visual grounding, but lacks strategic planning and error-correction logic.
+            </p>
+            <table class="mini-table">
+              <thead>
+                <tr><th>Method</th><th>SR</th><th>OSR</th><th>SPL</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Baseline Qwen2.5VL-7B</td><td>0.00</td><td>0.00</td><td>0.00</td></tr>
+                <tr><td>+ Oracle Assistant</td><td class="strong">52.00</td><td class="strong">68.00</td><td class="strong">41.28</td></tr>
+              </tbody>
+            </table>
+          </article>
+          <article class="study-card">
+            <h3>Failure-aware in-context learning</h3>
+            <p>
+              Instead of direct oracle support, the model receives examples of common failure cases in the prompt. This improves performance modestly, but remains far below the oracle-guided setting, indicating that awareness of failure modes helps less than active reasoning assistance.
+            </p>
+            <table class="mini-table">
+              <thead>
+                <tr><th>Method</th><th>SR</th><th>OSR</th><th>SPL</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Zero-shot baseline</td><td>0.00</td><td>0.00</td><td>0.00</td></tr>
+                <tr><td>1-shot failure example</td><td>12.00</td><td>24.00</td><td>9.42</td></tr>
+                <tr><td>2-shot failure examples</td><td>16.00</td><td>28.00</td><td>11.25</td></tr>
+                <tr><td>3-shot failure examples</td><td>16.00</td><td class="strong">32.00</td><td class="strong">14.29</td></tr>
+              </tbody>
+            </table>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="cases">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Case Studies</p>
+            <h2>Step-level behavior exposes where agents fail</h2>
+          </div>
+          <p class="section-lead">
+            The paper case studies show successful but inefficient paths, vertical-movement confusion, invalid outputs, and region-understanding failures.
+          </p>
+        </div>
+        <div class="case-grid">
+          <article class="case-card">
+            <a href="assets/case_788.png"><img src="assets/case_788.png" alt="Successful but inefficient treadmill navigation trajectory"></a>
+            <div class="case-text">
+              <h3>Successful but inefficient</h3>
+              <p>The agent sees the treadmill, loops through nearby rooms, and only later stops by the target.</p>
+            </div>
+          </article>
+          <article class="case-card">
+            <a href="assets/case_3272.png"><img src="assets/case_3272.png" alt="Successful trajectory with vertical movement looping on stairs"></a>
+            <div class="case-text">
+              <h3>Recovery with vertical confusion</h3>
+              <p>The agent eventually succeeds, but staircase positioning causes repeated local corrections.</p>
+            </div>
+          </article>
+          <article class="case-card">
+            <a href="assets/case_2194.png"><img src="assets/case_2194.png" alt="Failure case with oracle success but no final stop"></a>
+            <div class="case-text">
+              <h3>Oracle success, final failure</h3>
+              <p>The agent reaches the correct general area but fails to stop and loops on the staircase.</p>
+            </div>
+          </article>
+          <article class="case-card">
+            <a href="assets/case_5203.png"><img src="assets/case_5203.png" alt="Navigation failure caused by directional misunderstanding and invalid action"></a>
+            <div class="case-text">
+              <h3>Instruction and generation failure</h3>
+              <p>A directional grounding error is compounded by malformed output that yields an invalid action.</p>
+            </div>
+          </article>
+          <article class="case-card">
+            <a href="assets/case_2662.png"><img src="assets/case_2662.png" alt="Failure caused by misunderstanding the target sauna region"></a>
+            <div class="case-text">
+              <h3>Region-understanding failure</h3>
+              <p>The agent cannot correctly interpret and enter the specified target region, the sauna.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="start">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Quick Start</p>
+            <h2>Run evaluation without installing a simulator</h2>
+          </div>
+          <p class="section-lead">
+            The framework downloads processed VLN annotations, marked observations, connectivity graphs, captions, and environment metadata.
+          </p>
+        </div>
+        <div class="quickstart">
+          <pre><code>conda create --name VLNMME python=3.10
+conda activate VLNMME
+pip install -r requirements.txt
+
+cd src
+python main.py --config_dir configs/experiment.yaml</code></pre>
+          <div class="data-links" aria-label="Project links">
+            <a class="data-link" href="https://github.com/billzhao1030/VLN-MME">GitHub repository <span>code</span></a>
+            <a class="data-link" href="https://huggingface.co/VLN-MME">HuggingFace organization <span>assets</span></a>
+            <a class="data-link" href="https://huggingface.co/datasets/VLN-MME/VLN_annotations">VLN annotations <span>datasets</span></a>
+            <a class="data-link" href="https://huggingface.co/datasets/VLN-MME/MP3D_marked_obs">MP3D marked observations <span>images</span></a>
+            <a class="data-link" href="https://huggingface.co/datasets/VLN-MME/MP3D">MP3D environment metadata <span>graphs</span></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="bibtex">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Citation</p>
+            <h2>BibTeX</h2>
+          </div>
+          <p class="section-lead">
+            If VLN-MME is useful for your research, please cite the project.
+          </p>
+        </div>
+        <pre class="bibtex"><code>@article{zhao2025vln,
+  title={VLN-MME: Diagnosing MLLMs as Language-guided Visual Navigation agents},
+  author={Zhao, Xunyi and Zhou, Gengze and Wu, Qi},
+  journal={arXiv preprint arXiv:2512.24851},
+  year={2025}
+}</code></pre>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span>VLN-MME. Australian Institute for Machine Learning, University of Adelaide.</span>
+      <span>Website built as a static GitHub Pages project page.</span>
+    </div>
+  </footer>
+  <script>
+    const progress = document.getElementById("scrollProgress");
+    const updateProgress = () => {
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const ratio = maxScroll > 0 ? window.scrollY / maxScroll : 0;
+      progress.style.width = `${Math.min(100, Math.max(0, ratio * 100))}%`;
+    };
+
+    updateProgress();
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    window.addEventListener("resize", updateProgress);
+
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const revealItems = document.querySelectorAll(
+        "section, .card, .figure-panel, .figure-card, .case-card"
+      );
+      revealItems.forEach((item) => item.classList.add("reveal"));
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+
+      revealItems.forEach((item) => observer.observe(item));
+    }
+  </script>
+</body>
+</html>
