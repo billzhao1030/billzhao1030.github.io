@@ -174,12 +174,17 @@
 
     h1 {
       margin: 0;
-      max-width: 980px;
+      max-width: 1040px;
       margin-inline: auto;
       color: var(--ink);
-      font-size: clamp(1.82rem, 3.9vw, 3.08rem);
+      font-size: clamp(1.72rem, 3.45vw, 2.72rem);
       line-height: 1.12;
       letter-spacing: 0;
+    }
+
+    .title-line {
+      display: block;
+      white-space: nowrap;
     }
 
     .subtitle {
@@ -828,6 +833,10 @@
         height: 230px;
       }
 
+      .title-line {
+        white-space: normal;
+      }
+
       section {
         padding: 44px 0;
       }
@@ -863,7 +872,10 @@
           <span class="pill">Simulator-free VLN</span>
           <span class="pill">MLLM agent diagnosis</span>
         </div>
-        <h1><span class="title-accent">VLN-MME</span>: Diagnosing MLLMs as Language-guided Visual Navigation Agents</h1>
+        <h1>
+          <span class="title-line"><span class="title-accent">VLN-MME</span>: Diagnosing MLLMs as</span>
+          <span class="title-line">Language-guided Visual Navigation Agents</span>
+        </h1>
         <p class="subtitle">
           A unified, modular, and simulator-free evaluation framework for probing multimodal large language models as zero-shot embodied navigation agents.
         </p>
