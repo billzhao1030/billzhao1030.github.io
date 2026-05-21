@@ -7,3 +7,5 @@ vendor/
 assets/.DS_Store
 VLN-MME/*.md
 *.pdf
+CLAUDE.md
+/doc

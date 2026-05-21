@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Ask When It Pays: Cost-Aware Open-Ended Interaction for Instance Goal Navigation. TANDEM is a modular zero-shot MLLM navigator that asks the oracle only when the expected uncertainty reduction is worth its cost.">
+  <meta name="keywords" content="Instance Goal Navigation, vision-language navigation, cost-aware interaction, MLLM agents, embodied AI, TANDEM, Weighted Success Rate, Isaac Sim">
+  <meta property="og:title" content="Ask When It Pays: Cost-Aware Open-Ended Interaction for Instance Goal Navigation">
+  <meta property="og:description" content="A cost-sensitive reframing of interactive Instance Goal Navigation, a Weighted Success Rate benchmark, and TANDEM, a modular zero-shot MLLM navigator.">
+  <meta property="og:type" content="website">
+  <title>Ask When It Pays · Cost-Aware Interaction for Instance Goal Navigation</title>
+  <style>
+    :root {
+      --bg: #eef1f8;
+      --paper: #ffffff;
+      --ink: #0b1220;
+      --muted: #5a667b;
+      --line: #dde3ee;
+      --indigo: #4f46e5;
+      --cyan: #06b6d4;
+      --teal: #0d9488;
+      --amber: #d97706;
+      --rose: #e11d48;
+      --soft-indigo: #eef0ff;
+      --soft-cyan: #e6f7fb;
+      --soft-teal: #e6f6f3;
+      --soft-amber: #fdf3e3;
+      --soft-rose: #fdeef1;
+      --grad: linear-gradient(100deg, #4f46e5 0%, #4338ca 18%, #0891b2 60%, #0d9488 100%);
+      --grad-soft: linear-gradient(120deg, #eef0ff, #e6f7fb 55%, #e6f6f3);
+      --shadow: 0 14px 40px rgba(11, 18, 32, 0.10);
+      --shadow-lg: 0 24px 60px rgba(11, 18, 32, 0.14);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    a { color: var(--indigo); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ---------- scroll progress ---------- */
+    .scroll-progress {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: var(--grad);
+      z-index: 200;
+      transition: width 80ms linear;
+    }
+
+    /* ---------- nav ---------- */
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: saturate(160%) blur(12px);
+      background: rgba(238, 241, 248, 0.82);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav-inner {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 58px;
+    }
+    .brand { display: inline-flex; align-items: center; gap: 9px; color: var(--ink); font-weight: 800; letter-spacing: 0.01em; }
+    .brand:hover { text-decoration: none; }
+    .brand-mark {
+      width: 18px; height: 18px; border-radius: 6px;
+      background: var(--grad);
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+    }
+    .nav-links { display: flex; gap: 4px; flex-wrap: wrap; }
+    .nav-links a {
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 650;
+      padding: 6px 10px;
+      border-radius: 8px;
+      transition: color 160ms ease, background 160ms ease;
+    }
+    .nav-links a:hover { color: var(--ink); background: rgba(79,70,229,0.08); text-decoration: none; }
+    .nav-links a.active { color: var(--indigo); background: rgba(79,70,229,0.10); }
+    @media (max-width: 860px) { .nav-links { display: none; } }
+
+    main { overflow: hidden; }
+
+    /* ---------- hero ---------- */
+    .hero {
+      position: relative;
+      width: 100%;
+      padding: 78px 16px 64px;
+      text-align: center;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: -10% -5% 0;
+      background:
+        radial-gradient(50% 48% at 18% 4%, rgba(79,70,229,0.22), transparent 70%),
+        radial-gradient(48% 46% at 84% 0%, rgba(6,182,212,0.22), transparent 70%),
+        radial-gradient(54% 60% at 62% 100%, rgba(13,148,136,0.16), transparent 70%);
+      z-index: 0;
+      animation: drift 16s ease-in-out infinite alternate;
+    }
+    .hero-bg::after {
+      content: ""; position: absolute; inset: 0;
+      background:
+        radial-gradient(40% 40% at 70% 18%, rgba(124,58,237,0.18), transparent 70%),
+        radial-gradient(36% 38% at 30% 36%, rgba(6,182,212,0.16), transparent 70%);
+      animation: breathe 9s ease-in-out infinite alternate;
+    }
+    @keyframes drift {
+      from { transform: translate3d(0,0,0) scale(1); }
+      to   { transform: translate3d(0,-14px,0) scale(1.05); }
+    }
+    @keyframes breathe {
+      from { opacity: 0.55; transform: scale(1) translateY(0); }
+      to   { opacity: 1; transform: scale(1.12) translateY(10px); }
+    }
+    .hero-copy { position: relative; z-index: 1; width: min(980px, 100%); margin: 0 auto; }
+
+    .tagline { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 22px; }
+    .pill {
+      display: inline-flex; align-items: center; min-height: 30px;
+      padding: 5px 13px; border: 1px solid var(--line); border-radius: 999px;
+      background: rgba(255,255,255,0.78); color: var(--muted);
+      font-size: 0.74rem; font-weight: 750; letter-spacing: 0.02em;
+    }
+    .pill.glow { color: var(--indigo); border-color: rgba(79,70,229,0.35); background: rgba(238,240,255,0.9); }
+
+    h1 {
+      margin: 0; color: var(--ink);
+      font-size: clamp(1.78rem, 3.6vw, 2.95rem);
+      line-height: 1.1; letter-spacing: -0.01em; font-weight: 820;
+    }
+    .title-line { display: block; }
+    .title-accent {
+      background: var(--grad);
+      background-size: 200% 100%;
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent; color: transparent;
+      animation: shimmer 7s ease-in-out infinite;
+    }
+    @keyframes shimmer { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+    .subtitle {
+      margin: 22px auto 0; max-width: 760px; color: #2b3650;
+      font-size: clamp(0.96rem, 1.4vw, 1.08rem); line-height: 1.6;
+    }
+    .authors { margin: 22px auto 0; max-width: 820px; color: var(--muted); font-size: 0.9rem; line-height: 1.7; }
+    .authors strong { color: var(--ink); font-weight: 720; }
+    .affil { margin: 6px auto 0; max-width: 820px; color: var(--muted); font-size: 0.82rem; }
+    .footnote { color: var(--muted); font-size: 0.78rem; }
+
+    .hero-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 28px; }
+    .button {
+      display: inline-flex; align-items: center; gap: 8px;
+      min-height: 42px; padding: 9px 18px;
+      border: 1px solid transparent; border-radius: 11px;
+      font-size: 0.9rem; font-weight: 720; color: #fff;
+      background: var(--ink);
+      box-shadow: 0 8px 22px rgba(11,18,32,0.16);
+      transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+    }
+    .button:hover { text-decoration: none; transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .button.primary { background: var(--grad); }
+    .button.secondary { color: var(--ink); background: var(--paper); border-color: var(--line); box-shadow: none; }
+    .button.disabled { opacity: 0.5; cursor: not-allowed; }
+    .button .ic { width: 16px; height: 16px; }
+    .button .tbd { font-size: 0.66rem; font-weight: 700; padding: 1px 6px; border-radius: 6px; background: rgba(255,255,255,0.22); }
+    .button.secondary .tbd { background: var(--soft-indigo); color: var(--indigo); }
+
+    /* ---------- sections ---------- */
+    section { position: relative; padding: 64px 16px; }
+    .section-inner { width: min(1120px, 100%); margin: 0 auto; }
+    .section-head { margin-bottom: 34px; max-width: 820px; }
+    .eyebrow {
+      margin: 0 0 6px; font-size: 0.76rem; font-weight: 800; letter-spacing: 0.14em;
+      text-transform: uppercase;
+      background: var(--grad); -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent; color: transparent;
+    }
+    h2 { margin: 0; font-size: clamp(1.5rem, 2.6vw, 2.05rem); font-weight: 800; letter-spacing: -0.01em; line-height: 1.18; }
+    .section-lead { margin: 14px 0 0; color: var(--muted); font-size: 1.02rem; max-width: 720px; }
+    h3 { margin: 0 0 8px; font-size: 1.08rem; font-weight: 760; }
+    p { margin: 0 0 14px; }
+    .alt { background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0)); }
+    .tint { background: var(--grad-soft); }
+
+    /* ---------- TL;DR stats ---------- */
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 8px; }
+    .stat {
+      background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 22px 18px; text-align: center; box-shadow: var(--shadow);
+      transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+    }
+    .stat:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: rgba(79,70,229,0.4); }
+    .stat .num {
+      font-size: 2.1rem; font-weight: 840; line-height: 1;
+      background: var(--grad); -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent; color: transparent;
+    }
+    .stat .lbl { margin-top: 8px; color: var(--muted); font-size: 0.82rem; font-weight: 650; }
+    @media (max-width: 760px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } .nav-links{display:none;} }
+
+    /* ---------- cards ---------- */
+    .card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .card-grid.three { grid-template-columns: repeat(3, 1fr); }
+    .card {
+      background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 22px; box-shadow: var(--shadow);
+      transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+      position: relative; overflow: hidden;
+    }
+    .card::before {
+      content: ""; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: var(--indigo);
+    }
+    .card.t-indigo::before { background: var(--indigo); }
+    .card.t-cyan::before { background: var(--cyan); }
+    .card.t-teal::before { background: var(--teal); }
+    .card.t-amber::before { background: var(--amber); }
+    .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: #c7d0e6; }
+    .card p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+    .card .kicker { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    @media (max-width: 920px) { .card-grid, .card-grid.three { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px) { .card-grid, .card-grid.three { grid-template-columns: 1fr; } }
+
+    /* ---------- two column ---------- */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: center; }
+    .two-col.reverse > :first-child { order: 2; }
+    @media (max-width: 880px) { .two-col { grid-template-columns: 1fr; } .two-col.reverse > :first-child { order: 0; } }
+    .body-copy p { color: #33405a; }
+    .bullets { margin-top: 16px; display: grid; gap: 10px; }
+    .bullet { display: flex; gap: 10px; align-items: flex-start; color: #33405a; font-size: 0.94rem; }
+    .dot { flex: 0 0 auto; width: 9px; height: 9px; margin-top: 7px; border-radius: 50%; background: var(--grad); }
+
+    /* ---------- figures ---------- */
+    figure { margin: 0; }
+    .figure-panel {
+      overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius);
+      background: var(--paper); box-shadow: var(--shadow); padding: 14px;
+      transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+    }
+    .figure-panel:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: #c7d0e6; }
+    .figure-panel img { display: block; width: 100%; height: auto; border-radius: 8px; }
+    figcaption { margin-top: 12px; color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
+    figcaption b { color: var(--ink); }
+
+    /* ---------- taxonomy ---------- */
+    .qtype-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    @media (max-width: 920px) { .qtype-grid { grid-template-columns: repeat(2,1fr);} }
+    @media (max-width: 540px) { .qtype-grid { grid-template-columns: 1fr;} }
+    .qtype {
+      display: flex; flex-direction: column;
+      background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 20px; box-shadow: var(--shadow);
+      transition: transform 200ms ease, box-shadow 200ms ease;
+    }
+    .qtype:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+    .qtype .tag { display:inline-flex; align-items:center; gap:7px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+    .qtype .tag .swatch { width: 11px; height: 11px; border-radius: 4px; }
+    .qtype h3 { margin: 10px 0 6px; font-size: 1.04rem; }
+    .qtype p { margin: 0 0 16px; color: var(--muted); font-size: 0.88rem; flex: 1 0 auto; }
+    .cost-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; color: var(--muted); margin-bottom: 6px; font-weight: 650; }
+    .cost-bar { height: 9px; border-radius: 999px; background: #eef1f8; overflow: hidden; }
+    .cost-fill { height: 100%; width: 0; border-radius: 999px; transition: width 1100ms cubic-bezier(.22,1,.36,1); }
+
+    /* ---------- equation ---------- */
+    .eqn {
+      background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 22px 24px; box-shadow: var(--shadow); margin: 22px 0;
+      font-size: 1.04rem; overflow-x: auto;
+    }
+    .eqn .formula { font-family: "Cambria Math", Georgia, "Times New Roman", serif; font-size: 1.2rem; text-align: center; color: var(--ink); }
+    .eqn .formula em { font-style: italic; }
+    .eqn .note { margin: 12px 0 0; color: var(--muted); font-size: 0.86rem; text-align: center; }
+    .var { color: var(--indigo); font-weight: 700; }
+
+    /* ---------- tables ---------- */
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); background: var(--paper); }
+    table.results { width: 100%; border-collapse: collapse; font-size: 0.86rem; min-width: 560px; }
+    table.results th, table.results td { padding: 10px 12px; text-align: center; white-space: nowrap; }
+    table.results thead th { background: #f3f5fb; color: var(--muted); font-weight: 750; font-size: 0.78rem; letter-spacing: 0.02em; border-bottom: 1px solid var(--line); }
+    table.results tbody td { border-bottom: 1px solid #eef1f8; }
+    table.results td.name, table.results th.name { text-align: left; white-space: nowrap; }
+    table.results tbody tr:hover { background: #f8faff; }
+    table.results .group td { background: #f3f5fb; color: var(--muted); font-weight: 800; font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase; text-align: left; }
+    table.results tr.ours { background: var(--soft-indigo) !important; }
+    table.results tr.ours td { font-weight: 750; color: var(--ink); }
+    table.results tr.ours td.name { color: var(--indigo); }
+    table.results .best { color: var(--teal); font-weight: 800; }
+    table.results .sub td.name { padding-left: 28px; color: var(--muted); font-weight: 600; }
+    .table-cap { margin: 12px 2px 0; color: var(--muted); font-size: 0.82rem; }
+    .table-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .tab-btn {
+      border: 1px solid var(--line); background: var(--paper); color: var(--muted);
+      padding: 8px 14px; border-radius: 999px; font-size: 0.82rem; font-weight: 700; cursor: pointer;
+      transition: all 160ms ease;
+    }
+    .tab-btn:hover { color: var(--ink); border-color: #c7d0e6; }
+    .tab-btn.active { color: #fff; background: var(--grad); border-color: transparent; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: fadeIn 360ms ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px);} to {opacity:1; transform:none;} }
+
+    /* ---------- pipeline steps ---------- */
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 22px; }
+    @media (max-width: 760px){ .steps { grid-template-columns: 1fr; } }
+    .step { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); position: relative; }
+    .step .n { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font-weight: 800; color: #fff; background: var(--grad); margin-bottom: 10px; font-size: 0.9rem; }
+    .step h3 { font-size: 0.98rem; }
+    .step p { margin: 0; color: var(--muted); font-size: 0.87rem; }
+
+    /* ---------- bibtex ---------- */
+    .bibtex-box { position: relative; }
+    pre.bibtex {
+      background: #0b1220; color: #d7def0; border-radius: var(--radius);
+      padding: 22px; overflow-x: auto; font-size: 0.84rem; line-height: 1.55;
+      font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; box-shadow: var(--shadow);
+    }
+    pre.bibtex .k { color: #7dd3fc; }
+    .copy-btn {
+      position: absolute; top: 14px; right: 14px;
+      border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #d7def0;
+      padding: 6px 12px; border-radius: 8px; font-size: 0.76rem; font-weight: 700; cursor: pointer;
+      transition: background 160ms ease;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.18); }
+
+    /* ---------- footer ---------- */
+    footer { padding: 40px 16px; text-align: center; color: var(--muted); font-size: 0.86rem; border-top: 1px solid var(--line); background: var(--paper); }
+    footer a { font-weight: 650; }
+
+    /* ---------- reveal ---------- */
+    .reveal { opacity: 0; transform: translateY(22px); transition: opacity 620ms cubic-bezier(.22,1,.36,1), transform 620ms cubic-bezier(.22,1,.36,1); }
+    .reveal.in { opacity: 1; transform: none; }
+    .reveal.d1 { transition-delay: 80ms; }
+    .reveal.d2 { transition-delay: 160ms; }
+    .reveal.d3 { transition-delay: 240ms; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, .hero-bg, .hero-path path, .hero-path circle, .title-accent { animation: none !important; }
+      .reveal { opacity: 1 !important; transform: none !important; }
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+  <nav class="site-nav" aria-label="Primary navigation">
+    <div class="nav-inner">
+      <a class="brand" href="#top" aria-label="TANDEM home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">TANDEM</span>
+      </a>
+      <div class="nav-links">
+        <a href="#overview">Overview</a>
+        <a href="#problem">Problem</a>
+        <a href="#taxonomy">Taxonomy</a>
+        <a href="#method">Method</a>
+        <a href="#benchmark">Benchmark</a>
+        <a href="#results">Results</a>
+        <a href="#dynamics">Dynamics</a>
+        <a href="#cases">Cases</a>
+        <a href="#bibtex">BibTeX</a>
+      </div>
+    </div>
+  </nav>
+
+  <main id="top">
+    <!-- ============ HERO ============ -->
+    <header class="hero">
+      <div class="hero-bg" aria-hidden="true"></div>
+
+      <div class="hero-copy">
+        <div class="tagline" aria-label="Project tags">
+          <span class="pill glow">Preprint 2026</span>
+          <span class="pill">Instance Goal Navigation</span>
+          <span class="pill">Cost-Aware Interaction</span>
+          <span class="pill">Zero-shot MLLM Agent</span>
+        </div>
+        <h1>
+          <span class="title-line"><span class="title-accent">Ask When It Pays</span></span>
+          <span class="title-line">Cost-Aware Open-Ended Interaction</span>
+          <span class="title-line">for Instance Goal Navigation</span>
+        </h1>
+        <p class="subtitle">
+          We recast interactive Instance Goal Navigation as <strong>cost-sensitive uncertainty reduction</strong>: an agent should ask the question whose answer reduces the most navigation uncertainty <em>relative to its cost</em>. We contribute a data-derived question taxonomy, a Weighted Success Rate benchmark, and <strong>TANDEM</strong>, a modular zero-shot MLLM navigator.
+        </p>
+        <p class="authors">
+          <strong>Xunyi Zhao</strong><sup>1,2,*</sup>, <strong>Sihao Lin</strong><sup>1,2,*</sup>, <strong>Gengze Zhou</strong><sup>1</sup>, <strong>Zerui Li</strong><sup>1</sup>, <strong>Shijie Li</strong><sup>3</sup>, <strong>Wei Tao</strong><sup>4</sup>, <strong>Jiajun Liu</strong><sup>2,5</sup>, <strong>Qi Wu</strong><sup>1,2,†</sup>
+        </p>
+        <p class="affil">
+          <sup>1</sup>Adelaide University &nbsp;·&nbsp; <sup>2</sup>Responsible AI Research Centre, Australian Institute for Machine Learning &nbsp;·&nbsp; <sup>3</sup>Institute for Infocomm Research (I²R), A*STAR &nbsp;·&nbsp; <sup>4</sup>iMotion &nbsp;·&nbsp; <sup>5</sup>CSIRO Data61
+        </p>
+        <p class="footnote"><sup>*</sup> Equal contribution. &nbsp; <sup>†</sup> Corresponding author.</p>
+
+        <div class="hero-actions">
+          <a class="button primary disabled" href="#" aria-disabled="true" title="Coming soon">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/></svg>
+            Paper <span class="tbd">soon</span>
+          </a>
+          <a class="button secondary disabled" href="#" aria-disabled="true" title="Coming soon">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-4 1.5-4-2-6-2.5"/><path d="M15 22v-3.6c.1-1-.3-1.7-.9-2.1 3-.3 6-1.5 6-6.4a5 5 0 0 0-1.3-3.5 4.7 4.7 0 0 0-.1-3.5S17.5 2 15 3.7a12.4 12.4 0 0 0-6 0C6.5 2 5.4 2.4 5.4 2.4a4.7 4.7 0 0 0-.1 3.5A5 5 0 0 0 4 9.4c0 4.9 3 6.1 6 6.4-.4.3-.7.9-.8 1.6"/></svg>
+            Code <span class="tbd">soon</span>
+          </a>
+          <a class="button secondary disabled" href="#" aria-disabled="true" title="Coming soon">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+            Data <span class="tbd">soon</span>
+          </a>
+          <a class="button secondary" href="#bibtex">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h10l6 6v10H4z"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>
+            BibTeX
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============ OVERVIEW ============ -->
+    <section id="overview" class="tint">
+      <div class="section-inner">
+        <div class="stat-grid">
+          <div class="stat reveal"><div class="num" data-count="35.3" data-dec="1">0</div><div class="lbl">SR@1.5 — best zero-shot agent</div></div>
+          <div class="stat reveal d1"><div class="num" data-prefix="+" data-count="9.3" data-dec="1">0</div><div class="lbl">SR@1.5 over the next-best prior agent</div></div>
+          <div class="stat reveal d2"><div class="num" data-count="22905" data-dec="0">0</div><div class="lbl">eligible episodes · 262 scenes</div></div>
+          <div class="stat reveal d3"><div class="num" data-count="4" data-dec="0">0</div><div class="lbl">cost-weighted question types</div></div>
+        </div>
+
+        <div class="section-head reveal" style="margin-top:48px;">
+          <p class="eyebrow">Overview</p>
+          <h2>When asking is allowed, the cost of asking should count</h2>
+          <p class="section-lead">A household robot asked to <em>"bring me the cup"</em> faces uncertain room boundaries, several same-category instances, and routes to different valid-looking candidates. Talking to an oracle disambiguates — but only if the agent asks the <em>right</em> question at the right price.</p>
+        </div>
+        <div class="card-grid">
+          <article class="card t-indigo reveal">
+            <div class="kicker">Reframing</div>
+            <h3>Cost-sensitive</h3>
+            <p>Interactive IGN becomes uncertainty reduction per unit cost, not raw success at any number of queries.</p>
+          </article>
+          <article class="card t-cyan reveal d1">
+            <div class="kicker">Taxonomy</div>
+            <h3>Four typed questions</h3>
+            <p>Appearance, region, route, and confirmation — with penalties mined from human navigation corpora.</p>
+          </article>
+          <article class="card t-teal reveal d2">
+            <div class="kicker">Benchmark</div>
+            <h3>Weighted Success Rate</h3>
+            <p>An Isaac Sim benchmark with grounded typed oracles and a metric that discounts success by query cost.</p>
+          </article>
+          <article class="card t-amber reveal d3">
+            <div class="kicker">Agent</div>
+            <h3>TANDEM</h3>
+            <p>A modular zero-shot navigator that separates planning, grounding, metric execution, and cost-aware asking.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PROBLEM ============ -->
+    <section id="problem">
+      <div class="section-inner">
+        <div class="section-head reveal">
+          <p class="eyebrow">The Problem</p>
+          <h2>When to ask, what to ask, and how to use the answer</h2>
+          <p class="section-lead">Prior interactive navigation lets agents query an oracle, but the space of questions is hand-designed and the cost of asking is absent or uniform. Under cost-agnostic evaluation, an agent can lift Success Rate just by repeatedly asking high-information route questions — raw SR cannot separate efficient disambiguation from heavy oracle use.</p>
+        </div>
+        <div class="two-col">
+          <div class="body-copy reveal">
+            <p>We model the hidden target state <span class="var">S</span> and value a candidate question <span class="var">q</span> by its <strong>expected information gain</strong> — how much it shrinks the agent's uncertainty about the target. The agent should prefer questions that reduce uncertainty substantially <em>relative to their cost</em>.</p>
+            <p>The posterior over real targets in real scenes is unobservable, so we use heterogeneous human-authored navigation corpora (R2R, REVERIE, RxR, CVDN, SOON) as an empirical proxy for which linguistic cues typically reduce target and spatial ambiguity — yielding a reproducible, data-derived prior for pricing each question type.</p>
+            <div class="bullets">
+              <div class="bullet"><span class="dot"></span><span>Route-level questions stay available because they are useful — but their higher information value is reflected in their cost.</span></div>
+              <div class="bullet"><span class="dot"></span><span>A fixed-schema scorer labels each corpus record with cues, evidence spans, importance, and rank.</span></div>
+            </div>
+          </div>
+          <div class="eqn reveal d1">
+            <div class="formula">
+              EIG(<em>q</em>) = H[<em>p<sub>t</sub></em>(<em>S</em>)] − 𝔼<sub><em>a</em>∼<em>p</em>(<em>a</em>|<em>q</em>)</sub> H[<em>p<sub>t</sub></em>(<em>S</em> | <em>q</em>, <em>a</em>)]
+            </div>
+            <p class="note">Expected information gain: prior entropy over the target minus the entropy expected after receiving answer <em>a</em>. Ask when this gain outweighs the question's price.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TAXONOMY ============ -->
+    <section id="taxonomy" class="tint">
+      <div class="section-inner">
+        <div class="section-head reveal">
+          <p class="eyebrow">Question Taxonomy</p>
+          <h2>Four question types, four data-derived prices</h2>
+          <p class="section-lead">Mined cues are grouped by answer semantics into four interaction-level question types. Each cue's utility combines its average importance, its high-gain fraction, and how often it ranks first; these are rescaled into <em>locked</em> per-type penalties <span class="var">w<sub>t</sub></span>. More informative types cost more and are discounted harder when measuring autonomous navigation.</p>
+        </div>
+        <div class="qtype-grid">
+          <article class="qtype reveal">
+            <span class="tag"><span class="swatch" style="background:var(--indigo)"></span>Type 1</span>
+            <h3>Appearance</h3>
+            <p>Reduces uncertainty over <b>target identity</b> among same-category instances.</p>
+            <div class="cost-row"><span>Penalty <i>w</i></span><span>0.182</span></div>
+            <div class="cost-bar"><div class="cost-fill" data-w="76" style="background:var(--indigo)"></div></div>
+          </article>
+          <article class="qtype reveal d1">
+            <span class="tag"><span class="swatch" style="background:var(--cyan)"></span>Type 2</span>
+            <h3>Region</h3>
+            <p>Reduces uncertainty over the <b>room or region</b> to search.</p>
+            <div class="cost-row"><span>Penalty <i>w</i></span><span>0.162</span></div>
+            <div class="cost-bar"><div class="cost-fill" data-w="68" style="background:var(--cyan)"></div></div>
+          </article>
+          <article class="qtype reveal d2">
+            <span class="tag"><span class="swatch" style="background:var(--rose)"></span>Type 3</span>
+            <h3>Direction / Route</h3>
+            <p>Reduces uncertainty over the <b>branch, corridor, or layout direction</b> to follow. The most informative — and the priciest.</p>
+            <div class="cost-row"><span>Penalty <i>w</i></span><span>0.240</span></div>
+            <div class="cost-bar"><div class="cost-fill" data-w="100" style="background:var(--rose)"></div></div>
+          </article>
+          <article class="qtype reveal d3">
+            <span class="tag"><span class="swatch" style="background:var(--teal)"></span>Type 4</span>
+            <h3>Confirmation</h3>
+            <p>Verifies whether a <b>visible candidate is the target</b>. Cheapest, since it only checks one hypothesis.</p>
+            <div class="cost-row"><span>Penalty <i>w</i></span><span>0.103</span></div>
+            <div class="cost-bar"><div class="cost-fill" data-w="43" style="background:var(--teal)"></div></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ METHOD ============ -->
+    <section id="method">
+      <div class="section-inner">
+        <div class="section-head reveal">
+          <p class="eyebrow">Method · TANDEM</p>
+          <h2>Two-stage navigation with disentangled planning and metric grounding</h2>
+          <p class="section-lead">TANDEM decomposes interactive IGN into cost-aware semantic planning, visual grounding, constrained oracle interaction, and deterministic metric execution — keeping the MLLM's role qualitative and the metric quantities auditable.</p>
+        </div>
+        <figure class="figure-panel reveal">
+          <img src="assets/arch.png" alt="TANDEM architecture: question utility modelling on the left, agent and interactive protocol on the right">
+          <figcaption><b>TANDEM</b> decomposes interactive instance-goal navigation into two coupled stages. <b>(Left)</b> Question Utility Modelling derives the four question types and locked per-type costs from human navigation corpora. <b>(Right)</b> The Agent consumes panoramic RGB, maintains a Fact Base and Spatial Memory, and a cost-aware policy decides when and which type of question to ask the Oracle; the chosen direction is grounded to one cell on an 8×8 grid and projected to a world coordinate by a deterministic executor.</figcaption>
+        </figure>
+        <div class="steps">
+          <div class="step reveal">
+            <div class="n">1</div>
+            <h3>Plan (semantic)</h3>
+            <p>A Navigator MLLM reasons over the 8-view panorama, goal, history, question budget, Fact Base, and Spatial Memory, then emits one decision: <b>ASK</b>, <b>MOVE</b>, or <b>STOP</b> — never raw metric state.</p>
+          </div>
+          <div class="step reveal d1">
+            <div class="n">2</div>
+            <h3>Ground (visual)</h3>
+            <p>A Grounder maps the chosen direction and place-based subgoal to a single cell on an 8×8 floor-plane grid within the selected 90° view.</p>
+          </div>
+          <div class="step reveal d2">
+            <div class="n">3</div>
+            <h3>Execute (metric)</h3>
+            <p>A deterministic executor back-projects the cell to a world-frame waypoint, casts forward rays for collisions, and writes blocked directions into Spatial Memory.</p>
+          </div>
+        </div>
+        <div class="two-col" style="margin-top:30px;">
+          <div class="body-copy reveal">
+            <h3>Cost-aware interaction &amp; a typed oracle</h3>
+            <p>At every Planner call the agent sees the remaining budget, the relative penalties of the four types, the Fact Base, and Spatial Memory. If it asks, no movement happens that step; the controller charges the type's penalty and stores the answer for later calls, so duplicate or low-value questions compete against information already resolved.</p>
+          </div>
+          <div class="body-copy reveal d1">
+            <h3>Answers grounded, never leaked</h3>
+            <p>Type 1 uses a sanitized appearance description; Type 2 uses the room-object graph; Type 3 summarizes a front-view route clip and occupancy metadata as a natural-language hint — but never coordinates, headings, or step counts; Type 4 verifies a visible candidate within 3 m. Interaction informs, it does not hand off navigation.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BENCHMARK ============ -->
+    <section id="benchmark" class="tint">
+      <div class="section-inner">
+        <div class="section-head reveal">
+          <p class="eyebrow">Benchmark</p>
+          <h2>Controllable ambiguity, grounded oracles, a cost-aware metric</h2>
+          <p class="section-lead">Built in Isaac Sim from USD scenes with a consistent object–room–pose–relation graph. Each episode gives a coarse goal such as "Find a laptop" and asks the agent to identify the intended instance among same-category distractors — without any human route trajectory.</p>
+        </div>
+        <figure class="figure-panel reveal">
+          <img src="assets/benchmark_stats.png" alt="Benchmark statistics: episode distribution by difficulty, distractor counts, target categories, goal distance and goal room distributions">
+          <figcaption><b>Benchmark statistics.</b> Episode distribution by difficulty, distractor room and instance counts, target object categories, goal-distance distribution, and goal-room distribution.</figcaption>
+        </figure>
+        <div class="two-col" style="margin-top:30px;">
+          <div class="eqn reveal" style="margin:0;">
+            <div class="formula">
+              WSR<sub><em>e</em></sub>(<em>τ</em>) = <strong>1</strong>{<em>d<sub>e</sub></em> ≤ <em>τ</em>} · exp(− Σ<sub><em>i</em></sub> <em>w</em><sub>type(<em>q<sub>e,i</sub></em>)</sub>)
+            </div>
+            <p class="note">Weighted Success Rate: a successful episode is discounted by the accumulated per-type query costs. Repeated questions are charged repeatedly; a successful no-question episode reduces to plain success; failures score zero.</p>
+          </div>
+          <div class="body-copy reveal d1">
+            <div class="bullets">
+              <div class="bullet"><span class="dot"></span><span><b>22,905</b> eligible episodes across <b>262</b> scenes, <b>70</b> target categories, and <b>11</b> normalized goal-room labels.</span></div>
+              <div class="bullet"><span class="dot"></span><span>Deterministic difficulty from distractor count, same-room distractors, contextual ambiguity, and initial path distance — binned into a balanced <b>30 : 40 : 30</b> easy/medium/hard split.</span></div>
+              <div class="bullet"><span class="dot"></span><span>Headline metric <b>SR@1.5 m</b> (instance-level), with SR@0.5 m as a strict check and SR@3 m for comparability.</span></div>
+              <div class="bullet"><span class="dot"></span><span>Typed oracle answers are grounded to the target instance and hidden when they would leak the answer.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ RESULTS ============ -->
+    <section id="results">
+      <div class="section-inner">
+        <div class="section-head reveal">
+          <p class="eyebrow">Results</p>
+          <h2>Cost-aware interaction wins — most on hard episodes</h2>
+          <p class="section-lead">All methods share the same simulator, observation interface, oracle protocol, and scoring rule, with Qwen3.5-8B as the default backbone. TANDEM reaches <b>35.3 SR@1.5</b> and <b>21.4 Weighted SR</b>, beating the next-best prior agent by 9.3 SR points.</p>
+        </div>
+
+        <div class="table-tabs reveal" role="tablist">
+          <button class="tab-btn active" data-tab="agents">Agent comparison</button>
+          <button class="tab-btn" data-tab="backbones">Backbone scaling</button>
+          <button class="tab-btn" data-tab="transfer">Transfer (CVDN / SOON / REVERIE)</button>
+        </div>
+
+        <!-- Agents -->
+        <div class="tab-panel active" id="tab-agents">
+          <div class="table-wrap reveal">
+            <table class="results">
+              <thead>
+                <tr>
+                  <th class="name">Agent / Variant</th>
+                  <th>SR@1.5</th><th>OSR@1.5</th><th>SR@0.5</th><th>SR@3</th>
+                  <th>NE ↓</th><th>|Q|</th><th>WSR@1.5</th><th>WSR@3</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="group"><td colspan="9">Naive QA baselines (unconstrained interaction)</td></tr>
+                <tr><td class="name">GTA</td><td>26.7</td><td>39.3</td><td>8.8</td><td>50.6</td><td>3.49</td><td>8.25</td><td>6.4</td><td>12.2</td></tr>
+                <tr><td class="name">COIN</td><td>18.6</td><td>29.2</td><td>5.9</td><td>36.8</td><td>4.63</td><td>9.06</td><td>3.7</td><td>7.3</td></tr>
+                <tr><td class="name">MapGPT</td><td>15.9</td><td>28.3</td><td>6.7</td><td>32.6</td><td>4.89</td><td>8.87</td><td>3.6</td><td>7.1</td></tr>
+                <tr><td class="name">NavGPT</td><td>14.8</td><td>24.6</td><td>5.1</td><td>28.9</td><td>5.23</td><td>9.02</td><td>3.1</td><td>6.1</td></tr>
+                <tr class="group"><td colspan="9">Cost-aware QA protocol (ours)</td></tr>
+                <tr><td class="name">GTA</td><td>26.0</td><td>38.6</td><td>10.5</td><td>49.3</td><td>3.55</td><td>3.44</td><td>15.9</td><td>30.3</td></tr>
+                <tr><td class="name">MapGPT</td><td>16.5</td><td>27.6</td><td>6.6</td><td>31.5</td><td>4.97</td><td>3.28</td><td>10.2</td><td>19.4</td></tr>
+                <tr><td class="name">NavGPT</td><td>14.3</td><td>24.1</td><td>5.8</td><td>27.8</td><td>5.31</td><td>3.21</td><td>8.9</td><td>16.9</td></tr>
+                <tr><td class="name">COIN</td><td>13.0</td><td>22.0</td><td>2.0</td><td>27.4</td><td>5.20</td><td>2.61</td><td>9.2</td><td>19.3</td></tr>
+                <tr class="ours"><td class="name">TANDEM</td><td class="best">35.3</td><td class="best">50.0</td><td class="best">14.2</td><td class="best">66.5</td><td class="best">2.68</td><td>3.57</td><td class="best">21.4</td><td class="best">40.8</td></tr>
+                <tr class="sub"><td class="name">— w/o Spatial Memory</td><td>28.0</td><td>43.5</td><td>8.8</td><td>57.8</td><td>3.15</td><td>3.01</td><td>18.5</td><td>36.0</td></tr>
+                <tr class="sub"><td class="name">— w/o QA</td><td>20.0</td><td>34.0</td><td>3.2</td><td>49.2</td><td>3.35</td><td>—</td><td>14.2</td><td>34.2</td></tr>
+                <tr class="sub"><td class="name">— w/o Spatial Memory &amp; QA</td><td>14.0</td><td>25.0</td><td>1.5</td><td>34.2</td><td>5.15</td><td>—</td><td>10.0</td><td>23.8</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-cap">Overall metrics on the 500-episode evaluation subset, Qwen3.5-8B Navigator. Naive QA lets agents ask freely (large |Q|, low WSR); the cost-aware protocol regulates query cost while improving success. <span class="best">Teal</span> marks the best value per column.</p>
+        </div>
+
+        <!-- Backbones -->
+        <div class="tab-panel" id="tab-backbones">
+          <div class="table-wrap reveal">
+            <table class="results">
+              <thead>
+                <tr>
+                  <th class="name">Navigator Backbone</th>
+                  <th>SR@1.5</th><th>OSR@1.5</th><th>SR@3</th><th>NE ↓</th><th>TL</th><th>WSR@1.5</th><th>WSR@3</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="group"><td colspan="8">Closed-source MLLMs</td></tr>
+                <tr><td class="name">GPT-5.4</td><td>41.6</td><td>56.4</td><td class="best">74.8</td><td>2.21</td><td>23.21</td><td class="best">25.0</td><td class="best">45.3</td></tr>
+                <tr><td class="name">Gemini3-Flash</td><td>41.1</td><td class="best">59.4</td><td>73.7</td><td class="best">2.18</td><td>19.35</td><td>23.8</td><td>44.5</td></tr>
+                <tr class="group"><td colspan="8">Open-source MLLMs</td></tr>
+                <tr class="ours"><td class="name">Qwen3.5-8B <span style="font-weight:600;font-size:0.78rem;color:var(--muted)">(default)</span></td><td>35.3</td><td>50.0</td><td>66.5</td><td>2.68</td><td>23.87</td><td>21.4</td><td>40.7</td></tr>
+                <tr><td class="name">Qwen3-VL-4B</td><td>23.9</td><td>39.8</td><td>51.8</td><td>2.97</td><td>24.32</td><td>17.7</td><td>37.4</td></tr>
+                <tr><td class="name">Qwen3.5-4B</td><td>22.0</td><td>37.9</td><td>47.2</td><td>3.21</td><td>24.72</td><td>13.4</td><td>29.5</td></tr>
+                <tr><td class="name">Gemma-e4B</td><td>19.3</td><td>34.2</td><td>41.4</td><td>3.59</td><td>25.36</td><td>12.0</td><td>26.2</td></tr>
+                <tr><td class="name">InternVL3.5-4B</td><td>17.8</td><td>31.8</td><td>38.2</td><td>3.80</td><td>25.71</td><td>11.2</td><td>24.4</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-cap">Performance scales with backbone strength on both SR and Weighted SR — stronger Navigators improve through better navigation, not through extra querying.</p>
+        </div>
+
+        <!-- Transfer -->
+        <div class="tab-panel" id="tab-transfer">
+          <div class="table-wrap reveal">
+            <table class="results">
+              <thead>
+                <tr>
+                  <th class="name" rowspan="2">Method</th>
+                  <th colspan="2">CVDN (GP ↑)</th>
+                  <th colspan="2">SOON (Val unseen)</th>
+                  <th colspan="2">REVERIE (Val unseen)</th>
+                </tr>
+                <tr>
+                  <th>Val</th><th>Test</th><th>SR ↑</th><th>SPL ↑</th><th>SR ↑</th><th>SPL ↑</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td class="name">HAMT</td><td>5.13</td><td>5.58</td><td>—</td><td>—</td><td>33.0</td><td>30.2</td></tr>
+                <tr><td class="name">DUET</td><td>—</td><td>—</td><td>36.3</td><td>22.6</td><td>47.0</td><td>33.7</td></tr>
+                <tr><td class="name">AutoVLN</td><td>—</td><td>—</td><td>41.0</td><td>30.7</td><td>55.9</td><td>40.9</td></tr>
+                <tr><td class="name">GOAT</td><td>—</td><td>—</td><td>40.4</td><td>28.1</td><td>53.4</td><td>36.7</td></tr>
+                <tr><td class="name">ScaleVLN</td><td>6.12</td><td>6.97</td><td>—</td><td>—</td><td>57.0</td><td>41.8</td></tr>
+                <tr><td class="name">NaviLLM</td><td>6.16</td><td>7.90</td><td>38.3</td><td>29.2</td><td>42.2</td><td>35.7</td></tr>
+                <tr><td class="name">SAME</td><td>6.94</td><td>7.07</td><td>36.1</td><td>25.4</td><td>46.4</td><td>36.1</td></tr>
+                <tr class="ours"><td class="name">TANDEM</td><td class="best">8.15</td><td class="best">8.50</td><td class="best">45.2</td><td class="best">33.5</td><td class="best">62.4</td><td class="best">45.6</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-cap">A transfer check on discrete-environment benchmarks. Despite substantial differences in instructions, splits, and protocols, TANDEM consistently improves the held-out metrics.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DYNAMICS ============ -->
+    <section id="dynamics" class="tint">
+      <div class="section-inner">
+        <div class="section-head reveal">
+          <p class="eyebrow">The Aha Moment</p>
+          <h2>Quantifying when and where TANDEM asks</h2>
+          <p class="section-lead">Beyond <em>whether</em> asking helps, the benchmark lets us see <em>how</em> interaction reduces uncertainty: the temporal distribution of question types, the physical contexts of Type-3 spatial questions, and how much search space each answer removes.</p>
+        </div>
+        <figure class="figure-panel reveal">
+          <img src="assets/dynamics.png" alt="Temporal and spatial patterns of interaction for the full TANDEM agent">
+          <figcaption><b>Temporal and spatial patterns of interaction.</b> When the agent asks, where Type-3 questions arise, and how question counts and uncertainty reduction scale with episode difficulty.</figcaption>
+        </figure>
+        <div class="card-grid three" style="margin-top:30px;">
+          <article class="card t-indigo reveal">
+            <div class="kicker">When it gets curious</div>
+            <h3>Identity first</h3>
+            <p>Appearance (Type 1) and region (Type 2) cluster in the first 30–40% of an episode, grounding target identity and goal region before committing to a path. Confirmation (Type 4) is bimodal, peaking near 80%.</p>
+          </article>
+          <article class="card t-cyan reveal d1">
+            <div class="kicker">When it seeks help</div>
+            <h3>At junctions</h3>
+            <p>Type-3 questions concentrate at long corridors, multi-way junctions, and dead-ends — only 7% occur in closed rooms. 65% ask about the goal room's position, 25% about room relations, just 10% are raw route requests.</p>
+          </article>
+          <article class="card t-teal reveal d2">
+            <div class="kicker">Interaction scales with uncertainty</div>
+            <h3>ΔU: 21.9% → 47.5%</h3>
+            <p>Average questions rise from 2.32 (easy) to 5.33 (hard), driven by Type 4 (0.05→2.60). A Type-3 answer compresses the explored search area most when layout ambiguity is highest.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CASES ============ -->
+    <section id="cases">
+      <div class="section-inner">
+        <div class="section-head reveal">
+          <p class="eyebrow">Case Studies</p>
+          <h2>One well-placed question flips the trajectory</h2>
+          <p class="section-lead">Paired episodes where full TANDEM succeeds while the no-QA ablation fails under the same start and target. The oracle returns a natural-language route hint — never coordinates — so the gain refines the agent's coarse spatial prior rather than outsourcing navigation.</p>
+        </div>
+        <figure class="figure-panel reveal">
+          <img src="assets/case_0010.png" alt="Case study: a spatial QA cue helps the agent resolve ambiguity and reach the target directly">
+          <figcaption><b>Effect of spatial interaction.</b> A single Type-3 question at the marked junction redirects the agent toward the correct wing of the layout; it then quickly reaches the target room, instead of exhausting uncertain exploratory paths.</figcaption>
+        </figure>
+        <figure class="figure-panel reveal d1" style="margin-top:22px;">
+          <img src="assets/case_0003.png" alt="Case study: a staircase-junction example where the oracle answer redirects the agent to the correct floor wing">
+          <figcaption><b>Staircase-junction case.</b> The same paired structure on a multi-floor layout: the route hint redirects the agent to the correct wing of the second floor.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============ BIBTEX ============ -->
+    <section id="bibtex" class="tint">
+      <div class="section-inner">
+        <div class="section-head reveal">
+          <p class="eyebrow">Cite</p>
+          <h2>BibTeX</h2>
+          <p class="section-lead">arXiv identifier to be added on release.</p>
+        </div>
+        <div class="bibtex-box reveal">
+          <button class="copy-btn" id="copyBib">Copy</button>
+          <pre class="bibtex" id="bibText"><code>@article<span class="k">{</span>zhao2026askwhenitpays,
+  title   = <span class="k">{</span>Ask When It Pays: Cost-Aware Open-Ended Interaction for Instance Goal Navigation<span class="k">}</span>,
+  author  = <span class="k">{</span>Zhao, Xunyi and Lin, Sihao and Zhou, Gengze and Li, Zerui and
+             Li, Shijie and Tao, Wei and Liu, Jiajun and Wu, Qi<span class="k">}</span>,
+  journal = <span class="k">{</span>arXiv preprint<span class="k">}</span>,
+  year    = <span class="k">{</span>2026<span class="k">}</span>
+<span class="k">}</span></code></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 Xunyi Zhao · <a href="https://billzhao1030.github.io">Home</a> · TANDEM — Cost-Aware Interaction for Instance Goal Navigation</p>
+  </footer>
+
+  <script>
+    // ----- scroll progress -----
+    const progress = document.getElementById('scrollProgress');
+    const onScroll = () => {
+      const h = document.documentElement;
+      const max = h.scrollHeight - h.clientHeight;
+      progress.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%';
+    };
+    document.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    // ----- reveal on scroll -----
+    const revealEls = document.querySelectorAll('.reveal');
+    const counters = document.querySelectorAll('[data-count]');
+    const costFills = document.querySelectorAll('.cost-fill');
+
+    const animateCount = (el) => {
+      const target = parseFloat(el.dataset.count);
+      const dec = parseInt(el.dataset.dec || '0', 10);
+      const prefix = el.dataset.prefix || '';
+      const dur = 1300, start = performance.now();
+      const fmt = (v) => prefix + (dec > 0 ? v.toFixed(dec) : Math.round(v).toLocaleString('en-US'));
+      const tick = (now) => {
+        const p = Math.min((now - start) / dur, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = fmt(target * eased);
+        if (p < 1) requestAnimationFrame(tick);
+        else el.textContent = fmt(target);
+      };
+      requestAnimationFrame(tick);
+    };
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('in');
+        e.target.querySelectorAll?.('[data-count]').forEach(animateCount);
+        if (e.target.matches('[data-count]')) animateCount(e.target);
+        e.target.querySelectorAll?.('.cost-fill').forEach((f) => { f.style.width = f.dataset.w + '%'; });
+        io.unobserve(e.target);
+      });
+    }, { threshold: 0.18 });
+
+    revealEls.forEach((el) => io.observe(el));
+    // observe counters/cost bars even if not inside a .reveal that triggers them
+    counters.forEach((el) => io.observe(el));
+    document.querySelectorAll('.qtype').forEach((el) => io.observe(el));
+
+    // ----- nav active state -----
+    const sections = [...document.querySelectorAll('main section[id]')];
+    const navLinks = [...document.querySelectorAll('.nav-links a')];
+    const navIO = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          navLinks.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+        }
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    sections.forEach((s) => navIO.observe(s));
+
+    // ----- result table tabs -----
+    document.querySelectorAll('.tab-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        document.querySelectorAll('.tab-btn').forEach((b) => b.classList.toggle('active', b === btn));
+        document.querySelectorAll('.tab-panel').forEach((p) => p.classList.toggle('active', p.id === 'tab-' + tab));
+      });
+    });
+
+    // ----- copy bibtex -----
+    document.getElementById('copyBib').addEventListener('click', async (e) => {
+      const text = document.getElementById('bibText').innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+        e.target.textContent = 'Copied!';
+        setTimeout(() => (e.target.textContent = 'Copy'), 1600);
+      } catch (_) {
+        e.target.textContent = 'Press ⌘/Ctrl+C';
+      }
+    });
+
+    // ----- block disabled buttons -----
+    document.querySelectorAll('.button.disabled').forEach((b) =>
+      b.addEventListener('click', (e) => e.preventDefault()));
+  </script>
+</body>
+</html>
