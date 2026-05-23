@@ -29,6 +29,7 @@
       <a href="#pipeline">Pipeline</a>
       <a href="#demo">Demo</a>
       <a href="#docs">Docs</a>
+      <a href="#roadmap">Roadmap</a>
       <a href="#start">Quickstart</a>
       <a href="#cite">Cite</a>
     </nav>
@@ -82,7 +83,7 @@
       <article class="card">
         <div class="card-icon">📊</div>
         <h3>Forced curve, full receipts</h3>
-        <p>Whole-class mean locked to a target. Special-list students forced to HD. The math is deterministic and the audit trail keeps raw / reviewed / final scores in separate columns.</p>
+        <p>Whole-class mean locked to a target distribution. The math is deterministic; the audit trail keeps raw / reviewer-suggested / final scores in separate columns so every moderation step is traceable.</p>
       </article>
     </div>
   </div>
@@ -98,11 +99,11 @@
       <div class="stage-arrow">→</div>
       <div class="stage"><div class="stage-name">configure</div><div class="stage-desc">description.md + rubric.md → <code>rubric.yaml</code> (sha256 cached)</div></div>
       <div class="stage-arrow">→</div>
-      <div class="stage"><div class="stage-name">ingest</div><div class="stage-desc">unzip · docx→pdf · parse names · reconcile special list</div></div>
+      <div class="stage"><div class="stage-name">ingest</div><div class="stage-desc">unzip · docx→pdf · parse names · reconcile roster</div></div>
       <div class="stage-arrow">→</div>
       <div class="stage"><div class="stage-name">grade</div><div class="stage-desc">scorer + reviewer loop · per-student blackboard</div></div>
       <div class="stage-arrow">→</div>
-      <div class="stage"><div class="stage-name">moderate</div><div class="stage-desc">lock HD · curve to target mean · clamp · recenter</div></div>
+      <div class="stage"><div class="stage-name">moderate</div><div class="stage-desc">curve to target mean · clamp · recenter · band assignment</div></div>
       <div class="stage-arrow">→</div>
       <div class="stage"><div class="stage-name">report</div><div class="stage-desc">CSV · report.md · per-student feedback</div></div>
     </div>
@@ -117,15 +118,15 @@
   <div class="container">
     <div class="kicker">live demo</div>
     <h2 class="h2">Type any spelling. We'll find the right student.</h2>
-    <p class="lead">The fuzzy name matcher runs entirely in your browser — pure JS port of the Python module. <code>"Adi Issa"</code>, <code>"adi issa"</code>, <code>"Issa Adi"</code>, <code>"issaadi"</code> all resolve to the same submission token. Try it:</p>
+    <p class="lead">The fuzzy name matcher runs entirely in your browser — pure JS port of the Python module. <code>"John Smith"</code>, <code>"john smith"</code>, <code>"Smith John"</code>, <code>"smithjohn"</code> all resolve to the same submission token. Try it:</p>
     <div class="demo">
       <div class="demo-row">
         <label for="demo-q">Name to match</label>
-        <input id="demo-q" type="text" value="Adi Issa" placeholder="e.g. Adi Issa" />
+        <input id="demo-q" type="text" value="John Smith" placeholder="e.g. John Smith" />
       </div>
       <div class="demo-row">
         <label for="demo-against">Submission tokens (comma-separated)</label>
-        <input id="demo-against" type="text" value="issaadi, daitingxuan, unglinh, zhangsan, mariawong" />
+        <input id="demo-against" type="text" value="smithjohn, wangmei, obrienciara, 张明, garciamaria" />
       </div>
       <button id="demo-run" class="btn btn-primary">Match →</button>
       <div id="demo-result" class="demo-result"></div>
@@ -169,7 +170,7 @@
             <article class="card card-mini">
               <div class="card-icon">📊</div>
               <h3>Forced curve + audit</h3>
-              <p>Whole-class mean to target; special list to HD; non-list cohort curved (linear or rank-normal). Raw → reviewed → final stay in separate columns.</p>
+              <p>Whole-class mean to target; cohort curved (linear or rank-normal) with clamp + drift correction. Raw → reviewer-suggested → final stay in separate columns.</p>
             </article>
             <article class="card card-mini">
               <div class="card-icon">🎯</div>
@@ -189,7 +190,7 @@
             <article class="card card-mini">
               <div class="card-icon">🖥️</div>
               <h3>Rich terminal</h3>
-              <p>A run banner, a reconciliation table for special-list matches, per-step timing, a distribution panel after moderation. No surprises.</p>
+              <p>A run banner, a roster-matching table, per-step timing, a distribution panel after moderation. No surprises.</p>
             </article>
           </div>
         </div>
@@ -202,15 +203,11 @@
             <div class="step-meta">
               <div class="step-num">01</div>
               <h3 class="step-title">Drop your inputs</h3>
-              <p>Student files in <code>assignments/&lt;name&gt;/inputs/submissions/</code>. A free-form <code>special_list.txt</code> for HD-overrides. Filenames need only <code>{name}_anything.pdf</code>; everything after the first underscore is ignored.</p>
+              <p>Student files in <code>assignments/&lt;name&gt;/inputs/submissions/</code>. Filenames need only <code>{name}_anything.pdf</code>; everything after the first underscore is ignored, so an LMS export drops in unchanged.</p>
             </div>
 <pre class="code"><span class="cmt"># scaffold + drop files</span>
 $ python -m markerHarness.pipeline init -a a2
-$ cp ~/Downloads/submissions/* markerHarness/assignments/a2/inputs/submissions/
-$ cat &gt; markerHarness/assignments/a2/inputs/special_list.txt &lt;&lt;EOF
-Adi Issa
-Tingxuan Dai
-EOF</pre>
+$ cp ~/Downloads/submissions/* markerHarness/assignments/a2/inputs/submissions/</pre>
           </div>
 
           <div class="step-row">
@@ -233,7 +230,7 @@ $ python -m markerHarness.pipeline configure -a a2
             </div>
 <pre class="code">$ bash scripts/serve.sh start
 $ python -m markerHarness.pipeline grade -a a2
-[grade] (3/3) <b>issaadi</b>  scorer 6.4s · reviewer 1.8s · verdict=reasonable · total=95.7
+[grade] (3/3) <b>smithjohn</b>  scorer 6.4s · reviewer 1.8s · verdict=reasonable · total=87.3
 [grade]   └─ |Δ|=0.3 ≤ tol=5 → converged</pre>
           </div>
 
@@ -241,10 +238,10 @@ $ python -m markerHarness.pipeline grade -a a2
             <div class="step-meta">
               <div class="step-num">04</div>
               <h3 class="step-title">Moderate and report</h3>
-              <p>Lock special list to HD, curve to overall mean, write a CSV with per-criterion columns, a Markdown report, and per-student feedback.</p>
+              <p>Curve scores to the target overall mean, write a CSV with per-criterion columns, a Markdown report, and per-student feedback.</p>
             </div>
 <pre class="code">$ python -m markerHarness.pipeline moderate -a a2
-N=3  locked HD: 1  curved: 2
+N=3  curved: 3
 target mean=80 σ=8 → method=linear
 achieved mean=<b>80.0</b> σ=8.97
 $ python -m markerHarness.pipeline report -a a2
@@ -293,9 +290,9 @@ $ python -m markerHarness.pipeline report -a a2
         <summary><span class="acc-tag">🧬</span> Filename convention + name matcher algorithm</summary>
         <div class="acc-body">
           <p>Only the part <strong>before the first underscore</strong> is the student name token. Everything after (LMS-style ids, original filename) is ignored entirely.</p>
-<pre class="code"><b>issaadi</b>_71709_5279180_DeepLearning_Application_Final.pdf
-└──name──┘└──────────── ignored ────────────┘</pre>
-          <p><code>special_list.txt</code> accepts any spelling — different word order, different case, extra whitespace. Behind the scenes:</p>
+<pre class="code"><b>smithjohn</b>_12345_67890_FinalReport.pdf
+└──name───┘└──────── ignored ────────┘</pre>
+          <p>Same-student spelling variants — different word order, different case, extra whitespace — resolve to the same submission token. Useful whenever a typed name has to match a filename. Behind the scenes:</p>
           <ol class="num-list">
             <li><strong>Normalize both sides</strong>: NFKD-decompose, strip combining marks, casefold, keep only <code>[a-z0-9]</code> + CJK ideographs, concatenate.</li>
             <li><strong>Exact match</strong> on normalized form.</li>
@@ -389,7 +386,7 @@ $ python -m markerHarness.pipeline evolve -a a2 --rollback</pre>
         </div>
       </details>
 
-      <details>
+      <details id="roadmap">
         <summary><span class="acc-tag">🗺️</span> Roadmap — what's coming</summary>
         <div class="acc-body">
           <p>The current release (<code>v0.3</code>) grades PDF / text reports end-to-end with multi-agent argumentation and a self-evolving scorer prompt. Future releases extend the surface significantly.</p>
@@ -411,7 +408,7 @@ $ python -m markerHarness.pipeline evolve -a a2 --rollback</pre>
           <h4 class="sub-h">v0.6 · Validation loop</h4>
           <ul class="dot-list">
             <li>Pre-commit validators run before grades are sealed</li>
-            <li>User-customizable checks: rubric arithmetic, distribution sanity, special-list invariants, no-silent-F rules</li>
+            <li>User-customizable checks: rubric arithmetic consistency, distribution sanity, custom invariants, no-silent-F rules</li>
             <li>A failing validator blocks <code>apply</code> — never a silent ship</li>
           </ul>
 
