@@ -80,6 +80,14 @@ body {
 .nav a:hover { color: var(--text); }
 @media (max-width: 640px) { .nav { display: none; } }
 
+/* GitHub link styled as a ghost button next to Quickstart in the hero. */
+.btn-gh {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.btn-gh svg { flex-shrink: 0; }
+
 /* ---------- hero ---------- */
 .hero {
   position: relative;

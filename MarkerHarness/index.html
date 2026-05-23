@@ -53,7 +53,10 @@
     </p>
     <div class="hero-cta">
       <a href="#start" class="btn btn-primary">Quickstart →</a>
-      <a href="#demo" class="btn btn-ghost">Try the name matcher</a>
+      <a href="https://github.com/billzhao1030/MarkerHarness" class="btn btn-ghost btn-gh" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        View on GitHub
+      </a>
     </div>
     <div class="hero-stats">
       <div class="stat"><div class="stat-num">4</div><div class="stat-label">agent roles</div></div>
@@ -206,8 +209,8 @@
               <p>Student files in <code>assignments/&lt;name&gt;/inputs/submissions/</code>. Filenames need only <code>{name}_anything.pdf</code>; everything after the first underscore is ignored, so an LMS export drops in unchanged.</p>
             </div>
 <pre class="code"><span class="cmt"># scaffold + drop files</span>
-$ python -m markerHarness.pipeline init -a a2
-$ cp ~/Downloads/submissions/* markerHarness/assignments/a2/inputs/submissions/</pre>
+$ python -m markerHarness.pipeline init -a example
+$ cp ~/Downloads/submissions/* markerHarness/assignments/example/inputs/submissions/</pre>
           </div>
 
           <div class="step-row">
@@ -217,9 +220,9 @@ $ cp ~/Downloads/submissions/* markerHarness/assignments/a2/inputs/submissions/<
               <p>The <em>config_builder</em> agent parses Markdown rubric tables into structured <code>rubric.yaml</code>. A SHA256 hash of your Markdown keeps it from re-running needlessly.</p>
             </div>
 <pre class="code"><span class="cmt"># auto-runs as part of `all`</span>
-$ python -m markerHarness.pipeline configure -a a2
+$ python -m markerHarness.pipeline configure -a example
 [configure] running config_builder (vllm:Qwen3-VL-4B-Instruct) ...
-[configure] ✓ rubric.yaml generated → assignments/a2/config/rubric.yaml</pre>
+[configure] ✓ rubric.yaml generated → assignments/example/config/rubric.yaml</pre>
           </div>
 
           <div class="step-row">
@@ -229,7 +232,7 @@ $ python -m markerHarness.pipeline configure -a a2
               <p>Scorer + Reviewer agree, revise, or flag for human review.</p>
             </div>
 <pre class="code">$ bash scripts/serve.sh start
-$ python -m markerHarness.pipeline grade -a a2
+$ python -m markerHarness.pipeline grade -a example
 [grade] (3/3) <b>smithjohn</b>  scorer 6.4s · reviewer 1.8s · verdict=reasonable · total=87.3
 [grade]   └─ |Δ|=0.3 ≤ tol=5 → converged</pre>
           </div>
@@ -240,11 +243,11 @@ $ python -m markerHarness.pipeline grade -a a2
               <h3 class="step-title">Moderate and report</h3>
               <p>Curve scores to the target overall mean, write a CSV with per-criterion columns, a Markdown report, and per-student feedback.</p>
             </div>
-<pre class="code">$ python -m markerHarness.pipeline moderate -a a2
+<pre class="code">$ python -m markerHarness.pipeline moderate -a example
 N=3  curved: 3
 target mean=80 σ=8 → method=linear
 achieved mean=<b>80.0</b> σ=8.97
-$ python -m markerHarness.pipeline report -a a2
+$ python -m markerHarness.pipeline report -a example
 [report] ✓ wrote final_grades.csv / report.md / feedback/</pre>
           </div>
         </div>
@@ -349,13 +352,13 @@ results/
           </ul>
           <h4 class="sub-h">Versioning + rollback</h4>
 <pre class="code"><span class="cmt"># dry-run — see what it would propose</span>
-$ python -m markerHarness.pipeline evolve -a a2 --dry-run --allow-same-model
+$ python -m markerHarness.pipeline evolve -a example --dry-run --allow-same-model
 
 <span class="cmt"># commit (creates prompts/scorer_v(N+1).md + history/rationale_v(N+1).md)</span>
-$ python -m markerHarness.pipeline evolve -a a2 --apply
+$ python -m markerHarness.pipeline evolve -a example --apply
 
 <span class="cmt"># revert</span>
-$ python -m markerHarness.pipeline evolve -a a2 --rollback</pre>
+$ python -m markerHarness.pipeline evolve -a example --rollback</pre>
           <p>The active prompt is tracked in <code>prompts/active.json</code> with a history list — every change is reversible.</p>
         </div>
       </details>
@@ -457,16 +460,16 @@ $ conda create -n mllm python=3.12 -y &amp;&amp; conda activate mllm
 $ pip install -r requirements.txt
 
 <span class="cmt"># scaffold an assignment</span>
-$ python -m markerHarness.pipeline init -a a2
-<span class="cmt"># drop description.md + rubric.md + submissions/ into assignments/a2/inputs/</span>
+$ python -m markerHarness.pipeline init -a example
+<span class="cmt"># drop description.md + rubric.md + submissions/ into assignments/example/inputs/</span>
 
 <span class="cmt"># run — `all` chains configure → ingest → grade → moderate → report</span>
 $ bash scripts/serve.sh start
-$ python -m markerHarness.pipeline all -a a2
+$ python -m markerHarness.pipeline all -a example
 $ bash scripts/serve.sh stop   <span class="cmt"># release the GPU</span>
 
-<span class="cmt"># outputs in assignments/a2/results/</span>
-$ ls assignments/a2/results/
+<span class="cmt"># outputs in assignments/example/results/</span>
+$ ls assignments/example/results/
 final_grades.csv  moderation.json  raw_scores.json  report.md  feedback/  run_&lt;ts&gt;/</pre>
     <p class="lead small">Don't have a GPU? Set <code>backend: anthropic</code> (or <code>openai</code>) in <code>agents.yaml</code> for every role — the pipeline works without vLLM. Recommended for the self-evolver in any case, to avoid same-model bias.</p>
   </div>
