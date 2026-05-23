@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>MarkerHarness — multi-agent assignment grading, any MLLM</title>
+<meta name="description" content="A multi-agent grading harness with pluggable MLLM backends — local vLLM, Anthropic Claude, OpenAI GPT, or Google Gemini. Scorer + Reviewer + deterministic curve + audit trail + self-evolving prompts." />
+<meta name="author" content="Xunyi Zhao" />
+<meta property="og:title" content="MarkerHarness — multi-agent assignment grading, any MLLM" />
+<meta property="og:description" content="Multi-agent grading harness with pluggable MLLM backends. Scorer + Reviewer + deterministic curve + audit trail." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://billzhao1030.github.io/MarkerHarness/" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <div class="brand">
+      <span class="brand-mark">⌬</span>
+      <span class="brand-name">MarkerHarness</span>
+      <span class="brand-version">v0.3 · MIT</span>
+    </div>
+    <nav class="nav">
+      <a href="#key">What</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#demo">Demo</a>
+      <a href="#docs">Docs</a>
+      <a href="#start">Quickstart</a>
+      <a href="#cite">Cite</a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="container">
+    <div class="hero-eyebrow">
+      <span class="eyebrow-dot"></span> multi-agent · pluggable backends · auditable
+    </div>
+    <h1 class="hero-title">
+      Grade a whole class<br />
+      without surrendering<br />
+      <span class="grad-text">the audit trail.</span>
+    </h1>
+    <p class="hero-sub">
+      A multi-agent grading harness with <em>pluggable MLLM backends</em> — local vLLM, Anthropic Claude, OpenAI GPT, or Google Gemini. One model in two hats (a strict <em>Scorer</em> and a critical <em>Reviewer</em>), feeding a deterministic curve and a teacher-signoff report. No black boxes.
+    </p>
+    <div class="hero-cta">
+      <a href="#start" class="btn btn-primary">Quickstart →</a>
+      <a href="#demo" class="btn btn-ghost">Try the name matcher</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num">4</div><div class="stat-label">agent roles</div></div>
+      <div class="stat"><div class="stat-num">4</div><div class="stat-label">MLLM backends</div></div>
+      <div class="stat"><div class="stat-num">80</div><div class="stat-label">target mean enforced</div></div>
+      <div class="stat"><div class="stat-num">0</div><div class="stat-label">vendor lock-in</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY 3 FEATURES -->
+<section id="key" class="section">
+  <div class="container">
+    <div class="kicker">the three things that matter</div>
+    <h2 class="h2">Built like the teachers actually doing the grading wanted it.</h2>
+    <div class="grid grid-3">
+      <article class="card">
+        <div class="card-icon">⚖︎</div>
+        <h3>Two agents arguing it out</h3>
+        <p>A strict Scorer (temp 0) and a critical Reviewer (temp 0.7 + step-by-step prompt) on the same model. They agree, revise once, or flag the disagreement — never sweep it under the rug.</p>
+      </article>
+      <article class="card">
+        <div class="card-icon">🔌</div>
+        <h3>Any MLLM, per agent</h3>
+        <p>vLLM (local) or Anthropic / OpenAI / Gemini — set the backend independently for each role in <code>agents.yaml</code>. Scorer + Reviewer on local 4B, judge for the self-evolver on Claude.</p>
+      </article>
+      <article class="card">
+        <div class="card-icon">📊</div>
+        <h3>Forced curve, full receipts</h3>
+        <p>Whole-class mean locked to a target. Special-list students forced to HD. The math is deterministic and the audit trail keeps raw / reviewed / final scores in separate columns.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- PIPELINE -->
+<section id="pipeline" class="section section-tint">
+  <div class="container">
+    <div class="kicker">pipeline</div>
+    <h2 class="h2">Six stages. Each one writes a file you can read.</h2>
+    <div class="pipeline">
+      <div class="stage"><div class="stage-name">split</div><div class="stage-desc">combined.md → description + rubric <span class="dim">(lazy mode)</span></div></div>
+      <div class="stage-arrow">→</div>
+      <div class="stage"><div class="stage-name">configure</div><div class="stage-desc">description.md + rubric.md → <code>rubric.yaml</code> (sha256 cached)</div></div>
+      <div class="stage-arrow">→</div>
+      <div class="stage"><div class="stage-name">ingest</div><div class="stage-desc">unzip · docx→pdf · parse names · reconcile special list</div></div>
+      <div class="stage-arrow">→</div>
+      <div class="stage"><div class="stage-name">grade</div><div class="stage-desc">scorer + reviewer loop · per-student blackboard</div></div>
+      <div class="stage-arrow">→</div>
+      <div class="stage"><div class="stage-name">moderate</div><div class="stage-desc">lock HD · curve to target mean · clamp · recenter</div></div>
+      <div class="stage-arrow">→</div>
+      <div class="stage"><div class="stage-name">report</div><div class="stage-desc">CSV · report.md · per-student feedback</div></div>
+    </div>
+    <div class="pipeline-side">
+      <div class="side-stage"><span class="side-tag">↻</span> <code>evolve</code> — reviewer signals → scorer prompt v(N+1) · dry-run / --apply / --rollback</div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO -->
+<section id="demo" class="section">
+  <div class="container">
+    <div class="kicker">live demo</div>
+    <h2 class="h2">Type any spelling. We'll find the right student.</h2>
+    <p class="lead">The fuzzy name matcher runs entirely in your browser — pure JS port of the Python module. <code>"Adi Issa"</code>, <code>"adi issa"</code>, <code>"Issa Adi"</code>, <code>"issaadi"</code> all resolve to the same submission token. Try it:</p>
+    <div class="demo">
+      <div class="demo-row">
+        <label for="demo-q">Name to match</label>
+        <input id="demo-q" type="text" value="Adi Issa" placeholder="e.g. Adi Issa" />
+      </div>
+      <div class="demo-row">
+        <label for="demo-against">Submission tokens (comma-separated)</label>
+        <input id="demo-against" type="text" value="issaadi, daitingxuan, unglinh, zhangsan, mariawong" />
+      </div>
+      <button id="demo-run" class="btn btn-primary">Match →</button>
+      <div id="demo-result" class="demo-result"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ACCORDION DEEP DIVE -->
+<section id="docs" class="section section-tint">
+  <div class="container">
+    <div class="kicker">the deep dive</div>
+    <h2 class="h2">Everything else — expand only what you need.</h2>
+    <p class="lead">Nine collapsible cards covering every knob. Click to expand.</p>
+
+    <div class="accordion">
+
+      <details>
+        <summary><span class="acc-tag">⚙</span> All nine features in one place</summary>
+        <div class="acc-body">
+          <div class="grid grid-3 grid-tight">
+            <article class="card card-mini">
+              <div class="card-icon">⚖︎</div>
+              <h3>Propose-critique-revise</h3>
+              <p>Scorer + Reviewer on the same model, different temps/prompts. Tolerance-based convergence; revise round on disagreement; human-flag if persistent.</p>
+            </article>
+            <article class="card card-mini">
+              <div class="card-icon">📝</div>
+              <h3>Markdown-driven config</h3>
+              <p>Drop <code>description.md</code> + <code>rubric.md</code>. A <em>config_builder</em> agent parses them — including HD/D/C/P/F score ranges — into <code>rubric.yaml</code>.</p>
+            </article>
+            <article class="card card-mini">
+              <div class="card-icon">🧬</div>
+              <h3>Fuzzy name matching</h3>
+              <p>NFKD + casefold + permutation + Levenshtein, with CJK support and ambiguity guarded. Never silently mismatches.</p>
+            </article>
+            <article class="card card-mini">
+              <div class="card-icon">🔌</div>
+              <h3>Four MLLM backends</h3>
+              <p>vLLM, Anthropic Claude, OpenAI GPT, Google Gemini. Per-agent backend selection via <code>agents.yaml</code>. API keys via env vars only.</p>
+            </article>
+            <article class="card card-mini">
+              <div class="card-icon">📊</div>
+              <h3>Forced curve + audit</h3>
+              <p>Whole-class mean to target; special list to HD; non-list cohort curved (linear or rank-normal). Raw → reviewed → final stay in separate columns.</p>
+            </article>
+            <article class="card card-mini">
+              <div class="card-icon">🎯</div>
+              <h3>Per-criterion output</h3>
+              <p>Every rubric criterion gets a score + an evidence-cited reason. CSV columns per criterion. Feedback files are per-student Markdown.</p>
+            </article>
+            <article class="card card-mini">
+              <div class="card-icon">🧪</div>
+              <h3>Self-evolving prompts</h3>
+              <p>Reviewer corrections accumulate across runs. <code>evolve</code> proposes surgical scorer-prompt edits with same-model gate, holdout, one-line rollback.</p>
+            </article>
+            <article class="card card-mini">
+              <div class="card-icon">📚</div>
+              <h3>Multiple assignments</h3>
+              <p><code>assignments/&lt;name&gt;/</code> namespaces everything. <code>init</code> scaffolds; <code>-a</code> auto-resolves when there's exactly one.</p>
+            </article>
+            <article class="card card-mini">
+              <div class="card-icon">🖥️</div>
+              <h3>Rich terminal</h3>
+              <p>A run banner, a reconciliation table for special-list matches, per-step timing, a distribution panel after moderation. No surprises.</p>
+            </article>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="acc-tag">🎯</span> How it works — four steps from PDFs to signed grades</summary>
+        <div class="acc-body">
+          <div class="step-row">
+            <div class="step-meta">
+              <div class="step-num">01</div>
+              <h3 class="step-title">Drop your inputs</h3>
+              <p>Student files in <code>assignments/&lt;name&gt;/inputs/submissions/</code>. A free-form <code>special_list.txt</code> for HD-overrides. Filenames need only <code>{name}_anything.pdf</code>; everything after the first underscore is ignored.</p>
+            </div>
+<pre class="code"><span class="cmt"># scaffold + drop files</span>
+$ python -m markerHarness.pipeline init -a a2
+$ cp ~/Downloads/submissions/* markerHarness/assignments/a2/inputs/submissions/
+$ cat &gt; markerHarness/assignments/a2/inputs/special_list.txt &lt;&lt;EOF
+Adi Issa
+Tingxuan Dai
+EOF</pre>
+          </div>
+
+          <div class="step-row">
+            <div class="step-meta">
+              <div class="step-num">02</div>
+              <h3 class="step-title">Configure (automatic)</h3>
+              <p>The <em>config_builder</em> agent parses Markdown rubric tables into structured <code>rubric.yaml</code>. A SHA256 hash of your Markdown keeps it from re-running needlessly.</p>
+            </div>
+<pre class="code"><span class="cmt"># auto-runs as part of `all`</span>
+$ python -m markerHarness.pipeline configure -a a2
+[configure] running config_builder (vllm:Qwen3-VL-4B-Instruct) ...
+[configure] ✓ rubric.yaml generated → assignments/a2/config/rubric.yaml</pre>
+          </div>
+
+          <div class="step-row">
+            <div class="step-meta">
+              <div class="step-num">03</div>
+              <h3 class="step-title">Grade with two agents</h3>
+              <p>Scorer + Reviewer agree, revise, or flag for human review.</p>
+            </div>
+<pre class="code">$ bash scripts/serve.sh start
+$ python -m markerHarness.pipeline grade -a a2
+[grade] (3/3) <b>issaadi</b>  scorer 6.4s · reviewer 1.8s · verdict=reasonable · total=95.7
+[grade]   └─ |Δ|=0.3 ≤ tol=5 → converged</pre>
+          </div>
+
+          <div class="step-row">
+            <div class="step-meta">
+              <div class="step-num">04</div>
+              <h3 class="step-title">Moderate and report</h3>
+              <p>Lock special list to HD, curve to overall mean, write a CSV with per-criterion columns, a Markdown report, and per-student feedback.</p>
+            </div>
+<pre class="code">$ python -m markerHarness.pipeline moderate -a a2
+N=3  locked HD: 1  curved: 2
+target mean=80 σ=8 → method=linear
+achieved mean=<b>80.0</b> σ=8.97
+$ python -m markerHarness.pipeline report -a a2
+[report] ✓ wrote final_grades.csv / report.md / feedback/</pre>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="acc-tag">🔌</span> Multi-backend — any MLLM you have access to</summary>
+        <div class="acc-body">
+          <p>Each agent picks its backend in <code>agents.yaml</code>. The Scorer and Reviewer must share the same loaded model on the local GPU (single-instance constraint); other agents are free to use cloud APIs.</p>
+<pre class="code">agents:
+  scorer:
+    backend: vllm            <span class="cmt"># local Qwen3-VL-4B for throughput</span>
+    temperature: 0.0
+  reviewer:
+    backend: vllm
+    temperature: 0.7
+    cot_prompt: true
+  evolver:
+    backend: anthropic       <span class="cmt"># stronger judge — dodges same-model bias</span>
+    model: claude-sonnet-4-6
+    api_key_env: ANTHROPIC_API_KEY
+  config_builder:
+    backend: openai
+    model: gpt-4o-mini       <span class="cmt"># cheap + good at parsing tables</span></pre>
+          <h4 class="sub-h">Where the keys come from</h4>
+          <ul class="dot-list">
+            <li><code>OPENAI_API_KEY</code></li>
+            <li><code>ANTHROPIC_API_KEY</code></li>
+            <li><code>GEMINI_API_KEY</code> (or <code>GOOGLE_API_KEY</code>)</li>
+            <li>Keys live in environment variables only — never in YAML, never in the repo.</li>
+          </ul>
+          <h4 class="sub-h">Structured-output mechanisms (handled per-backend)</h4>
+          <ul class="dot-list">
+            <li><strong>vLLM</strong> → <code>extra_body.guided_json</code> with brace-balanced fallback parsing</li>
+            <li><strong>OpenAI</strong> → <code>response_format=json_schema</code></li>
+            <li><strong>Anthropic</strong> → tool-use (a synthetic tool whose <code>input_schema</code> = the JSON schema)</li>
+            <li><strong>Gemini</strong> → <code>response_mime_type=application/json</code> + <code>response_schema</code> (needs <code>pip install google-generativeai</code>)</li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="acc-tag">🧬</span> Filename convention + name matcher algorithm</summary>
+        <div class="acc-body">
+          <p>Only the part <strong>before the first underscore</strong> is the student name token. Everything after (LMS-style ids, original filename) is ignored entirely.</p>
+<pre class="code"><b>issaadi</b>_71709_5279180_DeepLearning_Application_Final.pdf
+└──name──┘└──────────── ignored ────────────┘</pre>
+          <p><code>special_list.txt</code> accepts any spelling — different word order, different case, extra whitespace. Behind the scenes:</p>
+          <ol class="num-list">
+            <li><strong>Normalize both sides</strong>: NFKD-decompose, strip combining marks, casefold, keep only <code>[a-z0-9]</code> + CJK ideographs, concatenate.</li>
+            <li><strong>Exact match</strong> on normalized form.</li>
+            <li><strong>Permutation match</strong>: try every token ordering of the user input (up to 4 tokens) joined and compared.</li>
+            <li><strong>Containment</strong>: all user tokens must appear as substrings (suppressed when input &lt; 4 chars).</li>
+            <li><strong>Levenshtein</strong> (fuzzy): distance ≤ 2 with length difference ≤ 2 (only when steps 1–3 found nothing).</li>
+            <li><strong>Ambiguity is never silent</strong>: multi-candidate matches return <code>Ambiguous</code> and surface in the reconciliation table.</li>
+          </ol>
+          <p>CJK names like <code>张三</code> are kept verbatim — we don't auto-romanize. Try the demo above to see this in action.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="acc-tag">📂</span> Outputs — every file the pipeline writes</summary>
+        <div class="acc-body">
+          <p>Per assignment, under <code>assignments/&lt;name&gt;/</code>:</p>
+<pre class="code">work/
+  manifest.json                <span class="cmt"># ingest output: name tokens, resolved PDFs, flags</span>
+  extracted/                   <span class="cmt"># zip/rar/tar.gz contents</span>
+  converted/                   <span class="cmt"># docx→pdf outputs (if LibreOffice present)</span>
+
+results/
+  raw_scores.json              <span class="cmt"># original scorer + reviewer + debate (immutable)</span>
+  moderation.json              <span class="cmt"># curve params + before/after + warnings</span>
+  final_grades.csv             <span class="cmt"># 1 row per student, columns:</span>
+                               <span class="cmt">#   name, final, band, special, status,</span>
+                               <span class="cmt">#   total_raw, total_reviewed,</span>
+                               <span class="cmt">#   &lt;criterion-id&gt;_score, &lt;criterion-id&gt;_comment   (per rubric)</span>
+                               <span class="cmt">#   flags</span>
+  report.md                    <span class="cmt"># flags top + distribution + warnings + grade table</span>
+  feedback/&lt;name&gt;.md           <span class="cmt"># per-student criterion-by-criterion writeup</span>
+  run_&lt;ts&gt;/&lt;name&gt;.json         <span class="cmt"># per-student blackboard: full debate audit, evolver input</span></pre>
+          <p>The triple <strong>raw → reviewer-suggested → final</strong> is kept in three separate columns of the CSV so any moderation step is auditable.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="acc-tag">🧪</span> Self-evolver — how the harness improves itself</summary>
+        <div class="acc-body">
+          <p>Across runs, the Reviewer accumulates disagreements with the Scorer. The <em>evolver</em> agent reads those signals and proposes a new Scorer prompt — surgical edits only.</p>
+          <h4 class="sub-h">Signals consumed</h4>
+          <ul class="dot-list">
+            <li>median |Δ| between scorer total and reviewer suggested</li>
+            <li>per-criterion mention frequency in reviewer notes</li>
+            <li>top recurring reviewer complaints</li>
+            <li>systematic bias direction (scorer-high / scorer-low / mixed)</li>
+          </ul>
+          <h4 class="sub-h">Safety gates (any failure → refuse to apply)</h4>
+          <ul class="dot-list">
+            <li><strong>Surgical-edit floor</strong>: rejects proposals that rewrite &gt; 40% of the prompt.</li>
+            <li><strong>Same-model gate</strong>: refuses to run unless <code>--allow-same-model</code> is set (since evolver-as-scorer-judge shares blind spots).</li>
+            <li><strong>Dry-run by default</strong>: prints the diff and rationale but doesn't activate.</li>
+            <li><strong>Provenance</strong>: every proposed change must cite a specific signal in the rationale file.</li>
+          </ul>
+          <h4 class="sub-h">Versioning + rollback</h4>
+<pre class="code"><span class="cmt"># dry-run — see what it would propose</span>
+$ python -m markerHarness.pipeline evolve -a a2 --dry-run --allow-same-model
+
+<span class="cmt"># commit (creates prompts/scorer_v(N+1).md + history/rationale_v(N+1).md)</span>
+$ python -m markerHarness.pipeline evolve -a a2 --apply
+
+<span class="cmt"># revert</span>
+$ python -m markerHarness.pipeline evolve -a a2 --rollback</pre>
+          <p>The active prompt is tracked in <code>prompts/active.json</code> with a history list — every change is reversible.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="acc-tag">📦</span> System dependencies (optional but useful)</summary>
+        <div class="acc-body">
+          <p>The harness keeps going even when these are missing — affected submissions get flagged.</p>
+          <ul class="dot-list">
+            <li><strong>LibreOffice</strong> (<code>soffice</code>) — converts <code>.docx</code> / <code>.doc</code> submissions to PDF. Missing → those submissions flagged, pipeline continues.</li>
+            <li><strong><code>rarfile</code> + <code>unrar</code>/<code>7z</code></strong> — for student <code>.rar</code> archives. <code>pip install rarfile</code> + system package.</li>
+            <li><strong><code>google-generativeai</code></strong> — required only if you want the Gemini backend. <code>pip install google-generativeai</code>.</li>
+            <li><strong>vLLM</strong> — needed only if you want a local backend. Cloud-only setups don't need a GPU at all.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="acc-tag">⚠</span> Honest caveats — read before trusting the numbers</summary>
+        <div class="acc-body">
+          <ul class="dot-list dot-warn">
+            <li>The default local scorer is a <strong>4B model</strong>. Its absolute scores need calibration against human-graded samples — that's why grades are <em>proposed</em>, not signed.</li>
+            <li>Same-model self-review (scorer reviewed by the scorer's own backend) shares blind spots. Configure the evolver — or even the reviewer — to a stronger backend (Claude / GPT) to dodge that.</li>
+            <li>Forcing a target mean while locking some students to HD has real consequences for the rest of the class; the moderator surfaces the warning rather than hiding it.</li>
+            <li>Long PDFs (image-heavy or scanned) can blow the 32K context. Default <code>content_mode</code> is text-primary; tune <code>max_pages</code> for your assignment.</li>
+            <li>The harness produces <em>proposals</em>, not final grades. Teacher sign-off is always required.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="acc-tag">🗺️</span> Roadmap — what's coming</summary>
+        <div class="acc-body">
+          <p>The current release (<code>v0.3</code>) grades PDF / text reports end-to-end with multi-agent argumentation and a self-evolving scorer prompt. Future releases extend the surface significantly.</p>
+
+          <h4 class="sub-h">v0.4 · Multi-modal inputs</h4>
+          <ul class="dot-list">
+            <li>Native <strong>PowerPoint</strong> ingestion (slide-by-slide content + layout via <code>python-pptx</code>)</li>
+            <li><strong>Video presentations</strong>: keyframe sampling + audio transcription, graded as a single multi-modal exhibit</li>
+            <li><strong>Source-code submissions</strong>: language detection + syntax-aware chunking + optional execution</li>
+          </ul>
+
+          <h4 class="sub-h">v0.5 · Tool use + tool registry</h4>
+          <ul class="dot-list">
+            <li>Agents can <em>call tools</em> mid-grading: web search for academic claims, code execution for student code, library / dataset lookup</li>
+            <li>Tools become a registerable concept: <code>name</code>, <code>description</code>, JSON <code>schema</code>, executor</li>
+            <li>Tool I/O joins the audit trail alongside the scorer↔reviewer debate</li>
+          </ul>
+
+          <h4 class="sub-h">v0.6 · Validation loop</h4>
+          <ul class="dot-list">
+            <li>Pre-commit validators run before grades are sealed</li>
+            <li>User-customizable checks: rubric arithmetic, distribution sanity, special-list invariants, no-silent-F rules</li>
+            <li>A failing validator blocks <code>apply</code> — never a silent ship</li>
+          </ul>
+
+          <h4 class="sub-h">v0.7 · Teacher-feedback evolution</h4>
+          <ul class="dot-list">
+            <li>Today the evolver consumes only the Reviewer's signal — same model, same blind spots</li>
+            <li>Tomorrow: the teacher's manual overrides on flagged students feed back as ground-truth signal</li>
+            <li>Closes the loop: human-in-the-loop learning, not just same-model self-review</li>
+          </ul>
+
+          <h4 class="sub-h">v1.0 · Rebrand</h4>
+          <p>"Harness" was honest for v0.x — a thin orchestration around a single model. With multi-modal inputs, tool use, validation, and teacher-feedback learning it stops being a harness. A new name is on the table; the audit-first, multi-agent, model-agnostic ethos stays.</p>
+        </div>
+      </details>
+
+      <details id="cite">
+        <summary><span class="acc-tag">©</span> License + citation</summary>
+        <div class="acc-body">
+          <p>Released under the <strong>MIT License</strong>. Copyright © 2026 Xunyi Zhao. Full text in <a href="LICENSE">LICENSE</a>.</p>
+          <h4 class="sub-h">BibTeX</h4>
+<pre class="code">@software{zhao2026markerharness,
+  author  = {Zhao, Xunyi},
+  title   = {{MarkerHarness}: Multi-agent assignment grading harness for any {MLLM}},
+  year    = {2026},
+  license = {MIT},
+  url     = {https://billzhao1030.github.io/MarkerHarness/}
+}</pre>
+          <h4 class="sub-h">APA</h4>
+          <p>Zhao, X. (2026). <em>MarkerHarness: Multi-agent assignment grading harness for any MLLM</em> [Computer software]. <a href="https://billzhao1030.github.io/MarkerHarness/">https://billzhao1030.github.io/MarkerHarness/</a></p>
+          <h4 class="sub-h">Plain text</h4>
+          <p>Xunyi Zhao. <em>MarkerHarness: Multi-agent assignment grading harness for any MLLM</em>. 2026. Licensed under MIT.</p>
+        </div>
+      </details>
+
+    </div>
+  </div>
+</section>
+
+<!-- QUICKSTART -->
+<section id="start" class="section">
+  <div class="container">
+    <div class="kicker">quickstart</div>
+    <h2 class="h2">Six lines from clone to signed grades.</h2>
+<pre class="code code-full"><span class="cmt"># one-time setup</span>
+$ conda create -n mllm python=3.12 -y &amp;&amp; conda activate mllm
+$ pip install -r requirements.txt
+
+<span class="cmt"># scaffold an assignment</span>
+$ python -m markerHarness.pipeline init -a a2
+<span class="cmt"># drop description.md + rubric.md + submissions/ into assignments/a2/inputs/</span>
+
+<span class="cmt"># run — `all` chains configure → ingest → grade → moderate → report</span>
+$ bash scripts/serve.sh start
+$ python -m markerHarness.pipeline all -a a2
+$ bash scripts/serve.sh stop   <span class="cmt"># release the GPU</span>
+
+<span class="cmt"># outputs in assignments/a2/results/</span>
+$ ls assignments/a2/results/
+final_grades.csv  moderation.json  raw_scores.json  report.md  feedback/  run_&lt;ts&gt;/</pre>
+    <p class="lead small">Don't have a GPU? Set <code>backend: anthropic</code> (or <code>openai</code>) in <code>agents.yaml</code> for every role — the pipeline works without vLLM. Recommended for the self-evolver in any case, to avoid same-model bias.</p>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <span class="brand-mark">⌬</span>
+      <span class="brand-name">MarkerHarness</span>
+    </div>
+    <div class="footer-text">
+      © 2026 Xunyi Zhao · MIT licensed · <a href="LICENSE">LICENSE</a> · <a href="#cite">cite this work</a>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
