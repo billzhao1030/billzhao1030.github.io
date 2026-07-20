@@ -20,16 +20,7 @@
   <link rel="stylesheet" href="{{ '/assets/site.css' | relative_url }}">
 </head>
 <body>
-  <header class="site-header">
-    <nav class="nav" aria-label="Primary navigation">
-      <a class="brand" href="#">{{ data.profile.name }}</a>
-      <ul class="nav-links">
-        {% for item in data.nav %}
-        <li><a href="{{ item.url }}">{{ item.label }}</a></li>
-        {% endfor %}
-      </ul>
-    </nav>
-  </header>
+  {% include site-header.html %}
 
   <main>
     <div class="page-layout">
@@ -132,7 +123,9 @@
                 {% endif %}
                 <div class="links">
                   {% for link in project.links %}
+                  {% if link.url and link.url != empty %}
                   <a href="{{ link.url }}">{{ link.label }}</a>
+                  {% endif %}
                   {% endfor %}
                 </div>
               </div>
@@ -242,8 +235,6 @@
     </div>
   </main>
 
-  <footer>
-    <p>{{ data.footer }}</p>
-  </footer>
+  {% include site-footer.html %}
 </body>
 </html>

@@ -4,16 +4,10 @@ site:
   theme_color: "#f6f3ee"
 
 nav:
-  - label: "About"
-    url: "#about"
-  - label: "News"
-    url: "#news"
-  - label: "Research"
-    url: "#research"
-  - label: "Publications"
-    url: "#publications"
-  - label: "Experience"
-    url: "#experience"
+  - label: "Home"
+    url: "/"
+  - label: "Blog"
+    url: "/blog/"
 
 profile:
   name: "Xunyi Zhao"
@@ -47,14 +41,14 @@ about:
   heading: "About Me"
   paragraphs:
     - "Hi, I am a first-year Ph.D. student at the <a href='https://www.adelaide.edu.au/aiml/'>Australian Institute for Machine Learning (AIML)</a>, <a href='https://www.adelaide.edu.au/'>Adelaide University</a>, supervised by <a href='http://www.qi-wu.me/'>A/Prof. Qi Wu</a> and <a href='https://people.csiro.au/L/J/ryan-liu'>A/Prof. Jiajun Liu</a>. I am a member of the <a href='https://v3alab.github.io/'>Vision and Visualisation for Autonomous AI Lab (V3A Lab)</a>, where I work on embodied AI, vision-language reasoning, and autonomous agents."
-    - "Prior to my Ph.D. studies, I received my Master’s degree from the University of Adelaide, now Adelaide University, where I was mentored by <a href='https://gengzezhou.github.io/'>Dr. Gengze Zhou</a>. Since 2026, I have been focusing on agentic AI for embodied AI tasks under the mentorship of <a href='https://gengzezhou.github.io/'>Dr. Gengze Zhou</a> and <a href='https://sihaoevery.github.io/'>Dr. Sihao Lin</a>. I also collaborate closely with Zerui Li and <a href='https://sj-li.com/'>Dr. Shijie Li</a>."
+    - "Prior to my Ph.D. studies, I received my Master’s degree from the University of Adelaide, now Adelaide University, where I was mentored by <a href='https://gengzezhou.github.io/'>Dr. Gengze Zhou</a>. Since 2026, I have been focusing on agentic AI for embodied AI tasks under the mentorship of <a href='https://gengzezhou.github.io/'>Dr. Gengze Zhou</a> and <a href='https://sihaoevery.github.io/'>Dr. Sihao Lin</a>. I also collaborate closely with <a href='https://jianzhou0420.github.io/'>Jian Zhou</a>, Zerui Li, and <a href='https://sj-li.com/'>Dr. Shijie Li</a>."
     - "My research focuses on building explainable and embodied AI systems for autonomous agents that can perceive, reason, learn, and navigate in complex 3D environments. I am particularly interested in evaluating and improving multimodal large language models for 3D understanding, spatial reasoning, lifelong learning, and ultra-long-horizon vision-and-language navigation. Recently, I have been exploring agentic AI frameworks for embodied tasks such as VLN, aiming to integrate perception, reasoning, memory, and decision-making into unified autonomous systems. More broadly, I am dedicated to bridging the gap between simulator-based embodied AI research and real-world robotic applications."
 
 news:
   heading: "News"
   items:
     - date: "2026.04"
-      text: "My first Research Paper <a href='https://arxiv.org/abs/2512.24851'>VLN-MME</a> is accepted to ACL 2026! Many thanks to my mentor Gengze, for his invaluable guidance and support."
+      text: "My first Research Paper <a href='https://aclanthology.org/2026.acl-long.1300/'>VLN-MME</a> is accepted to ACL 2026! Many thanks to my mentor Gengze, for his invaluable guidance and support."
     - date: "2025.12"
       text: "My first co-authored project, <a href='https://sihaoevery.github.io/vlnverse/'>VLNVerse</a> is now released!"
     - date: "2025.10"
@@ -82,7 +76,7 @@ projects:
       placeholder: "VLN-MME"
       links:
         - label: "Paper"
-          url: "https://arxiv.org/abs/2512.24851"
+          url: "https://aclanthology.org/2026.acl-long.1300/"
         - label: "Code"
           url: "https://github.com/billzhao1030/VLN-MME"
         - label: "Project"
@@ -96,11 +90,11 @@ projects:
       placeholder: "IVLN"
       links:
         - label: "Paper"
-          url: ""
+          url: "https://arxiv.org/abs/2606.03175"
         - label: "Code"
           url: ""
         - label: "Project"
-          url: ""
+          url: "IVLN/"
     - title: "VLNVerse: A Benchmark for Vision-Language Navigation with Versatile, Embodied, Realistic Simulation and Evaluation"
       venue: "Preprint 2025"
       authors: "Sihao Lin*, Zerui Li*, <strong>Xunyi Zhao</strong>*, Gengze Zhou, Liuyi Wang, Rong Wei, Rui Tang, Juncheng Li, Hanqing Wang, Jiangmiao Pang, Anton van den Hengel, Jiajun Liu, Qi Wu"

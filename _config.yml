@@ -2,9 +2,13 @@ title: "Xunyi Zhao"
 url: "https://billzhao1030.github.io"
 baseurl: ""
 
+permalink: /blog/:title/
+
 exclude:
   - Gemfile
   - Gemfile.lock
   - vendor
   - README.md
   - SETUP.md
+  - CLAUDE.md
+  - doc

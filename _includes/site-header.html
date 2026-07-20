@@ -1,0 +1,17 @@
+{% assign data = site.data.home %}
+<header class="site-header">
+  <nav class="nav" aria-label="Primary navigation">
+    <a class="brand" href="{{ '/' | relative_url }}">{{ data.profile.name }}</a>
+    <ul class="nav-links">
+      {% for item in data.nav %}
+      {% assign is_active = false %}
+      {% if item.url == "/" %}
+        {% if page.url == "/" %}{% assign is_active = true %}{% endif %}
+      {% elsif page.url contains item.url %}
+        {% assign is_active = true %}
+      {% endif %}
+      <li><a href="{{ item.url | relative_url }}"{% if is_active %} class="active" aria-current="page"{% endif %}>{{ item.label }}</a></li>
+      {% endfor %}
+    </ul>
+  </nav>
+</header>

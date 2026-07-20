@@ -1,0 +1,22 @@
+{% assign data = site.data.home %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if page.title %}{{ page.title }} · {{ data.site.title }}{% else %}{{ data.site.title }}{% endif %}</title>
+  <meta property="og:title" content="{% if page.title %}{{ page.title }} · {{ data.site.title }}{% else %}{{ data.site.title }}{% endif %}">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="{{ data.site.theme_color }}">
+  <link rel="stylesheet" href="{{ '/assets/site.css' | relative_url }}">
+</head>
+<body>
+  {% include site-header.html %}
+
+  <main>
+    {{ content }}
+  </main>
+
+  {% include site-footer.html %}
+</body>
+</html>

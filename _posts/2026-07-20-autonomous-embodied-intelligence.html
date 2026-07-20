@@ -1,0 +1,452 @@
+---
+layout: null
+title: "What Autonomous Embodied Intelligence Needs"
+excerpt: "Anthropic drove real robots with a coding agent: same model, change the interface, near-zero to working. But autonomous embodied intelligence has two bottlenecks, not one — a good-enough multimodal reasoner, and six parts (E,T,C,S,L,V) the physical world doesn't give you for free."
+---
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>What Autonomous Embodied Intelligence Needs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <style>
+    :root{
+      --bg:#fdfdfb;--ink:#1b1d21;--muted:#6b7280;--faint:#9aa1ab;
+      --line:#e6e7e3;--line-soft:#eeefea;--accent:#2f6f5e;--accent-soft:#eef4f1;
+      --code-bg:#f3f4f0;--warn:#a2543a;--warn-soft:#f6ece7;
+    }
+    *{box-sizing:border-box}
+    html{-webkit-text-size-adjust:100%}
+    body{margin:0;background:var(--bg);color:var(--ink);
+      font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+      font-size:17px;line-height:1.7;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+    .container{max-width:920px;margin:0 auto;padding:0 26px}
+
+    .tabs{display:flex;gap:26px;padding:30px 0 0;font-size:14px}
+    .tabs__link{color:var(--muted);text-decoration:none;letter-spacing:.01em;
+      padding-bottom:3px;border-bottom:1.5px solid transparent;transition:color .15s}
+    .tabs__link:hover{color:var(--ink)}
+    .tabs__link.is-active{color:var(--ink);border-bottom-color:var(--accent)}
+
+    .post-page__header{padding:48px 0 6px}
+    .post-page__date{margin:0 0 12px;font-family:'JetBrains Mono',monospace;font-size:13px;
+      letter-spacing:.06em;color:var(--faint)}
+    .post-page__title{margin:0;font-size:clamp(28px,4.6vw,40px);font-weight:700;
+      letter-spacing:-.022em;line-height:1.14}
+    .post-page__authors{margin:14px 0 0;font-size:14.5px;color:var(--muted)}
+    .post-page__authors strong{color:#2c2f34;font-weight:600}
+    .readtime{margin:6px 0 0;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--faint)}
+
+    .prose{padding:12px 0 8px}
+    .prose p{margin:0 0 1.2em}
+    .prose strong{font-weight:600;color:#15171a}
+    .prose em{font-style:italic;color:#33363b}
+    .prose a{color:var(--accent);text-decoration:none;border-bottom:1px solid #cfe0d9}
+    .prose a:hover{border-bottom-color:var(--accent)}
+
+    .lede{font-size:18.5px;line-height:1.58;color:#34383d;margin:6px 0 0;padding-bottom:4px}
+    .lede em{color:#1d2b26;font-style:normal;font-weight:600}
+
+    .prose h2{font-size:clamp(20px,2.8vw,25px);font-weight:700;letter-spacing:-.012em;line-height:1.24;
+      margin:1.7em 0 .35em;padding-top:1.3em;border-top:1px solid var(--line)}
+    .prose h2 .sn{color:var(--accent);font-weight:700;margin-right:.5em;
+      font-family:'JetBrains Mono',monospace;font-size:.8em}
+
+    code{font-family:'JetBrains Mono',monospace;font-size:.86em;background:var(--code-bg);
+      border-radius:4px;padding:.1em .4em;color:#2c2f34;border:1px solid #e8e9e4}
+
+    .cap{font-size:14px;line-height:1.5;color:#6b7078;text-align:center;max-width:640px;margin:.1em auto 1.5em}
+    .cap strong{color:#2c3a35;font-weight:600}
+
+    .chip{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.5;
+      background:var(--accent-soft);color:#2c3a35;border:1px solid #cfe0d9;border-radius:20px;
+      padding:2px 10px;margin:.1em .2em .1em 0}
+
+    /* works / doesn't-work result card */
+    .result{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:1.4em 0 .6em}
+    @media(max-width:560px){.result{grid-template-columns:1fr}}
+    .rcol{border:1px solid var(--line);border-radius:11px;padding:13px 16px;background:#fff}
+    .rcol.ok{border-color:#bcd9cd;background:#f2f8f5}
+    .rcol.no{border-color:#e6c6ba;background:#f9efeb}
+    .rcol h4{margin:0 0 .4em;font-size:13.5px;letter-spacing:.01em}
+    .rcol.ok h4{color:var(--accent)}
+    .rcol.no h4{color:var(--warn)}
+    .rcol ul{margin:0;padding-left:1.05em}
+    .rcol li{font-size:13.5px;line-height:1.5;margin:.3em 0;color:#41454b}
+    .rcol li::marker{color:var(--faint)}
+
+    /* SVG figures */
+    svg.fig{width:100%;height:auto;max-width:800px;display:block;margin:1.5em auto .5em}
+    .fig text{font-family:'Inter',system-ui,sans-serif;font-size:13px;fill:var(--ink)}
+    .fig .t{font-weight:600}
+    .fig .dim{fill:var(--muted);font-size:11.5px}
+    .fig .mono{font-family:'JetBrains Mono',monospace;font-size:11.5px;fill:#4b5058}
+    .fig .box{fill:#ffffff;stroke:#c9cbc4;stroke-width:1.2}
+    .fig .accent{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.6}
+    .fig .warn{fill:var(--warn-soft);stroke:var(--warn);stroke-width:1.4}
+    .fig .at{fill:var(--accent);font-weight:600}
+    .fig .wt{fill:var(--warn);font-weight:600}
+    .fig .ghost{fill:none;stroke:#c9cbc4;stroke-width:1.1;stroke-dasharray:5 4}
+    .fig .ghostA{fill:none;stroke:var(--accent);stroke-width:1.2;stroke-dasharray:5 4}
+    .fig .edge{stroke:#8b9096;stroke-width:1.4;fill:none;marker-end:url(#bl-m)}
+    .fig .edgeA{stroke:var(--accent);stroke-width:1.6;fill:none;marker-end:url(#bl-a)}
+    .fig .edgeAd{stroke:var(--accent);stroke-width:1.6;fill:none;stroke-dasharray:6 5;marker-end:url(#bl-a)}
+
+    blockquote{margin:1.9em 0;padding:16px 20px;background:var(--accent-soft);border-left:3px solid var(--accent);
+      border-radius:0 6px 6px 0;font-size:16px;line-height:1.6;color:#2c3a35}
+    blockquote strong{color:#1d2b26}
+
+    details.fold{margin:1.4em 0;border:1px solid var(--line);border-radius:8px;background:#fbfbf8}
+    details.fold summary{cursor:pointer;padding:10px 16px;font-size:13px;color:var(--muted);
+      font-weight:500;user-select:none;list-style-position:inside}
+    details.fold summary:hover{color:var(--ink)}
+    details.fold[open] summary{border-bottom:1px solid var(--line-soft)}
+    .refs{margin-top:10px;padding:4px 18px 2px}
+    .refs__item{position:relative;padding-left:2.9em;margin:0 0 .6em;font-size:13.5px;line-height:1.55;color:#41454b}
+    .refs__n{position:absolute;left:0;top:0;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--faint)}
+    .refs__item em{font-style:italic;color:#5c6066}
+    .refs a{color:var(--accent);border-bottom:1px solid #cfe0d9}
+
+    .footer{margin-top:44px;padding:24px 0 60px;border-top:1px solid var(--line);
+      font-size:13px;color:var(--faint);font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+
+    @media(max-width:600px){ body{font-size:16px} }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <nav class="tabs">
+      <a class="tabs__link" href="../../index.html">Home</a>
+      <a class="tabs__link is-active" href="../">Blog</a>
+    </nav>
+
+    <article class="post-page">
+      <header class="post-page__header">
+        <p class="post-page__date">2026-07-20</p>
+        <h1 class="post-page__title">What Autonomous Embodied Intelligence Needs</h1>
+      </header>
+
+      <div class="prose">
+
+        <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+          <marker id="bl-m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b9096"/></marker>
+          <marker id="bl-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2f6f5e"/></marker>
+        </defs></svg>
+
+        <p class="lede">
+          Anthropic just drove real robots with an off-the-shelf coding agent [1]. The lesson that reorganizes the field:
+          the <em>same</em> model swings from near-zero to working when you change the control <em>interface</em>, not the
+          weights. Read carelessly, that says the model is fine and only the scaffolding is missing — and that reading is
+          half right and dangerously tidy. <em>Autonomous embodied intelligence</em> (AEI) has <em>two</em> bottlenecks at
+          once: a reasoner whose multi-step, multimodal grounding is genuinely good enough, and a set of parts around it
+          that barely exists for the physical world. Here is the shape of both — figures first.
+        </p>
+
+        <h2><span class="sn">01</span>The shape</h2>
+
+        <svg class="fig" viewBox="0 0 780 372" role="img" aria-label="Six components around a base model. A top band L (lifecycle hooks: safety and authority) spans the width. A bottom band V (verification and trajectory record) spans the width. Between them a left-to-right flow: world observation into C (context), into the base model (a multi-turn multimodal reasoner), into E (execution loop), into T (tools and policies), out to the body. Below the model, S (state) reads and writes persistent memory across episodes.">
+          <rect x="20" y="24" width="740" height="40" rx="9" class="accent"/>
+          <text x="390" y="49" text-anchor="middle" class="at">L &nbsp;— safety · authority · approval · audit &nbsp;(cross-cutting)</text>
+          <text x="30" y="104" class="dim">world obs</text>
+          <path class="edge" d="M96,100 H132"/>
+          <rect x="132" y="86" width="96" height="34" rx="7" class="box"/><text x="180" y="107" text-anchor="middle">C · context</text>
+          <path class="edge" d="M228,103 H268"/>
+          <rect x="268" y="80" width="150" height="46" rx="8" class="accent"/>
+          <text x="343" y="100" text-anchor="middle" class="at">base model</text>
+          <text x="343" y="116" text-anchor="middle" class="dim">multi-turn · multimodal</text>
+          <path class="edge" d="M418,103 H458"/>
+          <rect x="458" y="86" width="92" height="34" rx="7" class="box"/><text x="504" y="107" text-anchor="middle">E · loop</text>
+          <path class="edge" d="M550,103 H590"/>
+          <rect x="590" y="86" width="96" height="34" rx="7" class="box"/><text x="638" y="107" text-anchor="middle">T · tools</text>
+          <path class="edge" d="M686,103 H726"/>
+          <text x="742" y="104" text-anchor="end" class="dim">body</text>
+          <text x="180" y="150" text-anchor="middle" class="dim">model-facing</text>
+          <text x="638" y="150" text-anchor="middle" class="dim">world-facing</text>
+          <rect x="268" y="176" width="150" height="40" rx="8" class="box"/>
+          <text x="343" y="201" text-anchor="middle">S · state</text>
+          <path class="edgeAd" d="M343,126 V176"/>
+          <text x="356" y="158" class="dim">read / write</text>
+          <text x="343" y="240" text-anchor="middle" class="dim">persistent memory — across episodes</text>
+          <rect x="132" y="262" width="516" height="30" rx="6" class="ghost"/>
+          <text x="390" y="281" text-anchor="middle" class="dim">geometry · semantics · robot state · task progress · skills</text>
+          <rect x="20" y="308" width="740" height="40" rx="9" class="accent"/>
+          <text x="390" y="333" text-anchor="middle" class="at">V &nbsp;— verification &amp; trajectory record: is it working? &nbsp;(cross-cutting)</text>
+        </svg>
+        <p class="cap">Not a bigger model, not a better policy — a reasoner wired to a body through <strong>six parts</strong>.</p>
+
+        <p>
+          Whatever you call the layer around the model — the agent-systems world calls it a <em>harness</em> [3]; we care
+          about the parts, not the label — AEI needs six: an execution loop (<strong>E</strong>), a tool-and-policy
+          registry (<strong>T</strong>), context management (<strong>C</strong>), cross-episode state
+          (<strong>S</strong>), lifecycle safety hooks (<strong>L</strong>), and verification (<strong>V</strong>). A
+          coding agent gets all six <em>free</em> from a fifty-year-old text workspace: the filesystem is its state, tests
+          are its verifier, a stack trace localizes failure, <code>git revert</code> undoes anything [4]. A robot
+          inherits none of it. Its world <strong>owns a clock</strong> it cannot pause, <strong>hides its state</strong>
+          behind noisy partial observation, and <strong>never throws a stack trace</strong> — so three of the six (E's
+          clock, C's attention, V's ground truth) do not just need rebuilding, they get qualitatively harder [5].
+        </p>
+
+        <h2><span class="sn">02</span>We tried it — and only half of it works</h2>
+
+        <div class="result">
+          <div class="rcol ok">
+            <h4>✔ &nbsp;WORKS</h4>
+            <ul>
+              <li><strong>fable 5, zero-shot VLN</strong> — no navigation training</li>
+              <li>Just a simple <strong>waypoint action space</strong> + multimodal dialogue</li>
+              <li>A general reasoner navigates out of the box</li>
+            </ul>
+          </div>
+          <div class="rcol no">
+            <h4>✘ &nbsp;NOT DONE</h4>
+            <ul>
+              <li>Habitat: constant <strong>wall-sliding</strong></li>
+              <li>VLNVerse: <strong>~10% collision</strong> rate</li>
+              <li>A frontier model on every step isn't affordable</li>
+            </ul>
+          </div>
+        </div>
+
+        <p>
+          This month we let a coding agent driving <strong>fable 5</strong> attempt vision-and-language navigation
+          zero-shot — no VLN training, just a waypoint action space and a multimodal dialogue. It works surprisingly well:
+          a general reasoner, wrapped in a thin loop with the right interface, is a competent navigator out of the box.
+          That is the existence proof — the <em>parts</em>, not a bespoke model, carry the task. But we will not be drunk
+          on it. The demo runs; AEI does not — <em>yet</em>. The six parts are the distance between those two sentences.
+        </p>
+
+        <h2><span class="sn">E</span>Execution loop — two clocks, hybrid now</h2>
+
+        <p>
+          Embodiment runs on <strong>two clocks</strong> [7]. The <em>rollout loop</em> ticks on the environment's clock —
+          one step per tick, whether or not anything reasons; the <em>agent loop</em> (ReAct [8]) ticks on the reasoner's —
+          one LLM turn per tick, no environment required. Today's navigators sit at the two broken extremes: NavGPT-style
+          <strong>workflows</strong> [9] script every step (total but rigid), and our zero-shot agent is <strong>pure
+          ReAct</strong> (flexible, but its unhandled corners <em>are</em> the wall-sliding). Anthropic sharpens it:
+          real-time control wants ~83 Hz while inference runs at 0.2–0.4 Hz, and more reasoning per step buys almost
+          nothing. The deployable answer is <strong>hybrid</strong> — a fast structured skeleton with the reasoner invoked
+          on events (stuck, uncertain, interrupted); the horizon past it is <strong>full-duplex</strong>, controller and
+          reasoner free-running on their own clocks. Build the hybrid so it can grow into the full-duplex one.
+        </p>
+
+        <svg class="fig" viewBox="0 0 780 244" role="img" aria-label="A spectrum of execution-loop couplings from structured to concurrent. Workflow (NavGPT) — total but rigid. Pure ReAct (ours) — partial, wall-slides. Hybrid — a structured skeleton with an event-triggered reasoner. Full-duplex — both clocks free-run. The world waits on the left and never waits on the right.">
+          <path class="edge" d="M40,150 H740"/>
+          <text x="40" y="176" class="dim">structured — the world waits</text>
+          <text x="740" y="176" text-anchor="end" class="dim">concurrent — the world never waits</text>
+          <rect x="42" y="60" width="150" height="64" rx="9" class="box"/>
+          <text x="117" y="86" text-anchor="middle" class="t">workflow</text>
+          <text x="117" y="104" text-anchor="middle" class="dim">NavGPT — total,</text>
+          <text x="117" y="118" text-anchor="middle" class="dim">rigid</text>
+          <circle cx="117" cy="150" r="4.5" class="box"/>
+          <rect x="222" y="60" width="150" height="64" rx="9" class="warn"/>
+          <text x="297" y="86" text-anchor="middle" class="wt">pure ReAct</text>
+          <text x="297" y="104" text-anchor="middle" class="dim">ours — partial,</text>
+          <text x="297" y="118" text-anchor="middle" class="dim">wall-slides</text>
+          <circle cx="297" cy="150" r="4.5" class="warn"/>
+          <rect x="402" y="60" width="150" height="64" rx="9" class="accent"/>
+          <text x="477" y="86" text-anchor="middle" class="at">hybrid</text>
+          <text x="477" y="104" text-anchor="middle" class="dim">skeleton +</text>
+          <text x="477" y="118" text-anchor="middle" class="dim">event-triggered reasoner</text>
+          <circle cx="477" cy="150" r="5" class="accent"/>
+          <rect x="582" y="60" width="156" height="64" rx="9" class="ghostA"/>
+          <text x="660" y="86" text-anchor="middle" class="at">full-duplex</text>
+          <text x="660" y="104" text-anchor="middle" class="dim">both clocks free-run,</text>
+          <text x="660" y="118" text-anchor="middle" class="dim">coupled by buffers</text>
+          <circle cx="660" cy="150" r="4.5" class="ghostA" fill="none"/>
+          <text x="390" y="222" text-anchor="middle" class="dim">deployable today = the middle; horizon = the right edge</text>
+        </svg>
+
+        <h2><span class="sn">T</span>Tools &amp; policies — interface beats model</h2>
+
+        <p>
+          The registry decides what the model can actually <em>do</em>, and it dominates. Direct control fails (LIBERO
+          <strong>0–5.5%</strong>; no model stands a humanoid up); hand the same model a pretrained policy and it works.
+          We see the slope from the bottom too: a <strong>waypoint predictor lifts a 4B model from 0.00 to 0.30</strong>
+          navigation success — no new weights, just a better interface. The one caveat is <em>selection</em>, not
+          capability: cut a tool set from 15 to 2 and accuracy went 80%→100% [3] — a hundred tools is a hundred-page
+          manual nobody reads fast. So <strong>prepare abundantly, expose selectively</strong>. And to be clear: more and
+          better policies do not compete with the loop — <strong>they are what it steps and calls</strong>. Growing the
+          policy zoo and building the loop are the same project.
+        </p>
+
+        <svg class="fig" viewBox="0 0 780 296" role="img" aria-label="A four-rung staircase rising left to right: direct control at the bottom (roughly 0 to 5.5 percent), then programmatic control, then RL supervision, then policy control at the top (much higher). A dashed curve rises with the steps. A note: a waypoint predictor lifts a 4B model from 0.00 to 0.30.">
+          <rect x="60" y="214" width="150" height="44" rx="7" class="warn"/>
+          <text x="135" y="234" text-anchor="middle" class="wt">direct</text>
+          <text x="135" y="250" text-anchor="middle" class="dim">torque / pose · ≈0–5.5%</text>
+          <rect x="220" y="168" width="150" height="90" rx="7" class="box"/>
+          <text x="295" y="192" text-anchor="middle" class="t">programmatic</text>
+          <text x="295" y="208" text-anchor="middle" class="dim">write a controller</text>
+          <rect x="380" y="120" width="150" height="138" rx="7" class="box"/>
+          <text x="455" y="144" text-anchor="middle" class="t">RL supervision</text>
+          <text x="455" y="160" text-anchor="middle" class="dim">design reward,</text>
+          <text x="455" y="174" text-anchor="middle" class="dim">train a policy</text>
+          <rect x="540" y="66" width="160" height="192" rx="7" class="accent"/>
+          <text x="620" y="90" text-anchor="middle" class="at">policy control</text>
+          <text x="620" y="106" text-anchor="middle" class="dim">command a</text>
+          <text x="620" y="120" text-anchor="middle" class="dim">pretrained policy · ≫</text>
+          <path class="edgeAd" d="M70,206 C170,188 210,150 300,150 C360,150 380,120 470,112 C520,108 540,92 615,78"/>
+          <text x="60" y="286" class="dim">rising abstraction &amp; success →&nbsp;&nbsp;&nbsp; + waypoint predictor: 4B nav 0.00 → 0.30</text>
+        </svg>
+
+        <h2><span class="sn">C</span>Context — attention, not capacity</h2>
+
+        <p>
+          Context management is not "fit more in the window" — it is <em>attention</em>. Anthropic's cleanest result:
+          depth maps, segmentation, and crosshairs are useless or harmful, while a <strong>compass</strong> (heading angle
+          as text) and a <strong>cursor</strong> (a queryable 3D point) lift every model — one climbs
+          <strong>6%→32%</strong> on a 10-task subset. The bottleneck was never "can't see"; it was "doesn't know where
+          it is pointed." So C has two jobs: <strong>before the window fills</strong>, place the right representation where
+          attention lands; <strong>after it fills</strong>, compress. A million-token window retires neither — long
+          contexts dilute attention, the "lost in the middle" effect [13].
+        </p>
+
+        <svg class="fig" viewBox="0 0 780 210" role="img" aria-label="Two columns. Left, accent: representations that help — a compass (heading angle as text) and a cursor (queryable 3D point); the model can locate itself and act. Right, warning: representations that do not help — raw depth map, segmentation, crosshair overlay; nothing to orient against. A note gives a 6 to 32 percent lift.">
+          <rect x="40" y="40" width="330" height="120" rx="10" class="accent"/>
+          <text x="205" y="66" text-anchor="middle" class="at">helps — act-on-able state</text>
+          <text x="205" y="94" text-anchor="middle" class="mono">compass → heading angle (text)</text>
+          <text x="205" y="116" text-anchor="middle" class="mono">cursor → queryable 3D point</text>
+          <text x="205" y="142" text-anchor="middle" class="dim">the model can locate itself in it</text>
+          <rect x="410" y="40" width="330" height="120" rx="10" class="warn"/>
+          <text x="575" y="66" text-anchor="middle" class="wt">doesn't help — raw pixels</text>
+          <text x="575" y="94" text-anchor="middle" class="mono">depth map · segmentation</text>
+          <text x="575" y="116" text-anchor="middle" class="mono">crosshair overlay</text>
+          <text x="575" y="142" text-anchor="middle" class="dim">nothing to orient against</text>
+          <text x="390" y="192" text-anchor="middle" class="dim">compass + cursor: one frontier model 6% → 32%</text>
+        </svg>
+
+        <h2><span class="sn">S</span>State — the part that breaks first at home</h2>
+
+        <p>
+          Everything above lives in one episode; <strong>state is what survives across them</strong>, and it breaks first
+          at household scale. A navigation episode is hundreds of steps; "keep the kitchen tidy this week" is millions,
+          with no reset — no window holds that, so <em>even fable 5 chokes</em>. Competence has to live <em>outside</em>
+          the transcript, in durable state: a persistent map, an object memory, task progress, a skill library.
+          In-context learning will not carry it — it decays within the window and <strong>flips sign with scale</strong>
+          (our demo episode: a 4B model improved 0→1/10, but a 27B model got <em>worse</em>, 3/10→0/8). The implication is
+          blunt: do not leave durable competence in the context; write it to state, and eventually to weights. S is also
+          the deepest attack surface — a poisoned map persists across every session until writes are validated.
+          <span class="chip">ICL flips sign · 4B 0→1/10 · 27B 3/10→0/8</span>
+        </p>
+
+        <h2><span class="sn">L</span>Lifecycle hooks — authority the world can't undo</h2>
+
+        <p>
+          In code, lifecycle hooks are a convenience; in a robot they are <strong>execution semantics</strong>, because the
+          world has no undo. Force and speed limits, collision and proximity gates, workspace bounds, approval for
+          irreversible acts — these decide whether a one-way door opens. Anthropic's real-robot crashes are exactly hook
+          failures: one model judged a trash can "safe, it is left of the crosshair," drove in, and dragged it two meters;
+          another charged a glass door, mistaking its reflection for the target. Both are perception errors — and both a
+          proximity-and-speed gate would have caught <em>without consulting the model at all</em>. That is the point: L is
+          the one part that holds <strong>even when the reasoner is confidently wrong</strong>, and it is where the human
+          belongs — uncertainty past a threshold should stop and ask, not act.
+          <span class="chip">both crashes = gate failures</span>
+        </p>
+
+        <h2><span class="sn">V</span>Verification — success without a stack trace</h2>
+
+        <p>
+          A coding agent knows when it succeeded — green tests, a stack trace naming a line. A robot knows almost nothing
+          of the kind: success is latent, delayed, uncertain, and failure could be perception, pose, planner, controller,
+          or skill choice. <strong>Wall-sliding is the canonical unverified failure</strong> — the agent believes it is
+          progressing because nothing contradicts it. So V must manufacture the signal the world withholds: progress
+          monitors, geometric and physics checks, world-model or simulator rollouts that test a plan before committing,
+          human feedback as backstop. And V does double duty: a good verifier turns each rollout into a <strong>labeled
+          trajectory</strong> — the fuel for everything next.
+          <span class="chip">wall-slide = the unverified failure</span>
+        </p>
+
+        <h2><span class="sn">06</span>Where it goes — the flywheel</h2>
+
+        <p>
+          Put the six together and a direction falls out. <strong>The large model is the right call now</strong> — only a
+          strong multimodal reasoner carries a task zero-shot. But paying for it on every step is not necessary, and its
+          own limits say it is not the endpoint: the destination is <strong>small, post-trained policies</strong>, with
+          the big model kept for the hard, novel, supervisory moments — which is what Anthropic's VLA results actually
+          show, the frontier model's value being to <em>judge when the policy would fail</em>, not to out-act it. This is
+          where the six parts become an engine: good parts let you run the big model over many policies (T), keep it
+          oriented and bounded (C, E), hold state (S), stay safe (L), and — through V — <strong>label every
+          trajectory</strong> it produces. Those labels post-train the next small policy, which runs cheaper and collects
+          still better data. That is a <strong>flywheel</strong>, and good parts plus post-training spin it.
+        </p>
+
+        <svg class="fig" viewBox="0 0 780 330" role="img" aria-label="A five-node cycle. Top: good components E T C S L V. Right: run the large model over many policies in the world. Bottom-right: V labels the trajectories. Bottom-left: S persists them. Left: post-train a small specialized policy. Back to the top: cheaper, more capable components. The centre reads data flywheel.">
+          <rect x="300" y="26" width="180" height="46" rx="9" class="accent"/>
+          <text x="390" y="46" text-anchor="middle" class="at">good components</text>
+          <text x="390" y="62" text-anchor="middle" class="dim">E · T · C · S · L · V</text>
+          <rect x="574" y="118" width="184" height="60" rx="9" class="box"/>
+          <text x="666" y="142" text-anchor="middle" class="t">run big model</text>
+          <text x="666" y="160" text-anchor="middle" class="dim">over many policies, in the world</text>
+          <rect x="486" y="252" width="180" height="52" rx="9" class="box"/>
+          <text x="576" y="274" text-anchor="middle" class="t">V labels trajectories</text>
+          <text x="576" y="291" text-anchor="middle" class="dim">verified → data</text>
+          <rect x="114" y="252" width="180" height="52" rx="9" class="box"/>
+          <text x="204" y="274" text-anchor="middle" class="t">S persists them</text>
+          <text x="204" y="291" text-anchor="middle" class="dim">durable, recallable</text>
+          <rect x="22" y="118" width="184" height="60" rx="9" class="accent"/>
+          <text x="114" y="142" text-anchor="middle" class="at">post-train small policy</text>
+          <text x="114" y="160" text-anchor="middle" class="dim">cheaper · specialized</text>
+          <text x="390" y="182" text-anchor="middle" class="at" font-size="14">data flywheel</text>
+          <circle cx="390" cy="196" r="52" class="ghostA"/>
+          <path class="edgeA" d="M480,52 C560,64 630,88 664,116"/>
+          <path class="edgeA" d="M666,178 C666,214 640,236 618,250"/>
+          <path class="edge" d="M486,282 H296"/>
+          <path class="edgeA" d="M150,250 C126,232 116,210 114,180"/>
+          <path class="edgeA" d="M120,116 C150,86 224,64 298,52"/>
+        </svg>
+
+        <blockquote>
+          Autonomous embodied intelligence is not a bigger model or a better policy. It is a capable multimodal reasoner
+          <strong>coupled to a body through six parts</strong> — loop, tools/policies, context, state, safety,
+          verification — none of them free from the world. Two bottlenecks, not one: fix the reasoner <em>and</em> the
+          parts. Hybrid now, small post-trained policies next, full-duplex on the horizon.
+        </blockquote>
+
+        <details class="fold"><summary>References</summary>
+        <div class="refs">
+          <p class="refs__item"><span class="refs__n">[1]</span> Anthropic, "Claude plays robotics (Embody)," 2026. <a href="https://www.anthropic.com/research/claude-plays-robotics">anthropic.com/research/claude-plays-robotics</a>.</p>
+          <p class="refs__item"><span class="refs__n">[2]</span> Allen Institute for AI, "MolmoAct," 2025. <a href="https://allenai.org/blog/molmoact">allenai.org/blog/molmoact</a>.</p>
+          <p class="refs__item"><span class="refs__n">[3]</span> J. Meng et al., "Agent Harness for Large Language Model Agents: A Survey," <em>Preprints</em>, 2026.</p>
+          <p class="refs__item"><span class="refs__n">[4]</span> J. Zhou, "Inside the Coding-Agent Harness," 2026. <a href="coding-agent-harness.html">companion post</a>.</p>
+          <p class="refs__item"><span class="refs__n">[5]</span> J. Zhou, "What It Takes to Build a ReAct-Style Embodied Agent," 2026. <a href="react-embodiment-architecture-brief.html">companion post</a>.</p>
+          <p class="refs__item"><span class="refs__n">[7]</span> J. Zhou, "Rollout Loop vs. Agent Loop," 2026. <a href="rollout-loop-vs-agent-loop.html">companion post</a>.</p>
+          <p class="refs__item"><span class="refs__n">[8]</span> S. Yao et al., "ReAct," <em>ICLR</em>, 2023. arXiv:<a href="https://arxiv.org/abs/2210.03629">2210.03629</a>.</p>
+          <p class="refs__item"><span class="refs__n">[9]</span> G. Zhou, Y. Hong, Q. Wu, "NavGPT," <em>AAAI</em>, 2024. arXiv:<a href="https://arxiv.org/abs/2305.16986">2305.16986</a>.</p>
+          <p class="refs__item"><span class="refs__n">[13]</span> N. F. Liu et al., "Lost in the middle," <em>TACL</em>, 2024. arXiv:<a href="https://arxiv.org/abs/2307.03172">2307.03172</a>.</p>
+        </div>
+        </details>
+
+        <p style="margin-top:1.6em">
+          <a href="../">&larr; Back to blog</a>
+        </p>
+      </div>
+
+      <section class="post-comments">
+        <script src="https://giscus.app/client.js"
+                data-repo="jianzhou0420/jianzhou0420.github.io"
+                data-repo-id="R_kgDOKGTs0g"
+                data-category="Comments"
+                data-category-id="DIC_kwDOKGTs0s4DBBIZ"
+                data-mapping="pathname"
+                data-strict="0"
+                data-reactions-enabled="1"
+                data-emit-metadata="0"
+                data-input-position="bottom"
+                data-theme="light"
+                data-lang="en"
+                data-loading="lazy"
+                crossorigin="anonymous"
+                async>
+        </script>
+      </section>
+    </article>
+
+    <footer class="footer">&copy; Xunyi Zhao &middot; Jian Zhou &middot; Qi Wu</footer>
+  </main>
+  <script src="/_edit/inline-edit.js" defer></script>
+</body>
+</html>
