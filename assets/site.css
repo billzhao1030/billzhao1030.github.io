@@ -388,6 +388,59 @@
       font-size: 1.18rem;
     }
 
+    /* Collapsible subsection: the heading doubles as the <summary> toggle.
+       list-style/::-webkit-details-marker kill the browser's default triangle
+       so the chevron below is the only affordance. */
+    .collapsible > summary {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .collapsible > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .collapsible > summary h3 {
+      margin: 0;
+    }
+
+    .collapsible > summary::after {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-right: 2px solid var(--muted);
+      border-bottom: 2px solid var(--muted);
+      border-radius: 1px;
+      transform: translateY(-2px) rotate(-45deg);
+      transition: transform 0.18s ease, border-color 0.18s ease;
+    }
+
+    .collapsible[open] > summary::after {
+      transform: translateY(-2px) rotate(45deg);
+    }
+
+    .collapsible > summary:hover::after {
+      border-color: var(--accent-strong);
+    }
+
+    .collapsible > summary:hover h3 {
+      color: var(--accent-strong);
+    }
+
+    .collapsible > summary:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+      border-radius: 3px;
+    }
+
+    /* Only pay for the gap when something is actually shown below the heading. */
+    .collapsible[open] > summary {
+      margin-bottom: 16px;
+    }
+
     .teaching-item {
       display: grid;
       grid-template-columns: 190px minmax(0, 1fr);
@@ -421,6 +474,15 @@
     .teaching-item .meta {
       color: var(--muted);
       font-size: 0.93rem;
+    }
+
+    /* One row per role, every course that role covers stacked inside it. */
+    .course-list {
+      display: grid;
+      gap: 14px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
     }
 
     .service-section {

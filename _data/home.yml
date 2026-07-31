@@ -47,6 +47,10 @@ about:
 news:
   heading: "News"
   items:
+    - date: "2026.07"
+      text: "Our new preprint <a href='https://arxiv.org/abs/2607.26148'>Embodied Agents Take Control</a> is out on arXiv! Given only a monocular RGB camera and four discrete actions, a general-purpose agent already rivals industrial-scale navigation policies on VLN."
+    - date: "2026.06"
+      text: "Our new preprint <a href='https://arxiv.org/abs/2606.03175'>Ask When It Pays</a> is out on arXiv! It is a cost-aware reactive agent for instance goal navigation that works out <em>when</em> asking a question is worth what it costs. My first attempt at building a ReAct-style agent."
     - date: "2026.04"
       text: "My first Research Paper <a href='https://aclanthology.org/2026.acl-long.1300/'>VLN-MME</a> is accepted to ACL 2026! Many thanks to my mentor Gengze, for his invaluable guidance and support."
     - date: "2025.12"
@@ -81,6 +85,16 @@ projects:
           url: "https://github.com/billzhao1030/VLN-MME"
         - label: "Project"
           url: "VLN-MME/"
+    - title: "Embodied Agents Take Control: Minimal-Interface Zero-Shot Agents Rival Industrial-Scale Policies in Vision-and-Language Navigation"
+      venue: "Preprint, 2026"
+      authors: "Jian Zhou*, <strong>Xunyi Zhao</strong>*, Gengze Zhou, Zerui Li, Sihao Lin, Jiajun Liu, Qi Wu"
+      note: "* Equal Contribution"
+      image: "assets/projects/embodied-agents-take-control-tp.png"
+      image_alt: "Embodied Agents Take Control thumbnail"
+      placeholder: "Embodied Agents Take Control"
+      links:
+        - label: "Paper"
+          url: "https://arxiv.org/abs/2607.26148"
     - title: "Ask When It Pays: Cost-Aware Open-Ended Interaction for Instance Goal Navigation"
       venue: "Preprint, 2026"
       authors: "Xunyi Zhao*, Sihao Lin*, Gengze Zhou, Zerui Li, Shijie Li, Wei Tao, Jiajun Liu, Qi Wu"
@@ -127,8 +141,14 @@ experience:
     heading: "Teaching"
     items:
       - role: "Teaching Assistant"
+        course: "COMP 5004 - Programming for Artificial Intelligence and Machine Learning"
+        meta: "Adelaide University | Semester 2, 2026"
+      - role: "Teaching Assistant"
         course: "COMP 6004 - Deep Learning Applications"
-        meta: "Adelaide University | 2026"
+        meta: "Adelaide University | Semester 1, 2026"
+      - role: "Teaching Assistant"
+        course: "INFO 2005 - System Design"
+        meta: "Adelaide University | Semester 1, 2026"
 
   # services:
   #   heading: "Services"

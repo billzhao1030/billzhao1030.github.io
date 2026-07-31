@@ -183,18 +183,27 @@
 
             {% if has_teaching %}
             <section class="experience-subsection" id="teaching">
-              <h3>{{ data.experience.teaching.heading | default: "Teaching" }}</h3>
-              <ul class="teaching-list">
-                {% for item in teaching_items %}
-                <li class="teaching-item">
-                  <span class="role">{{ item.role }}</span>
-                  <div>
-                    <p class="course">{{ item.course }}</p>
-                    <p class="meta">{{ item.meta }}</p>
-                  </div>
-                </li>
-                {% endfor %}
-              </ul>
+              <details class="collapsible" open>
+                <summary>
+                  <h3>{{ data.experience.teaching.heading | default: "Teaching" }}</h3>
+                </summary>
+                <ul class="teaching-list">
+                  {% assign role_groups = teaching_items | group_by: "role" %}
+                  {% for group in role_groups %}
+                  <li class="teaching-item">
+                    <span class="role">{{ group.name }}</span>
+                    <ul class="course-list">
+                      {% for item in group.items %}
+                      <li>
+                        <p class="course">{{ item.course }}</p>
+                        <p class="meta">{{ item.meta }}</p>
+                      </li>
+                      {% endfor %}
+                    </ul>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </details>
             </section>
             {% endif %}
 
