@@ -73,7 +73,7 @@ projects:
   items:
     - title: "VLN-MME: Diagnosing MLLMs as Language-guided Visual Navigation Agents"
       venue: "Annual Meeting of the Association for Computational Linguistics (ACL), 2026"
-      authors: "Xunyi Zhao, Gengze Zhou<sup>†</sup>, Qi Wu"
+      authors: "<strong>Xunyi Zhao</strong>, Gengze Zhou<sup>†</sup>, Qi Wu"
       note: "<sup>†</sup> Project Lead"
       image: "assets/projects/vln-mme-tp.png"
       image_alt: "VLN-MME project thumbnail"
@@ -95,9 +95,11 @@ projects:
       links:
         - label: "Paper"
           url: "https://arxiv.org/abs/2607.26148"
+        - label: "Project"
+          url: "https://jianzhou0420.github.io/src/works/MIP/"
     - title: "Ask When It Pays: Cost-Aware Open-Ended Interaction for Instance Goal Navigation"
       venue: "Preprint, 2026"
-      authors: "Xunyi Zhao*, Sihao Lin*, Gengze Zhou, Zerui Li, Shijie Li, Wei Tao, Jiajun Liu, Qi Wu"
+      authors: "<strong>Xunyi Zhao</strong>*, Sihao Lin*, Gengze Zhou, Zerui Li, Shijie Li, Wei Tao, Jiajun Liu, Qi Wu"
       note: "* Equal Contribution"
       image: "assets/projects/ivln-tp.png"
       image_alt: "IVLN thumbnail"
