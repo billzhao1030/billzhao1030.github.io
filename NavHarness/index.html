@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NavHarness: Towards Lifelong Embodied Navigation</title>
+<meta name="description" content="NavHarness is a training-free embodied harness towards lifelong navigation that makes memory processing part of the navigation loop.">
+<meta property="og:title" content="NavHarness: Towards Lifelong Embodied Navigation">
+<meta property="og:description" content="Multi-round agentic sessions that read, check and revise maps, task records and house notes as the robot navigates.">
+<meta property="og:image" content="assets/teaser.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f8fc; --bg2:#eef2f8; --ink:#0f172a; --ink2:#475569; --ink3:#7b8798; --line:rgba(15,23,42,.09); --glass:rgba(255,255,255,.75); --glass2:rgba(15,23,42,.05);
+  --teal:#0d9488; --blue:#2563eb; --violet:#7c3aed; --full:#2f80c8; --nomem:#c8873a; --ok:#1f9d86; --bad:#cc5b44; --amber:#b7791f;
+  --radius:18px; --maxw:1120px;
+  --sans:'Manrope',system-ui,-apple-system,Segoe UI,sans-serif; --display:'Sora','Manrope',sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.65;font-size:16px;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:var(--teal);text-decoration:none}
+a:hover{text-decoration:underline}
+img{max-width:100%;display:block}
+
+/* ── background ── */
+.bg{position:fixed;inset:0;z-index:-3;background:
+  radial-gradient(1100px 650px at 12% -8%,rgba(96,165,250,.20),transparent 60%),
+  radial-gradient(900px 600px at 95% 6%,rgba(124,58,237,.16),transparent 60%),
+  radial-gradient(1000px 800px at 50% 110%,rgba(45,212,191,.12),transparent 60%),
+  linear-gradient(180deg,#f8fafd 0%,#f4f7fb 100%)}
+.grid{position:fixed;inset:0;z-index:-2;pointer-events:none;opacity:.5;
+  background-image:linear-gradient(rgba(15,23,42,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(15,23,42,.045) 1px,transparent 1px);
+  background-size:56px 56px;mask-image:radial-gradient(ellipse at 50% 20%,#000 30%,transparent 75%);-webkit-mask-image:radial-gradient(ellipse at 50% 20%,#000 30%,transparent 75%)}
+.orb{position:fixed;border-radius:50%;filter:blur(90px);opacity:.22;z-index:-1;pointer-events:none;animation:float 16s ease-in-out infinite}
+.orb.o1{width:360px;height:360px;background:radial-gradient(circle,rgba(56,189,248,.9),transparent 70%);top:6%;left:3%}
+.orb.o2{width:300px;height:300px;background:radial-gradient(circle,rgba(129,140,248,.9),transparent 70%);top:48%;right:4%;animation-delay:-5s}
+.orb.o3{width:260px;height:260px;background:radial-gradient(circle,rgba(45,212,191,.8),transparent 70%);bottom:6%;left:30%;animation-delay:-10s}
+@keyframes float{0%,100%{transform:translate(0,0)}33%{transform:translate(30px,-30px)}66%{transform:translate(-20px,20px)}}
+@media (prefers-reduced-motion:reduce){.orb{animation:none}html{scroll-behavior:auto}}
+
+/* ── nav ── */
+.nav{position:sticky;top:0;z-index:50;background:rgba(248,250,253,.8);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+.nav .in{max-width:var(--maxw);margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:22px}
+.brand{font-family:var(--display);font-weight:700;font-size:18px;color:var(--ink);letter-spacing:-.01em;white-space:nowrap}
+.brand span{background:linear-gradient(90deg,var(--teal),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+.nav ul{display:flex;gap:4px;list-style:none;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.nav ul::-webkit-scrollbar{display:none}
+.nav ul a{color:var(--ink2);font-size:14px;padding:6px 11px;border-radius:999px;white-space:nowrap;transition:.2s}
+.nav ul a:hover,.nav ul a.on{color:var(--ink);background:var(--glass2);text-decoration:none}
+.nav .home{font-size:13px;color:var(--ink3);white-space:nowrap}
+
+/* ── layout ── */
+section{max-width:var(--maxw);margin:0 auto;padding:84px 20px 0}
+.kicker{font-family:var(--mono);font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:12px}
+h2{font-family:var(--display);font-size:clamp(28px,4vw,40px);line-height:1.15;letter-spacing:-.02em;font-weight:700;margin-bottom:16px}
+h3{font-family:var(--display);font-size:21px;letter-spacing:-.01em;font-weight:600;margin-bottom:8px}
+.lead{font-size:18px;color:var(--ink2);max-width:820px}
+p+p{margin-top:12px}
+.muted{color:var(--ink3)}
+.card{background:rgba(255,255,255,.82);border:1px solid rgba(15,23,42,.07);border-radius:var(--radius);box-shadow:0 1px 2px rgba(15,23,42,.04),0 18px 44px -26px rgba(30,58,110,.28)}
+.figure{margin-top:28px}
+.figure .frame{border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 70px -34px rgba(30,58,110,.45)}
+.figure .white{background:#fff;padding:14px}
+.figure figcaption{font-size:14.5px;color:var(--ink2);margin-top:12px;max-width:900px}
+.figure figcaption b{color:var(--ink)}
+
+/* ── hero ── */
+.hero{padding-top:72px;text-align:center}
+.badge{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--glass)}
+.badge i{width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 12px var(--teal)}
+.title{font-family:var(--display);font-weight:700;letter-spacing:-.035em;line-height:1;margin:26px 0 10px;font-size:clamp(52px,9vw,96px);
+  background:linear-gradient(100deg,#0f172a 5%,#1d4ed8 45%,#0d9488 75%,#7c3aed 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 10px 30px rgba(37,99,235,.15))}
+.subtitle{font-family:var(--display);font-size:clamp(20px,3vw,30px);font-weight:500;color:var(--ink);letter-spacing:-.01em}
+.authors{margin:28px auto 0;max-width:860px;font-size:16.5px;line-height:1.9}
+.authors span{white-space:nowrap;margin:0 9px}
+.authors sup{color:var(--ink3);font-size:11px;margin-left:1px}
+.affil{margin-top:10px;color:var(--ink2);font-size:14.5px;line-height:1.7}
+.affil sup{color:var(--ink3)}
+.notes{margin-top:6px;color:var(--ink3);font-size:13px}
+.logos{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:40px;margin:30px auto 0;max-width:100%}
+.logos img{height:46px;width:auto;mix-blend-mode:multiply;opacity:.9;transition:opacity .2s}.logos img:hover{opacity:1}
+.logos img.rair{height:30px}
+.btns{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;margin-top:30px}
+.btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:9px;padding:11px 20px;border-radius:999px;font-weight:600;font-size:15px;color:var(--ink);background:#fff;border:1px solid rgba(15,23,42,.12);box-shadow:0 2px 8px -4px rgba(15,23,42,.2);transition:.25s}
+.btn:hover{text-decoration:none;transform:translateY(-2px);border-color:rgba(37,99,235,.35);box-shadow:0 10px 26px -12px rgba(37,99,235,.45)}
+.btn.primary{background:linear-gradient(135deg,#1d4ed8,#0d9488);color:#fff;border-color:transparent}.btn.primary small{color:rgba(255,255,255,.75)}
+.btn svg{width:17px;height:17px}
+.btn small{font-weight:500;font-size:11.5px;color:var(--ink3);margin-left:2px}
+.btn::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);transform:translateX(-120%);transition:.6s}
+.btn:hover::after{transform:translateX(120%)}
+.teaser{margin-top:46px;text-align:left}
+
+/* ── highlights ── */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:34px}
+.stat{padding:20px 20px 18px}
+.stat .v{font-family:var(--display);font-size:38px;font-weight:700;letter-spacing:-.02em;line-height:1.05;background:linear-gradient(90deg,#0f172a,#1d4ed8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat .v{white-space:nowrap}.stat .v small{font-size:18px;font-weight:600}
+.stat .l{font-size:13.5px;color:var(--ink2);margin-top:6px;line-height:1.45}
+.abstract{padding:30px 34px;margin-top:22px;font-size:16.5px;color:var(--ink2);line-height:1.75}
+.abstract b{color:var(--ink)}
+
+/* ── method ── */
+.steps5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:26px}
+.step{padding:18px 16px}
+.step .n{font-family:var(--mono);font-size:12px;color:var(--teal)}
+.step h4{font-family:var(--display);font-size:16.5px;margin:6px 0 6px;font-weight:600;line-height:1.25}
+.step p{font-size:13.8px;color:var(--ink2);line-height:1.55}
+.tiers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:26px}
+.tier{padding:22px 22px 20px;position:relative;overflow:hidden}
+.tier::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c)}
+.tier .tag{font-family:var(--mono);font-size:11.5px;color:var(--c);letter-spacing:.08em;text-transform:uppercase}
+.tier h4{font-family:var(--display);font-size:19px;margin:6px 0 10px}
+.tier ul{list-style:none;font-size:14px;color:var(--ink2)}
+.tier li{padding:4px 0 4px 16px;position:relative}
+.tier li::before{content:"";position:absolute;left:0;top:12px;width:6px;height:6px;border-radius:50%;background:var(--c);opacity:.7}
+.tier .who{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);font-size:13px;color:var(--ink3)}
+
+/* ── tables ── */
+.tabs{display:inline-flex;gap:4px;padding:4px;border-radius:999px;background:rgba(15,23,42,.05);border:1px solid var(--line);margin-top:10px;flex-wrap:wrap}
+.tabs button{font:500 14px var(--sans);color:var(--ink2);background:none;border:0;padding:8px 16px;border-radius:999px;cursor:pointer;transition:.2s}
+.tabs button.on{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(15,23,42,.15)}
+.tabs button:hover{color:var(--ink)}
+.results{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-top:22px;align-items:start}
+.tbl-wrap{padding:6px 6px 10px;overflow-x:auto}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+.t th{font-weight:700;color:var(--ink3);font-size:11px;letter-spacing:.08em;text-transform:uppercase;text-align:right;padding:12px 12px 8px;border-bottom:1px solid var(--line)}
+.t th:first-child,.t td:first-child{text-align:left}
+.t td{padding:6px 12px;text-align:right;color:var(--ink2);border-bottom:1px solid rgba(15,23,42,.05);white-space:nowrap}
+.t td:first-child{color:var(--ink);font-weight:500}
+.t .bb{font-size:11.5px;color:var(--ink3);margin-left:8px;font-weight:400}
+.t tr.prior td{color:var(--ink3)}
+.t tr.prior td:first-child{color:var(--ink2)}
+.t tr.grp td{padding-top:14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);border-bottom:0}
+.t .gnote{text-transform:none;letter-spacing:0;color:var(--ink3);font-family:var(--sans);font-size:11.5px;margin-left:6px}
+.t .more{font:600 11px var(--sans);color:var(--blue);background:none;border:0;cursor:pointer;margin-left:8px;text-transform:none;letter-spacing:0}
+.t tr.nh td{padding:7px 12px}
+.t tr.nh td.hl .big{font-weight:700;color:var(--ink);font-size:14.5px}
+.t .pm{color:var(--ink3);font-size:10.5px;margin-left:2px}
+.t .from{display:block;font-size:11px;color:var(--nomem);line-height:1.1}
+.t .from::before{content:"from ";color:var(--ink3)}
+.t tr.best td{background:rgba(13,148,136,.07)}
+.t tr.best td.hl .big{color:#0b6b62}
+.tnote{font-size:12.5px;color:var(--ink3);padding:8px 10px 0}
+.chart{padding:20px 20px 16px}
+.chart h4{font-family:var(--display);font-size:16px;font-weight:600}
+.chart .sub{font-size:13px;color:var(--ink3);margin-bottom:14px}
+.db{display:grid;grid-template-columns:96px minmax(0,1fr);align-items:center;gap:10px;margin:14px 0}
+.db .nm{font-size:13px;color:var(--ink2);line-height:1.25}
+.db .track{position:relative;height:34px}
+.db .axis{position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line)}
+.db .seg{position:absolute;top:calc(50% - 2px);height:4px;border-radius:4px;background:linear-gradient(90deg,var(--nomem),var(--full))}
+.db .dot{position:absolute;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;border:2px solid var(--bg)}
+.db .dot.a{background:var(--nomem)}.db .dot.b{background:var(--full);box-shadow:0 0 0 3px rgba(47,128,200,.18)}
+.db .lab{position:absolute;top:-4px;font-size:11.5px;color:var(--ink3);transform:translateX(-50%);font-variant-numeric:tabular-nums}
+.db .lab.b{color:var(--ink);font-weight:600}
+.db .gain{position:absolute;bottom:-5px;font-size:11px;color:var(--teal);transform:translateX(-50%);font-weight:600}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+
+/* ── ablation bars ── */
+.abl{padding:22px 24px;margin-top:22px}
+.abl .ref{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:14px;color:var(--ink2);padding-bottom:12px;border-bottom:1px solid var(--line)}
+.abl .ref b{color:var(--ink)}
+.abl .g{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--c);margin:16px 0 6px}
+.bar{display:grid;grid-template-columns:minmax(0,290px) minmax(0,1fr) 150px;gap:14px;align-items:center;padding:4px 0}
+.bar .nm{font-size:13.6px;color:var(--ink2);line-height:1.3}
+.bar .tr{position:relative;height:18px}
+.bar .fill{position:absolute;right:0;top:3px;height:12px;border-radius:6px 2px 2px 6px;background:linear-gradient(90deg,var(--c),rgba(15,23,42,.04));opacity:.8}
+.bar .ci{position:absolute;top:8px;height:2px;background:rgba(15,23,42,.45)}
+.bar .ci::before,.bar .ci::after{content:"";position:absolute;top:-4px;width:1px;height:10px;background:rgba(15,23,42,.45)}
+.bar .ci::before{left:0}.bar .ci::after{right:0}
+.bar .v{font-size:13px;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+.bar .v small{display:block;color:var(--ink3);font-size:11px;white-space:nowrap}
+.takeaways{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px}
+.take{padding:18px 20px;font-size:14px;color:var(--ink2)}
+.take b{display:block;color:var(--ink);font-family:var(--display);font-size:16px;margin-bottom:4px}
+
+/* ── deployment strip ── */
+.deploy-stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+.chip{font-size:13.5px;padding:7px 14px;border-radius:999px;background:var(--glass);border:1px solid var(--line);color:var(--ink2)}
+.chip b{color:var(--ink)}
+.strip{padding:22px 22px 18px;margin-top:22px}
+.strip .hdr{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+.house{margin-top:18px}
+.house .hn{display:flex;align-items:baseline;gap:12px;font-size:13px;color:var(--ink3);margin-bottom:6px;flex-wrap:wrap}
+.house .hn b{font-family:var(--display);font-size:16px;color:var(--ink);font-weight:600}
+.dots{position:relative;height:22px}
+.cdot{position:absolute;width:18px;height:18px;margin-left:-9px;border-radius:50%;font:600 10px/18px var(--sans);text-align:center;color:#081018;cursor:pointer;border:0;transition:transform .15s;box-shadow:0 0 0 2px var(--bg)}
+.cdot:hover,.cdot.on{transform:scale(1.25)}
+.rowlab{display:grid;grid-template-columns:118px minmax(0,1fr);gap:10px;align-items:center;margin:3px 0}
+.rowlab span{font-size:12px;color:var(--ink3);text-align:right}
+.rowlab span i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+.cells{display:grid;gap:1.5px;height:20px}
+.cell{border-radius:2px;cursor:pointer;transition:filter .15s,transform .15s}
+.cell.s{background:rgba(31,157,134,.55)}
+.cell.f{background:rgba(204,91,68,.85)}
+.cell.day{box-shadow:-2.5px 0 0 0 rgba(15,23,42,.55)}
+.cell:hover,.cell.sel{filter:brightness(1.25) saturate(1.3);transform:scaleY(1.25)}
+.cell.case{outline:2px solid #0f172a;outline-offset:-1px}
+.daylabels{display:grid;margin-left:128px;font-size:11px;color:var(--ink3);margin-top:3px}
+.tip{position:fixed;z-index:80;pointer-events:none;max-width:320px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.98);border:1px solid rgba(15,23,42,.12);font-size:12.5px;line-height:1.45;color:var(--ink2);opacity:0;transition:opacity .12s;box-shadow:0 18px 40px -12px rgba(15,23,42,.3)}
+.tip b{color:var(--ink)}
+.detail{margin-top:18px;padding:16px 18px;border-radius:14px;background:rgba(15,23,42,.03);border:1px dashed var(--line);font-size:14px;color:var(--ink2);min-height:76px}
+.detail .dg{color:var(--ink);font-weight:500}
+.detail .arms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.detail .arm{padding:10px 12px;border-radius:10px;background:rgba(15,23,42,.035);border-left:3px solid var(--c);font-size:13px}
+.detail .arm b{color:var(--ink)}
+.detail code{font-family:var(--mono);font-size:11.5px;background:rgba(15,23,42,.06);padding:1px 6px;border-radius:5px;color:var(--ink2);margin:2px 3px 0 0;display:inline-block}
+.detail .go{margin-top:10px;display:inline-block;font-size:13px;font-weight:600;cursor:pointer;color:var(--teal);background:none;border:0;font-family:var(--sans)}
+.caselist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 22px;margin-top:18px;font-size:13.2px;color:var(--ink2)}
+.caselist div{display:flex;gap:10px;align-items:flex-start;cursor:pointer;padding:4px 6px;border-radius:8px}
+.caselist div:hover{background:var(--glass2)}
+.caselist .k{flex:none;width:18px;height:18px;border-radius:50%;font:600 10px/18px var(--sans);text-align:center;color:#081018;margin-top:1px}
+.caselist .rp{font-size:10.5px;font-weight:600;color:var(--teal);border:1px solid rgba(13,148,136,.4);border-radius:999px;padding:0 6px;margin-left:4px;white-space:nowrap}
+
+/* ── replays ── */
+.casegroups{display:flex;flex-direction:column;gap:10px;margin-top:14px}.cg{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.cg .tabs{margin-top:0}
+.gl{font:700 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;min-width:132px}.gl.ok{color:var(--ok)}.gl.bad{color:var(--bad)}
+.rp-head{padding:22px 24px;margin-top:18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:22px;align-items:start}
+.rp-head .meta{font-family:var(--mono);font-size:12px;color:var(--ink3);letter-spacing:.04em}
+.rp-head h3{margin-top:6px;font-size:22px}
+.rp-head .goal{margin-top:10px;font-size:14.5px;color:var(--ink);padding:10px 14px;border-radius:10px;background:rgba(15,23,42,.04);border-left:3px solid var(--violet)}
+.rp-head .goal small{display:block;font-size:11px;font-family:var(--mono);color:var(--violet);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px}
+.rp-head p.why{margin-top:12px;font-size:14.5px;color:var(--ink2)}
+.rp-head .gimg{width:180px;text-align:center;font-size:11.5px;color:var(--ink3)}
+.rp-head .gimg img{border-radius:12px;border:1px solid var(--line);margin-bottom:6px}
+.panels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
+.panels.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.panel{overflow:hidden;display:flex;flex-direction:column}
+.panel .ph{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.panel .ph b{font-family:var(--display);font-size:15px;font-weight:600}
+.panel .ph .armtag{font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;color:#fff;background:var(--c)}
+.panel .ph .sub{font-size:12px;color:var(--ink3)}
+.viewer{position:relative;aspect-ratio:1/1;background:#0f172a;max-height:360px;width:100%;display:flex;align-items:center;justify-content:center}
+.viewer img{width:100%;height:100%;object-fit:cover;transition:opacity .25s}
+.viewer .ov{position:absolute;left:10px;top:10px;font-family:var(--mono);font-size:11.5px;color:#fff;background:rgba(0,0,0,.55);padding:3px 8px;border-radius:6px}
+.viewer .res{position:absolute;left:10px;right:10px;bottom:10px;padding:10px 12px;border-radius:10px;font-size:13px;color:#fff;background:rgba(0,0,0,.72);border-left:3px solid var(--c);display:none}
+.viewer .res.show{display:block;animation:pop .35s}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.viewer .empty{color:var(--ink3);font-size:13px;padding:20px;text-align:center}
+.ctrl{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.ctrl button{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--glass2);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none}
+.ctrl button:hover{border-color:rgba(15,23,42,.3)}
+.ctrl button svg{width:13px;height:13px}
+.ctrl input[type=range]{flex:1;accent-color:var(--c);min-width:0}
+.ctrl .cnt{font-family:var(--mono);font-size:11px;color:var(--ink3);min-width:44px;text-align:right}
+.log{height:300px;overflow-y:auto;padding:12px 14px 16px;font-size:13px;scroll-behavior:smooth}
+.log::-webkit-scrollbar{width:6px}.log::-webkit-scrollbar-thumb{background:rgba(15,23,42,.12);border-radius:3px}
+.ev{margin:0 0 9px;animation:pop .3s;line-height:1.5}
+.ev .tg{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;margin-right:6px}
+.ev.say{color:var(--ink);padding:8px 11px;border-radius:4px 12px 12px 12px;background:rgba(37,99,235,.07);border:1px solid rgba(37,99,235,.16)}
+.ev.say .tg{color:var(--blue)}
+.ev.read,.ev.grep,.ev.glob{border:1px solid rgba(124,58,237,.25);background:rgba(124,58,237,.06);border-radius:10px;padding:8px 11px;color:var(--ink2)}
+.ev.read .tg,.ev.grep .tg,.ev.glob .tg,.ev.photos .tg{color:var(--violet)}
+.ev .file{font-family:var(--mono);font-size:12px;color:#6d28d9}
+.ev pre{font-family:var(--mono);font-size:11.3px;white-space:pre-wrap;word-break:break-word;color:var(--ink2);margin-top:6px;max-height:150px;overflow:auto;line-height:1.5}
+.ev.photos{border:1px solid rgba(124,58,237,.25);background:rgba(124,58,237,.06);border-radius:10px;padding:8px 11px;color:var(--ink2)}
+.ev.photos .th{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.ev.photos .th img{width:64px;height:64px;object-fit:cover;border-radius:6px}
+.ev.move,.ev.map,.ev.preview,.ev.goal,.ev.frame{color:var(--ink3);font-size:12px;padding-left:4px}
+.ev.move .tg,.ev.frame .tg,.ev.map .tg,.ev.preview .tg,.ev.goal .tg{color:var(--ink3)}
+.ev.mark{color:var(--ink2);font-size:12.5px;padding-left:4px}
+.ev.mark .tg{color:var(--teal)}
+.ev.recovery,.ev.askrec,.ev.refused{color:#7c4a03;padding:8px 11px;border-radius:10px;background:rgba(183,121,31,.08);border:1px solid rgba(183,121,31,.3)}
+.ev.recovery .tg,.ev.askrec .tg,.ev.refused .tg{color:var(--amber)}
+.ev.close{padding:8px 11px;border-radius:10px;background:rgba(15,23,42,.04);border:1px solid var(--line);color:var(--ink2)}
+.ev.close .tg{color:var(--ink)}
+.ev.verdict{padding:8px 11px;border-radius:10px;background:rgba(13,148,136,.06);border:1px solid rgba(13,148,136,.25);color:var(--ink2)}
+.ev.verdict .tg{color:var(--teal)}
+.ev.truth{padding:9px 12px;border-radius:10px;font-weight:600;color:var(--ink);border-left:3px solid var(--c);background:rgba(15,23,42,.05)}
+.ev.truth .tg{color:var(--c)}
+.rp-note{margin-top:14px;font-size:13.5px;color:var(--ink3)}
+.limit{margin-top:28px;padding:20px 24px;border-left:3px solid var(--amber)}
+.limit b{color:var(--amber)}
+
+/* ── code / cite ── */
+pre.code,pre.bib{font-family:var(--mono);font-size:13px;line-height:1.7;padding:20px 22px;overflow-x:auto;color:#1e293b}
+pre.code .c{color:var(--ink3)}
+.bibbox{position:relative;margin-top:18px}
+.copy{position:absolute;top:12px;right:12px;font:600 12.5px var(--sans);color:var(--ink);background:var(--glass2);border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer}
+.copy:hover{border-color:rgba(15,23,42,.3)}
+footer{max-width:var(--maxw);margin:90px auto 0;padding:26px 20px 40px;border-top:1px solid var(--line);font-size:13px;color:var(--ink3);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+
+/* ── responsive ── */
+@media (max-width:980px){
+  .steps5{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .results{grid-template-columns:minmax(0,1fr)}
+  .panels.three{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:760px){
+  section{padding-top:64px}
+  .nav ul{display:none}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tiers,.takeaways,.caselist{grid-template-columns:minmax(0,1fr)}
+  .steps5{grid-template-columns:minmax(0,1fr)}
+  .panels{grid-template-columns:minmax(0,1fr)}
+  .rp-head{grid-template-columns:minmax(0,1fr)}
+  .rp-head .gimg{width:160px}
+  .bar{grid-template-columns:minmax(0,1fr) 84px;gap:4px 10px}
+  .bar .nm{grid-column:1/-1}
+  .rowlab{grid-template-columns:74px minmax(0,1fr)}.rowlab span{font-size:10.5px;white-space:nowrap}.stat .v{font-size:30px}.stat .v small{font-size:14px}
+  .daylabels{margin-left:84px}
+  .abstract{padding:22px 20px}
+  .logos{gap:16px;padding:12px 16px}.logos img{height:34px}.logos img.rair{height:24px}
+  .detail .arms{grid-template-columns:minmax(0,1fr)}
+}
+
+pre.code,pre.bib{background:#f1f5fb;border-radius:var(--radius)}
+.ev.read pre{color:#334155}
+.abstract{color:#334155}
+.lead{color:#475569}
+.viewer .res b{color:#fff}
+.caselist .rp{color:var(--teal);border-color:rgba(13,148,136,.4)}
+</style>
+</head>
+<body>
+<div class="bg"></div><div class="grid"></div>
+<div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+
+<nav class="nav"><div class="in">
+  <a class="brand" href="#top">Nav<span>Harness</span></a>
+  <ul>
+    <li><a href="#abstract">Abstract</a></li>
+    <li><a href="#method">Method</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#ablations">Analysis</a></li>
+    <li><a href="#deployment">Deployment</a></li>
+    <li><a href="#replays">Replays</a></li>
+    <li><a href="#cite">BibTeX</a></li>
+  </ul>
+  <a class="home" href="../">&larr; Homepage</a>
+</div></nav>
+
+<!-- ═════════ HERO ═════════ -->
+<section class="hero" id="top">
+  <div class="badge"><i></i>Training-free · SLAM-estimated pose · GOAT-Bench &amp; IR2R-CE</div>
+  <h1 class="title">NavHarness</h1>
+  <div class="subtitle">Towards Lifelong Embodied Navigation</div>
+  <div class="authors">
+    <span><a href="../">Xunyi Zhao</a><sup>1,2,*</sup></span>
+    <span>Jian Zhou<sup>1,*</sup></span>
+    <span>Sihao Lin<sup>1,2</sup></span>
+    <span>Gengze Zhou<sup>1</sup></span>
+    <span>Zerui Li<sup>1</sup></span>
+    <span>Xinyu Yan<sup>1,2</sup></span>
+    <span>Jiajun Liu<sup>2,3</sup></span>
+    <span>Anton van den Hengel<sup>1,2</sup></span>
+    <span>Qi Wu<sup>1,2,&dagger;</sup></span>
+  </div>
+  <div class="affil"><sup>1</sup>Adelaide University &nbsp;·&nbsp; <sup>2</sup>Responsible AI Research Centre, Australian Institute for Machine Learning (AIML) &nbsp;·&nbsp; <sup>3</sup>CSIRO Data61</div>
+  <div class="notes">* Equal contribution &nbsp;&nbsp; &dagger; Corresponding author</div>
+  <div class="logos">
+    <img src="assets/logo-aiml.png" alt="Adelaide University · Australian Institute for Machine Learning">
+    <img class="rair" src="assets/logo-rair.png" alt="Responsible AI Research Centre">
+    <img src="assets/logo-data61.png" alt="CSIRO Data61">
+  </div>
+  <div class="btns">
+    <a class="btn primary" href="#" aria-disabled="true" title="arXiv link will be added on release"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></svg>Paper<small>arXiv · soon</small></a>
+    <a class="btn" href="https://github.com/billzhao1030/NavHarness" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.7 1.7.3 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z"/></svg>Code</a>
+    <a class="btn" href="#replays"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m10 8 6 4-6 4z" fill="currentColor"/></svg>Episode replays</a>
+    <a class="btn" href="#cite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h4v4H8v2a2 2 0 0 0 2 2M15 7h4v4h-3v2a2 2 0 0 0 2 2"/></svg>BibTeX</a>
+  </div>
+  <figure class="figure teaser">
+    <div class="frame"><img src="assets/teaser.jpg" alt="NavHarness teaser: a robot carrying experience between tasks in a house through working memory and long-term house notes" loading="eager"></div>
+    <figcaption><b>NavHarness</b> orchestrates long-horizon embodied navigation through multi-round multimodal reasoning over working memory and house knowledge, retaining experience for successive tasks.</figcaption>
+  </figure>
+</section>
+
+<!-- ═════════ ABSTRACT ═════════ -->
+<section id="abstract">
+  <div class="kicker">Abstract</div>
+  <h2>Memory processing, inside the navigation loop</h2>
+  <div class="stats">
+    <div class="card stat"><div class="v">83.7<small>%</small></div><div class="l">GOAT-Bench s-SR with GPT-6 Astra, using SLAM-estimated rather than simulator poses</div></div>
+    <div class="card stat"><div class="v">36.9<small>%</small></div><div class="l">GOAT-Bench e-SR: tours in which every subtask succeeds (strongest prior: 8.6)</div></div>
+    <div class="card stat"><div class="v">85.9<small>%</small></div><div class="l">IR2R-CE s-SR with GPT-6 Astra (SeqWalker: 36)</div></div>
+    <div class="card stat"><div class="v">+18.6<small>–34.8</small></div><div class="l">s-SR points over the same backbone in independent sessions, across four reasoning models</div></div>
+  </div>
+  <div class="card abstract">
+    Frontier models can now perform well on individual embodied navigation tasks through multi-round multimodal reasoning with simple tools. Across successive tasks, however, an agent must also rely on an evolving map and earlier search records, both of which may be incomplete or conflict with new observations. We present <b>NavHarness</b>, a training-free embodied harness towards lifelong navigation that makes memory processing part of the navigation loop. During navigation, its multi-round agentic session draws on maps, task records, and house knowledge, checking them against observations and recording corrections to guide its actions. NavHarness preserves this experience across fresh conversations for new tasks or recovery attempts, while outcome verification and run-end summaries support its later reuse. On GOAT-Bench, NavHarness improves s-SR over context-only independent sessions by <b>18.6 points</b> with Astra and <b>22.6</b> with Opus 5. Using SLAM-estimated poses, NavHarness with GPT-6 Astra achieves state-of-the-art task success of <b>83.7 s-SR</b> with <b>36.9 e-SR</b> on GOAT-Bench and <b>85.9 s-SR</b> on IR2R-CE. To understand these gains, we examine how experience is carried between sessions and find that structured recovery handovers outperform length-matched summaries. In extended deployments across houses, consolidation improves navigation beyond retaining maps and task records, with case studies showing how agents use earlier experience to interpret new goals, investigate unresolved questions, and resume failed searches. We suggest that progress towards lifelong navigation depends on how successive reasoning sessions build on prior experience, alongside improvements in single-task capability.
+  </div>
+</section>
+
+<!-- ═════════ METHOD ═════════ -->
+<section id="method">
+  <div class="kicker">Method</div>
+  <h2>Fresh conversations, retained experience</h2>
+  <p class="lead">An outer <b>orchestrator</b> opens a fresh multi-round agentic session for every task and every recovery attempt. The robot keeps its position, maps, task records and house notes; only the conversation is replaced. Sessions reach that experience through file and map tools, compare it with what they see, and leave corrections for the next session.</p>
+  <figure class="figure">
+    <div class="frame"><img src="assets/architecture.jpg" alt="NavHarness execution flow: orchestrator, navigation session, pre-stop verification, post-stop certification, working memory and long-term memory" loading="lazy"></div>
+    <figcaption><b>NavHarness execution flow.</b> The orchestrator manages navigation sessions and persistent memory. <i>Verify</i> and <i>Certify</i> denote pre-stop verification and post-stop certification, respectively.</figcaption>
+  </figure>
+
+  <div class="tiers">
+    <div class="card tier" style="--c:var(--blue)"><div class="tag">Tier 1 · one attempt</div><h4>Active context</h4>
+      <ul><li>The current goal</li><li>Reasoning and observations</li><li>Information retrieved by tools</li></ul>
+      <div class="who">Replaced at every task and recovery boundary.</div></div>
+    <div class="card tier" style="--c:var(--teal)"><div class="tag">Tier 2 · across tasks &amp; attempts</div><h4>Working memory</h4>
+      <ul><li>Occupancy maps built from SLAM-estimated poses; named places with photographs; room and floor connections</li><li>Task records (the journal): ledger, task handovers, recovery notes, completion-check results</li></ul>
+      <div class="who">Written by sessions (handovers, notes) and by the orchestrator (maps, verdicts, ledger).</div></div>
+    <div class="card tier" style="--c:var(--violet)"><div class="tag">Tier 3 · across runs</div><h4>Long-term memory</h4>
+      <ul><li>House notes: an index, a house overview, room notes and navigation skills</li><li>Room connections, landmarks, useful routes, failed searches, places ruled out by evidence, unresolved questions</li></ul>
+      <div class="who">Read by navigation sessions; updated only by run-end consolidation.</div></div>
+  </div>
+
+  <div class="steps5">
+    <div class="card step"><div class="n">01</div><h4>Start with retained experience</h4><p>A new goal opens a fresh conversation that is told which handovers, ledger entries and notes to read before moving.</p></div>
+    <div class="card step"><div class="n">02</div><h4>Navigate by consulting memory</h4><p>Observation, reasoning and action interleave with map queries, file reads and marked places. Actions: forward 0.25&nbsp;m, turn 15°, STOP.</p></div>
+    <div class="card step"><div class="n">03</div><h4>Recover with a fresh conversation</h4><p>A stuck session writes a recovery note (searched vs. ruled out, untried options) before a new attempt at the same goal continues from the same spot.</p></div>
+    <div class="card step"><div class="n">04</div><h4>Check completion</h4><p>A separate judge sees four stop views, earlier frames and the map. A contradicting verdict sends evidence back once; certification records the outcome.</p></div>
+    <div class="card step"><div class="n">05</div><h4>Consolidate for the next run</h4><p>At run end a file-only session rewrites the index, overview, room notes and skills, separating checked outcomes from claims.</p></div>
+  </div>
+</section>
+
+<!-- ═════════ RESULTS ═════════ -->
+<section id="results">
+  <div class="kicker">Results</div>
+  <h2>State of the art without simulator poses</h2>
+  <p class="lead">Validation-unseen splits; all 2,669 GOAT-Bench subtasks in 360 episodes across 36 scenes. Ours: mean ± s.d. over three seeds. NavHarness uses no simulator pose, global navmesh, auxiliary perception model or navigation-specific learned policy.</p>
+  <div class="tabs" role="tablist" data-tabs="bench">
+    <button class="on" data-k="goat">GOAT-Bench</button><button data-k="ir2r">IR2R-CE</button>
+  </div>
+  <div class="results">
+    <div class="card tbl-wrap" id="tbl"></div>
+    <div class="card chart">
+      <h4>Same backbone, with and without the harness</h4>
+      <div class="sub" id="dbsub">s-SR (%) · independent context-only sessions → NavHarness</div>
+      <div class="legend"><span><i style="background:var(--nomem)"></i>Independent sessions</span><span><i style="background:var(--full)"></i>NavHarness</span></div>
+      <div id="dumbbell"></div><div class="sub" style="margin-top:22px" id="dbsub2"></div><div id="dumbbell2"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════ ABLATIONS ═════════ -->
+<section id="ablations">
+  <div class="kicker">Analysis</div>
+  <h2>What carries navigation across tasks and attempts?</h2>
+  <p class="lead">Opus 5 on the full GOAT-Bench validation-unseen split with matched task budgets, three seeds. Each bar is the paired s-SR change from the full harness, with its 95% confidence interval.</p>
+  <div class="card abl" id="abl"></div>
+  <div class="takeaways">
+    <div class="card take"><b>A longer conversation is not memory.</b>A single session continued across tasks scores 54.9, below fresh independent sessions at 58.9: it keeps outdated goals and observations that compete with the current task.</div>
+    <div class="card take"><b>Both maps and records carry weight.</b>Clearing the map costs 12.6 points and hiding task records 9.7; with neither, later tasks lose 14.7 points and repeat searches that retained experience avoids.</div>
+    <div class="card take"><b>How experience is handed over matters.</b>A matched-length ordinary summary trails the structured handover by 8.3 points; another task's handover is worse than an empty one.</div>
+  </div>
+</section>
+
+<!-- ═════════ DEPLOYMENT ═════════ -->
+<section id="deployment">
+  <div class="kicker">Continuous deployment</div>
+  <h2>Ten tours per house, across simulated days</h2>
+  <p class="lead">We concatenate ten GOAT-Bench tours per house. At each tour boundary the robot is placed at the next prescribed start, like resuming after a shutdown, and must recover its bearings with SLAM and stored house knowledge. Across all 36 houses with Opus 5, we compare NavHarness with a <b style="color:var(--nomem)">No consolidation</b> control that keeps maps, task records, recovery, verification and budgets, and disables only run-end consolidation into house notes.</p>
+  <div class="deploy-stats">
+    <span class="chip">s-SR <b>72.8 → 80.5</b> (+7.7, 95% CI [+6.3, +9.1])</span>
+    <span class="chip">SPL <b>36.5 → 44.3</b> (+7.8, 95% CI [+6.5, +9.2])</span>
+  </div>
+  <figure class="figure">
+    <div class="frame white"><img src="assets/deployment.png" alt="s-SR and SPL over task progress for NavHarness and No consolidation across 36 houses, with pooled table" loading="lazy"></div>
+    <figcaption>Continuous deployment across 36 houses with Opus 5, varying only consolidation. Curves over normalized task progress; the table reports pooled scores, paired gains and 95% CIs.</figcaption>
+  </figure>
+
+  <div class="card strip" id="strip">
+    <div class="hdr">
+      <div><h3>Every task in three houses, both runs</h3>
+      <div class="muted" style="font-size:14px">One cell per task in order, by environment truth. Hover a cell for the goal and both outcomes; click it to see which notes the full run opened. Numbered dots are the paper's fourteen case studies.</div></div>
+      <div class="legend"><span><i style="background:rgba(63,191,166,.7);border-radius:2px"></i>success</span><span><i style="background:rgba(208,113,90,.9);border-radius:2px"></i>failure</span><span><i style="background:#0f172a;width:2px;border-radius:0"></i>day boundary</span></div>
+    </div>
+    <div id="houses"></div>
+    <div class="detail" id="detail"><span class="muted">Select a task or a case.</span></div>
+    <div class="caselist" id="caselist"></div>
+  </div>
+</section>
+
+<!-- ═════════ REPLAYS ═════════ -->
+<section id="replays">
+  <div class="kicker">Episode replays</div>
+  <h2>What the sessions actually did</h2>
+  <p class="lead">Each replay is rebuilt from the deployment logs: the model's own messages, the notes and stored photographs it opened, the camera frames it requested, its completion claim, the judge's verdict, and the environment's ground truth. Nothing is re-enacted; long searches are shown with sampled frames. Goal photographs are re-rendered from the GOAT-Bench goal pose.</p>
+  <div class="casegroups">
+    <div class="cg"><span class="gl ok">Memory helps</span><div class="tabs" role="tablist" data-tabs="case">
+      <button class="on" data-k="dresser">Dresser</button><button data-k="fridge">Refrigerator</button><button data-k="boiler">Boiler</button><button data-k="closet">Closet</button><button data-k="plant">Plant</button></div></div>
+    <div class="cg"><span class="gl bad">Memory misleads</span><div class="tabs" role="tablist" data-tabs="case">
+      <button data-k="lamp">Lamp table</button><button data-k="piano">Piano</button><button data-k="mirror">Mirror</button></div></div>
+  </div>
+  <div id="replay"><div class="card" style="padding:40px;text-align:center;color:var(--ink3);margin-top:16px">Loading replays…</div></div>
+  <div class="card limit"><b>Limitation.</b> Memory reliability remains open. An incorrect completion accepted by the judge can propagate into house notes (Case 7: a lamp table certified as the dresser is copied into a room note and a skill), and correcting one record does not necessarily update its copies or validate other spatial claims.</div>
+</section>
+
+<!-- ═════════ CODE ═════════ -->
+<section id="code">
+  <div class="kicker">Code</div>
+  <h2>Running it</h2>
+  <p class="lead">An experiment is one configuration file; the command line picks the reasoning core. Code will be released with the paper.</p>
+  <div class="card" style="margin-top:20px"><pre class="code"><span class="c"># wiring check: the real CLI against a scripted endpoint, no tokens</span>
+python runner.py std_goat_slam_es_lhnav harness=navh model=opus-5 api=fake run.episodes=0
+
+<span class="c"># one GOAT-Bench chain, Claude Code holding the sessions</span>
+python runner.py std_goat_slam_es_lhnav harness=navh model=opus-5
+
+<span class="c"># the same chain with the Codex CLI, or an open model through mini-swe-agent</span>
+python runner.py std_goat_slam_es_lhnav harness=navhcodex model=gpt-6
+python runner.py std_goat_slam_es_lhnav harness=navhmini model=qwen3.8-27b</pre></div>
+</section>
+
+<!-- ═════════ CITE ═════════ -->
+<section id="cite">
+  <div class="kicker">Citation</div>
+  <h2>BibTeX</h2>
+  <div class="card bibbox"><button class="copy" id="copy">Copy</button><pre class="bib" id="bib">@misc{zhao2026navharness,
+  title  = {NavHarness: Towards Lifelong Embodied Navigation},
+  author = {Zhao, Xunyi and Zhou, Jian and Lin, Sihao and Zhou, Gengze and Li, Zerui and
+            Yan, Xinyu and Liu, Jiajun and van den Hengel, Anton and Wu, Qi},
+  year   = {2026}
+}</pre></div>
+</section>
+
+<footer><span>NavHarness · Adelaide University · AIML · CSIRO Data61</span><span>Figures and numbers from the paper. Replays from the deployment logs.</span></footer>
+
+<div class="tip" id="tip"></div>
+
+<script>
+const STRIP={"A":[[1,1,"o","Find any freezer.",[1,23,0.66,0,"c"],[1,22,0.72,0,"c"],[]],[2,1,"o","Find any refrigerator.",[1,19,0.49,0,"c"],[1,12,0.36,0,"u"],["journal/2026-09-19.md"]],[3,1,"o","Find any freezer.",[1,51,0.11,0,"c"],[1,46,0.11,0,"c"],["MEMORY.md","journal/2026-09-19.md"]],[4,1,"d","Find this specific boiler: gas boiler in relation to other objects in the frame. the gas boiler is located below the heater and slightly to the right. it is also positioned to the right of the laundry machine and the shower curtain.",[1,115,0.57,0,"c"],[1,254,0.36,0,"c"],["MEMORY.md","journal/2026-09-19.md","rooms/freezer-room/photos.json","WRITE:MEMORY.md"]],[5,1,"d","Find this specific carpet: berber carpet in the room. it is located near the rack, freezer, and refrigerator, towards the bottom right corner of the frame. look for a carpet that is situated close to these objects.",[1,172,0.44,0,"c"],[1,188,0.29,0,"c"],["MEMORY.md","journal/2026-09-19.md"]],[6,1,"o","Find any freezer.",[1,11,0.76,0,"c"],[1,14,0.86,0,"c"],["MEMORY.md","journal/2026-09-19.md"]],[7,1,"o","Find any refrigerator.",[1,29,0.33,0,"c"],[1,17,0.24,0,"c"],["MEMORY.md","journal/2026-09-19.md"]],[8,1,"d","Find this specific boiler: gas boiler in relation to other objects in the frame. the gas boiler is located below the heater and slightly to the right. it is also positioned to the right of the laundry machine and the shower curtain.",[1,74,0.82,0,"c"],[1,130,0.78,0,"c"],["MEMORY.md","journal/2026-09-19.md"]],[9,1,"o","Find any carpet.",[1,43,0.72,0,"c"],[0,69,0.0,0,"c"],["MEMORY.md","journal/2026-09-19.md"]],[10,1,"d","Find this specific dresser: wooden dresser with a mirror on it. it is located to the right of the hunting trophy, above the staircase handrail, and next to the shelf.",[1,37,0.22,0,"c"],[0,492,0.0,1,"i"],["MEMORY.md","journal/2026-09-19.md"]],[11,1,"d","Find this specific carpet: berber carpet in the room. it is located near the rack, freezer, and refrigerator, towards the bottom right corner of the frame. look for a carpet that is situated close to these objects.",[1,84,0.66,1,"c"],[1,99,0.58,0,"c"],["MEMORY.md"]],[12,1,"o","Find any refrigerator.",[1,9,0.64,0,"c"],[1,8,0.33,0,"c"],["MEMORY.md"]],[13,1,"i","Find the specific freezer shown in the goal image.",[1,22,0.12,0,"u"],[1,100,0.04,0,"c"],["MEMORY.md","journal/2026-09-19.md"]],[14,1,"o","Find any dresser.",[1,27,0.87,0,"c"],[1,52,0.05,0,"c"],["MEMORY.md","journal/2026-09-19.md"]],[15,1,"i","Find the specific boiler shown in the goal image.",[1,170,0.45,0,"c"],[0,481,0.0,1,"i"],["MEMORY.md","journal/2026-09-19.md","WRITE:MEMORY.md"]],[16,1,"o","Find any carpet.",[1,101,0.6,0,"c"],[0,10,0.0,0,"c"],["MEMORY.md","journal/2026-09-19.md","WRITE:2026-09-20.md"]],[17,2,"o","Find any carpet.",[1,186,0.34,0,"c"],[0,24,0.0,0,"c"],["skills/find-carpet.md","skills/scan-before-walking.md","rooms/freezer-room.md","skills/verify-markers-before-trusting.md","WRITE:find-carpet.md"]],[18,2,"o","Find any freezer.",[1,11,0.84,0,"c"],[1,84,0.86,0,"c"],["skills/find-cold-appliance.md","rooms/freezer-room.md"]],[19,2,"o","Find any refrigerator.",[1,13,0.38,0,"c"],[1,376,0.0,1,"c"],["skills/find-cold-appliance.md"]],[20,2,"i","Find the specific freezer shown in the goal image.",[1,6,0.13,0,"u"],[1,16,0.18,0,"c"],["skills/find-cold-appliance.md"]],[21,2,"o","Find any carpet.",[1,76,0.04,0,"c"],[1,20,0.17,0,"c"],["skills/find-carpet.md","skills/scan-before-walking.md"]],[22,2,"i","Find the specific carpet shown in the goal image.",[1,78,0.02,0,"u"],[1,135,0.02,0,"c"],["skills/find-carpet.md","rooms/freezer-room.md","journal/2026-09-20.md","skills/scan-before-walking.md"]],[23,2,"i","Find the specific dresser shown in the goal image.",[1,11,0.21,0,"c"],[1,26,0.44,0,"c"],["skills/find-cold-appliance.md","rooms/freezer-room.md"]],[24,2,"d","Find this specific freezer: freezer, which is a chest freezer, located on a shelf towards the left side of the room.",[1,16,0.49,0,"c"],[1,28,0.5,0,"c"],["rooms/freezer-room.md","skills/find-cold-appliance.md","EDIT:freezer-room.md"]],[25,2,"d","Find this specific refrigerator: refrigerator with a white door and a deer head on top of it. it is located to the right of the picture frame and below the picture. the freezer is situated to the left of the refrigerator.",[1,15,0.78,0,"c"],[1,12,0.7,0,"c"],["rooms/freezer-room.md"]],[26,2,"i","Find the specific dresser shown in the goal image.",[1,160,0.29,0,"u"],[1,356,0.2,1,"u"],["rooms/bedroom-unlabelled.md","journal/2026-09-20.md","MEMORY.md","house.md","WRITE:office-bedroom.md"]],[27,2,"o","Find any dresser.",[0,297,0.0,1,"c"],[1,136,0.06,0,"u"],["skills/find-cold-appliance.md","rooms/freezer-room.md"]],[28,2,"o","Find any refrigerator.",[1,76,0.82,0,"c"],[1,111,0.65,0,"c"],["skills/find-cold-appliance.md","rooms/freezer-room.md","house.md","journal/2026-09-20.md","WRITE:kitchen.md"]],[29,2,"o","Find any dresser.",[0,239,0.0,1,"u"],[0,449,0.0,1,"c"],["skills/find-cold-appliance.md","rooms/freezer-room.md","rooms/entry-hall.md","skills/verify-markers-before-trusting.md","rooms/bedroom-unlabelled.md"]],[30,2,"o","Find any refrigerator.",[1,65,0.77,0,"c"],[1,72,0.91,0,"c"],["skills/find-cold-appliance.md","rooms/freezer-room.md","rooms/kitchen.md","journal/2026-09-20.md","rooms/bedroom-unlabelled.md"]],[31,2,"o","Find any dresser.",[1,152,0.47,0,"c"],[1,137,0.53,0,"c"],["skills/find-cold-appliance.md","rooms/freezer-room.md","house.md","journal/2026-09-20.md","rooms/bedroom-unlabelled.md"]],[32,2,"d","Find this specific dresser: dresser next to the armchair.",[0,489,0.0,1,"c"],[0,472,0.0,1,"c"],["rooms/bedroom-unlabelled.md","journal/2026-09-20.md","house.md","rooms/utility-room.md"]],[33,2,"o","Find any dresser.",[0,16,0.0,0,"u"],[1,244,0.43,0,"c"],[]],[34,3,"d","Find this specific boiler: gas boiler in relation to other objects in the frame. the gas boiler is located below the heater and slightly to the right. it is also positioned to the right of the laundry machine and the shower curtain.",[1,80,0.52,0,"c"],[1,91,0.64,0,"c"],["skills/find-boiler-or-laundry.md","rooms/laundry-bath.md","skills/ignore-route-preview.md","house.md","WRITE:find-boiler-or-laundry.md"]],[35,3,"i","Find the specific freezer shown in the goal image.",[1,96,0.65,0,"c"],[1,124,0.52,0,"c"],["skills/find-cold-appliance.md","rooms/freezer-room.md","rooms/laundry-bath.md","rooms/entry-hall.md","skills/ignore-route-preview.md"]],[36,3,"i","Find the specific refrigerator shown in the goal image.",[1,10,1.0,0,"c"],[1,22,0.16,0,"c"],["skills/find-cold-appliance.md","rooms/freezer-room.md"]],[37,3,"d","Find this specific freezer: freezer, which is a chest freezer, located on a shelf towards the left side of the room.",[1,18,0.14,0,"c"],[1,42,0.07,0,"c"],["rooms/freezer-room.md","skills/find-cold-appliance.md","EDIT:find-cold-appliance.md"]],[38,3,"d","Find this specific carpet: berber carpet in the room. it is located near the rack, freezer, and refrigerator, towards the bottom right corner of the frame. look for a carpet that is situated close to these objects.",[1,80,0.04,0,"c"],[1,120,0.01,0,"c"],["skills/find-carpet.md","rooms/freezer-room.md","WRITE:find-carpet.md"]],[39,3,"d","Find this specific refrigerator: refrigerator with a white door and a deer head on top of it. it is located to the right of the picture frame and below the picture. the freezer is situated to the left of the refrigerator.",[1,10,0.92,0,"c"],[1,16,0.9,0,"c"],[]],[40,3,"i","Find the specific boiler shown in the goal image.",[1,51,0.73,0,"c"],[0,491,0.0,1,"i"],["skills/find-boiler-or-laundry.md","skills/approach-without-wedging.md"]],[41,3,"o","Find any boiler.",[1,13,1.0,0,"c"],[1,330,0.05,1,"c"],["skills/find-boiler-or-laundry.md"]],[42,3,"i","Find the specific freezer shown in the goal image.",[1,70,0.81,0,"c"],[1,142,0.67,0,"c"],["skills/find-cold-appliance.md","rooms/freezer-room.md","journal/2026-09-21.md","MEMORY.md"]],[43,3,"o","Find any dresser.",[1,17,0.48,0,"c"],[1,20,0.59,0,"c"],["skills/find-dresser.md","rooms/freezer-room.md"]],[44,3,"o","Find any boiler.",[1,93,0.73,0,"c"],[1,436,0.19,1,"c"],["skills/find-boiler-or-laundry.md","rooms/laundry-bath.md","journal/2026-09-20.md","MEMORY.md","journal/2026-09-21.md"]],[45,3,"d","Find this specific refrigerator: refrigerator with a white door and a deer head on top of it. it is located to the right of the picture frame and below the picture. the freezer is situated to the left of the refrigerator.",[1,51,1.0,0,"c"],[1,110,0.76,1,"c"],["skills/find-cold-appliance.md"]],[46,3,"o","Find any freezer.",[1,5,0.1,0,"c"],[1,13,0.08,0,"c"],[]],[47,3,"d","Find this specific freezer: freezer, which is a chest freezer, located on a shelf towards the left side of the room.",[1,8,0.1,0,"c"],[1,32,0.74,0,"c"],[]],[48,3,"o","Find any freezer.",[1,2,1.0,0,"u"],[1,19,1.0,0,"c"],[]],[49,3,"i","Find the specific freezer shown in the goal image.",[1,21,0.16,0,"c"],[1,489,0.01,1,"c"],["skills/find-cold-appliance.md","rooms/freezer-room.md","journal/2026-09-20.md"]],[50,4,"i","Find the specific refrigerator shown in the goal image.",[1,249,0.52,1,"c"],[1,158,0.74,1,"u"],["skills/find-cold-appliance.md","rooms/freezer-room.md","rooms/bedroom-unlabelled.md","skills/verify-markers-before-trusting.md","house.md"]],[51,4,"i","Find the specific carpet shown in the goal image.",[1,37,0.03,0,"u"],[1,34,0.03,0,"u"],["skills/find-carpet.md"]],[52,4,"o","Find any carpet.",[1,31,0.07,0,"c"],[1,41,0.03,0,"c"],["skills/find-carpet.md"]],[53,4,"i","Find the specific carpet shown in the goal image.",[1,60,0.02,0,"u"],[1,42,0.05,0,"c"],["skills/find-carpet.md","rooms/freezer-room.md","skills/moving-and-odometry.md","WRITE:find-carpet.md"]],[54,4,"d","Find this specific freezer: freezer, which is a chest freezer, located on a shelf towards the left side of the room.",[1,26,0.75,0,"c"],[1,24,0.67,0,"c"],["skills/tell-chest-freezers-apart.md","rooms/freezer-room.md"]],[55,4,"o","Find any carpet.",[1,39,0.09,0,"c"],[1,28,0.04,0,"c"],["skills/find-carpet.md"]],[56,4,"d","Find this specific dresser: wooden dresser with a mirror on it. it is located to the right of the hunting trophy, above the staircase handrail, and next to the shelf.",[1,18,0.24,0,"c"],[0,478,0.0,1,"i"],["skills/find-dresser.md","rooms/freezer-room.md"]],[57,4,"o","Find any refrigerator.",[1,14,0.69,0,"c"],[1,12,0.68,0,"c"],["skills/find-cold-appliance.md"]],[58,4,"o","Find any boiler.",[1,282,0.41,1,"c"],[0,475,0.0,1,"i"],["skills/find-boiler-or-laundry.md","rooms/laundry-bath.md","rooms/laundry-bath/2026-09-21-t11-flaundry-bath-0.png","rooms/laundry-bath/2026-09-21-t8-flaundry-bath-0.png","rooms/laundry-bath/photos/2026-09-21-t8-flaundry-bath-0.png"]],[59,4,"i","Find the specific carpet shown in the goal image.",[1,309,0.19,1,"c"],[1,16,0.05,0,"c"],["skills/find-carpet.md","rooms/laundry-bath.md","rooms/freezer-room.md","skills/navigation.md","journal/2026-09-22.md"]],[60,4,"d","Find this specific freezer: freezer, which is a chest freezer, located on a shelf towards the left side of the room.",[1,32,0.91,0,"c"],[1,29,0.78,0,"c"],["skills/tell-chest-freezers-apart.md","rooms/freezer-room.md"]],[61,4,"o","Find any refrigerator.",[1,12,0.67,0,"c"],[1,27,0.93,0,"c"],["skills/find-cold-appliance.md"]],[62,4,"o","Find any carpet.",[1,41,0.03,0,"c"],[1,33,0.05,0,"c"],["skills/find-carpet.md"]],[63,4,"i","Find the specific carpet shown in the goal image.",[1,39,0.03,0,"u"],[1,22,0.03,0,"u"],["skills/find-carpet.md"]],[64,4,"o","Find any refrigerator.",[1,14,0.6,0,"c"],[1,9,0.9,0,"c"],["skills/find-cold-appliance.md"]],[65,4,"i","Find the specific freezer shown in the goal image.",[1,21,0.49,0,"u"],[1,25,0.41,0,"c"],["skills/tell-chest-freezers-apart.md"]],[66,4,"d","Find this specific carpet: berber carpet in the room. it is located near the rack, freezer, and refrigerator, towards the bottom right corner of the frame. look for a carpet that is situated close to these objects.",[1,35,0.07,0,"c"],[0,497,0.0,1,"c"],["skills/find-carpet.md"]],[67,4,"o","Find any dresser.",[1,10,0.58,0,"c"],[0,157,0.0,1,"c"],["skills/find-dresser.md"]],[68,5,"o","Find any boiler.",[1,132,0.54,0,"c"],[1,93,0.78,0,"c"],["skills/find-boiler-or-laundry.md","rooms/laundry-bath.md","skills/scan-before-walking.md","skills/verify-markers-before-trusting.md","journal/2026-09-22.md"]],[69,5,"d","Find this specific dresser: wooden dresser with a mirror on it. it is located to the right of the hunting trophy, above the staircase handrail, and next to the shelf.",[1,104,0.53,0,"u"],[1,493,0.12,1,"c"],["skills/find-dresser.md","rooms/freezer-room.md","rooms/laundry-bath.md","house.md","journal/2026-09-23.md"]],[70,5,"o","Find any boiler.",[1,94,0.8,0,"c"],[1,317,0.2,1,"c"],["skills/find-boiler-or-laundry.md","WRITE:find-boiler-or-laundry.md"]],[71,5,"i","Find the specific boiler shown in the goal image.",[1,16,0.37,0,"c"],[1,429,0.01,1,"c"],["skills/find-boiler-or-laundry.md"]],[72,5,"d","Find this specific freezer: freezer, which is a chest freezer, located on a shelf towards the left side of the room.",[1,81,1.0,0,"c"],[1,304,0.33,1,"c"],["skills/tell-chest-freezers-apart.md","skills/find-cold-appliance.md","rooms/freezer-room.md","skills/scan-before-walking.md"]],[73,5,"o","Find any boiler.",[1,79,0.82,0,"c"],[1,340,0.31,1,"c"],["skills/find-boiler-or-laundry.md","WRITE:find-boiler-or-laundry.md"]],[74,5,"d","Find this specific refrigerator: refrigerator in the kitchen. it is made of stainless steel. it is located on the kitchen counter towards the left side.",[1,343,0.37,1,"c"],[1,390,0.27,1,"c"],["rooms/kitchen.md","rooms/window-bedroom.md","rooms/bedroom-unlabelled.md","house.md","skills/find-cold-appliance.md"]],[75,5,"i","Find the specific refrigerator shown in the goal image.",[1,80,0.07,0,"u"],[1,3,1.0,0,"c"],[]],[76,5,"d","Find this specific dresser: the wooden dresser with a mirror on top. the dresser is located below the cloth.",[1,159,0.76,0,"c"],[0,482,0.0,1,"u"],["skills/find-dresser.md","rooms/freezer-room.md","rooms/window-bedroom.md","journal/2026-09-23.md","MEMORY.md"]],[77,5,"i","Find the specific refrigerator shown in the goal image.",[1,137,0.88,0,"u"],[1,39,0.4,0,"c"],["rooms/kitchen.md","rooms/window bedroom.md","journal/2026-09-23.md","skills/find-cold-appliance.md","MEMORY.md"]],[78,5,"o","Find any dresser.",[1,400,0.16,1,"c"],[0,124,0.0,0,"c"],["skills/find-dresser.md"]]],"B":[[1,1,"o","Find any hanging clothes.",[1,17,0.92,0,"c"],[1,40,0.67,0,"c"],[]],[2,1,"o","Find any hanging clothes.",[1,0,1.0,0,"c"],[1,24,1.0,0,"c"],["journal/2026-09-19.md","WRITE:MEMORY.md","WRITE:walk-in-closet.md","WRITE:2026-09-20.md"]],[3,1,"d","Find this specific hanging clothes: hanging clothes in the closet full of clothes. the hanging clothes can be found above the bag and mat, within the wardrobe.",[1,35,0.21,0,"c"],[1,57,0.13,0,"c"],[]],[4,1,"d","Find this specific hanging clothes: hanging clothes, which is a closet full of clothes. the hanging clothes are located above the shelf, on the right side of the hanger, and near the shoe.",[1,3,0.88,0,"c"],[1,24,0.35,0,"c"],[]],[5,1,"o","Find any hanging clothes.",[1,0,1.0,0,"c"],[1,12,1.0,0,"c"],[]],[6,1,"o","Find any hanging clothes.",[1,0,1.0,0,"c"],[1,0,1.0,0,"c"],["MEMORY.md"]],[7,1,"i","Find the specific hanging clothes shown in the goal image.",[1,12,1.0,0,"c"],[1,44,0.28,0,"u"],["MEMORY.md","journal/2026-09-19.md"]],[8,1,"d","Find this specific hanging clothes: hanging clothes, which is a closet full of clothes. the hanging clothes are located above the shelf, on the right side of the hanger, and near the shoe.",[1,0,1.0,0,"c"],[1,57,0.21,0,"c"],["MEMORY.md","journal/2026-09-19.md","WRITE:MEMORY.md","WRITE:walk-in-closet.md"]],[9,1,"d","Find this specific hanging clothes: hanging clothes, which is a closet full of clothes. the hanging clothes are located above the shelf, on the right side of the hanger, and near the shoe.",[1,12,1.0,0,"c"],[1,56,0.18,0,"c"],["journal/2026-09-19.md"]],[10,1,"o","Find any hanging clothes.",[1,0,1.0,0,"c"],[1,18,1.0,0,"c"],["MEMORY.md","WRITE:MEMORY.md"]],[11,1,"i","Find the specific microwave shown in the goal image.",[1,86,0.41,0,"c"],[1,85,0.35,0,"c"],["journal/2026-09-19.md","WRITE:2026-09-20.md"]],[12,1,"d","Find this specific footrest: footrest. it is located near the sofa, table, bookshelf, and pillow.",[1,114,0.68,0,"c"],[1,141,0.63,0,"c"],["journal/2026-09-19.md","WRITE:2026-09-20.md"]],[13,1,"o","Find any refrigerator.",[1,77,0.81,0,"c"],[1,72,0.83,0,"c"],["MEMORY.md","journal/2026-09-19.md","WRITE:2026-09-20.md"]],[14,1,"o","Find any picture.",[1,31,0.79,0,"c"],[1,21,0.98,0,"c"],["MEMORY.md","journal/2026-09-19.md"]],[15,1,"o","Find any microwave.",[1,42,0.1,0,"c"],[1,58,0.09,0,"c"],["MEMORY.md"]],[16,1,"o","Find any mirror.",[1,22,0.64,0,"c"],[1,215,0.1,0,"u"],["MEMORY.md","journal/2026-09-19.md"]],[17,1,"o","Find any footrest.",[1,82,0.89,0,"c"],[1,170,0.62,0,"c"],["MEMORY.md","journal/2026-09-19.md","WRITE:2026-09-20.md"]],[18,1,"i","Find the specific footrest shown in the goal image.",[1,47,0.35,0,"c"],[1,173,0.05,0,"u"],[]],[19,1,"i","Find the specific refrigerator shown in the goal image.",[1,180,0.39,0,"c"],[1,52,0.8,0,"c"],["MEMORY.md","journal/2026-09-19.md","WRITE:2026-09-20.md"]],[20,2,"d","Find this specific microwave: built-in microwave in the kitchen. it is located near the stove and bench, towards the right side of the mirror. look for a microwave within the same area as the stove and bench, close to the mirror.",[1,132,0.83,1,"c"],[1,111,0.55,0,"c"],["skills/find-kitchen-appliance.md","rooms/kitchen.md","skills/cross-the-house.md","house.md","MEMORY.md"]],[21,2,"d","Find this specific refrigerator: refrigerator located to the left of the worktop and below the cabinet. it is a side by side refrigerator with a freezer on the bottom and a water dispenser on the top.",[1,56,0.18,0,"c"],[1,20,0.44,0,"c"],["rooms/kitchen.md","skills/find-kitchen-appliance.md","house.md"]],[22,2,"i","Find the specific decorative plant shown in the goal image.",[1,37,0.84,0,"c"],[1,62,0.8,0,"c"],["MEMORY.md","skills/cross-the-house.md","skills/observe-before-walking.md","house.md","rooms/kitchen.md"]],[23,2,"o","Find any refrigerator.",[1,50,0.72,0,"c"],[1,36,0.8,0,"c"],["skills/find-kitchen-appliance.md","skills/navigating-this-house.md","skills/cross-the-house.md","journal/2026-09-20.md","WRITE:steer-by-map-coordinates.md"]],[24,2,"o","Find any footrest.",[1,43,0.84,0,"c"],[1,83,0.74,0,"c"],["house.md","rooms/family-room.md","journal/2026-09-20.md","skills/cross-the-house.md","MEMORY.md"]],[25,2,"o","Find any refrigerator.",[1,48,0.87,0,"c"],[1,46,0.85,0,"c"],[]],[26,2,"d","Find this specific christmas tree: christmas tree in the room. it is located to the right of the table and below the easel.",[0,444,0.0,1,"i"],[1,492,0.18,1,"c"],["MEMORY.md","skills/observe-before-walking.md","skills/cross-the-house.md"]],[27,2,"o","Find any christmas tree.",[1,115,0.75,0,"c"],[1,85,0.18,0,"c"],["MEMORY.md","journal/2026-09-19.md","skills/cross-the-house.md","house.md","journal/2026-09-20.md"]],[28,2,"i","Find the specific christmas tree shown in the goal image.",[1,41,0.21,0,"c"],[1,68,0.12,0,"c"],[]],[29,2,"i","Find the specific book shown in the goal image.",[1,85,0.6,0,"u"],[1,168,0.2,0,"u"],["MEMORY.md","skills/observe-before-walking.md","journal/2026-09-20.md","skills/approach-doorways-close-up.md","house.md"]],[30,2,"d","Find this specific christmas tree: christmas tree in the room. it is located to the right of the table and below the easel.",[1,101,0.69,0,"c"],[1,408,0.09,1,"c"],["MEMORY.md","journal/2026-09-19.md","skills/cross-the-house.md","journal/2026-09-20.md","house.md"]],[31,2,"i","Find the specific book shown in the goal image.",[1,164,0.37,0,"u"],[1,84,0.63,0,"u"],["journal/2026-09-19.md","journal/2026-09-20.md","EDIT:2026-09-20.md"]],[32,2,"o","Find any christmas tree.",[1,55,0.81,0,"c"],[1,71,0.84,0,"c"],["journal/2026-09-19.md","MEMORY.md","WRITE:basement.md"]],[33,2,"i","Find the specific christmas tree shown in the goal image.",[1,26,0.09,0,"c"],[1,285,0.01,0,"c"],[]],[34,2,"d","Find this specific book: book on the bookshelf.",[1,41,0.75,0,"c"],[1,96,0.54,0,"c"],["journal/2026-09-20.md","skills/cross-the-house.md","WRITE:basement-rec-room.md"]],[35,2,"d","Find this specific christmas tree: christmas tree in the room. it is located to the right of the table and below the easel.",[1,53,0.93,0,"c"],[1,239,0.11,0,"c"],[]],[36,3,"i","Find the specific refrigerator shown in the goal image.",[1,36,0.7,0,"c"],[0,490,0.0,1,"i"],["rooms/kitchen-dining-doorway.md","skills/find-kitchen-appliance.md"]],[37,3,"i","Find the specific footrest shown in the goal image.",[1,84,0.84,0,"c"],[1,233,0.69,0,"c"],["rooms/fireplace-family-room.md","rooms/family-room.md","skills/cross-the-house.md","rooms/kitchen.md","rooms/fridge-nook.md"]],[38,3,"d","Find this specific refrigerator: refrigerator located to the left of the worktop and below the cabinet. it is a side by side refrigerator with a freezer on the bottom and a water dispenser on the top.",[1,120,0.78,0,"c"],[1,109,0.7,0,"c"],["rooms/kitchen-dining-doorway.md","rooms/galley-kitchen.md","rooms/kitchen.md","WRITE:fridge-nook.md"]],[39,3,"i","Find the specific refrigerator shown in the goal image.",[1,1,0.54,0,"c"],[1,9,0.2,0,"c"],[]],[40,3,"i","Find the specific picture shown in the goal image.",[1,73,0.78,0,"c"],[1,67,0.31,0,"u"],["rooms/piano-living-room.md","skills/cross-the-house.md","rooms/living-room.md","journal/2026-09-21.md","WRITE:hardwood-living-room.md"]],[41,3,"o","Find any microwave.",[1,65,0.8,0,"c"],[1,176,0.64,1,"c"],["skills/find-kitchen-appliance.md","rooms/galley-kitchen.md","rooms/kitchen.md","WRITE:galley-kitchen.md"]],[42,3,"d","Find this specific picture: picture located above the bench and to the right of the mirror. it shows a kitchen with hardwood floors.",[1,481,0.05,1,"u"],[1,295,0.06,1,"c"],["rooms/front-hallway.md","journal/2026-09-21.md","house.md","rooms/stair-hall.md"]],[43,3,"d","Find this specific footrest: footrest. it is located near the sofa, table, bookshelf, and pillow.",[1,75,0.85,0,"c"],[1,110,0.7,0,"c"],["rooms/fireplace-family-room.md","rooms/family-room.md"]],[44,3,"i","Find the specific decorative plant shown in the goal image.",[1,121,0.62,1,"c"],[1,74,0.71,0,"c"],["rooms/piano-corner-branch-plant.md","rooms/piano-living-room.md","rooms/living-room.md","journal/2026-09-21.md","MEMORY.md"]],[45,3,"o","Find any refrigerator.",[1,130,0.54,1,"c"],[1,52,0.78,0,"c"],["skills/find-kitchen-appliance.md","rooms/kitchen-dining-doorway.md"]],[46,3,"i","Find the specific microwave shown in the goal image.",[1,28,0.21,0,"c"],[1,14,0.55,0,"c"],["rooms/galley-kitchen.md","skills/find-kitchen-appliance.md"]],[47,3,"i","Find the specific microwave shown in the goal image.",[1,2,1.0,0,"c"],[1,23,1.0,0,"c"],[]],[48,3,"o","Find any microwave.",[1,1,1.0,0,"c"],[1,0,1.0,0,"c"],[]],[49,3,"d","Find this specific footrest: footrest. it is located near the sofa, table, bookshelf, and pillow.",[1,71,0.83,1,"c"],[1,93,0.76,0,"c"],[]],[50,3,"i","Find the specific refrigerator shown in the goal image.",[1,63,0.83,0,"c"],[1,74,0.73,0,"c"],[]],[51,3,"o","Find any microwave.",[1,16,0.61,0,"c"],[1,17,0.63,0,"c"],[]],[52,4,"d","Find this specific footrest: footrest. it is located near the sofa, table, bookshelf, and pillow.",[1,88,0.87,0,"c"],[1,188,0.52,0,"c"],["skills/find-footrest-ottoman.md","rooms/fireplace-family-room.md","skills/orient-on-waking.md","skills/cross-the-house.md","rooms/family-room.md"]],[53,4,"o","Find any footrest.",[1,0,1.0,0,"c"],[1,52,0.18,0,"c"],["skills/find-footrest-ottoman.md","rooms/fireplace-family-room.md"]],[54,4,"o","Find any microwave.",[1,89,0.84,0,"c"],[1,70,0.8,0,"c"],["skills/find-kitchen-appliance.md","rooms/galley-kitchen.md","rooms/kitchen.md","skills/navigating-the-house.md","skills/markers-check-refresh.md"]],[55,4,"o","Find any picture.",[1,37,1.0,0,"c"],[1,10,1.0,0,"c"],["skills/find-framed-picture.md","rooms/kitchen.md","rooms/hardwood-living-room.md","rooms/stair-hall.md","EDIT:stair-hall.md"]],[56,4,"i","Find the specific picture shown in the goal image.",[1,140,0.05,0,"u"],[1,141,0.04,0,"u"],["skills/find-framed-picture.md","rooms/stair-hall.md","rooms/entry-hall.md","rooms/front-hallway.md","rooms/entry-hall/photos/2026-09-21-t7-fentry-hall-0.png"]],[57,4,"o","Find any footrest.",[1,76,0.83,0,"c"],[1,88,0.77,0,"c"],["skills/find-footrest-ottoman.md","skills/navigation-basics.md","skills/cross-the-house.md","journal/2026-09-22.md","skills/orient-on-waking.md"]],[58,4,"i","Find the specific refrigerator shown in the goal image.",[1,145,0.54,0,"c"],[1,51,0.87,0,"c"],["rooms/fridge-nook.md","skills/find-kitchen-appliance.md","journal/2026-09-22.md","skills/markers-check-refresh.md","MEMORY.md"]],[59,4,"d","Find this specific decorative plant: decorative plant that is located above and to the right of the picture and below the piano. the decorative plant is a ficus tree.",[1,42,0.9,0,"c"],[1,94,0.66,0,"c"],["rooms/piano-corner-branch-plant.md","rooms/living-room.md","EDIT:piano-corner-branch-plant.md"]],[60,4,"i","Find the specific mirror shown in the goal image.",[0,500,0.0,1,"i"],[0,485,0.0,1,"u"],["MEMORY.md","house.md","skills/orient-on-waking.md"]],[61,4,"o","Find any hanging clothes.",[1,5,0.59,0,"c"],[1,35,0.96,0,"c"],["skills/find-hanging-clothes.md","rooms/walk-in-closet.md","rooms/teal-bed-guest-room.md","WRITE:find-hanging-clothes.md"]],[62,4,"d","Find this specific hanging clothes: the hanging clothes in the closet.",[1,0,1.0,0,"c"],[0,4,0.0,0,"c"],["skills/find-hanging-clothes.md"]],[63,4,"o","Find any picture.",[1,28,0.69,0,"c"],[1,196,0.33,0,"c"],["skills/find-framed-picture.md","rooms/teal-bed-guest-room.md"]],[64,4,"d","Find this specific hanging clothes: the hanging clothes in the closet.",[1,97,0.43,0,"c"],[1,76,0.72,0,"c"],["skills/find-hanging-clothes.md","WRITE:find-hanging-clothes.md"]],[65,4,"i","Find the specific mirror shown in the goal image.",[1,468,0.08,1,"c"],[1,156,0.38,0,"c"],["rooms/north-corridor.md","journal/2026-09-22.md","rooms/front-hallway.md","rooms/entry-hall.md","rooms/entry-hall/photos/2026-09-21-t7-fentry-hall-0.png"]],[66,4,"d","Find this specific mirror: mirror located near the sink and the bathroom cabinet.",[1,56,1.0,0,"c"],[1,81,0.91,0,"c"],["journal/2026-09-22.md","rooms/master-bedroom-ensuite/photos.json","rooms/master-bedroom-ensuite/2026-09-22-t9-fmaster-bedroom-ensuite-0.png","rooms/master-bedroom-ensuite/2026-09-22-t9-fmaster-bedroom-ensuite-1.png","rooms/master-bedroom-ensuite/photos/2026-09-22-t9-fmaster-bedroom-ensuite-0.png"]]],"C":[[1,1,"o","Find any piano.",[1,62,0.84,0,"u"],[0,495,0.0,1,"i"],[]],[2,1,"o","Find any piano.",[1,107,0.01,0,"c"],[1,46,0.56,0,"c"],["MEMORY.md","journal/2026-09-19.md","WRITE:2026-09-20.md"]],[3,1,"o","Find any refrigerator.",[1,37,0.48,0,"c"],[1,57,0.63,0,"c"],["MEMORY.md","journal/2026-09-19.md"]],[4,1,"d","Find this specific piano: the grand piano located to the right and below the cabinet in a log cabin.",[1,30,0.71,0,"c"],[1,75,0.53,0,"c"],["MEMORY.md","journal/2026-09-19.md"]],[5,1,"o","Find any rug.",[1,32,0.02,0,"c"],[1,23,0.08,0,"u"],["MEMORY.md","journal/2026-09-19.md"]],[6,1,"o","Find any nightstand.",[1,260,0.39,1,"c"],[0,149,0.0,0,"c"],["MEMORY.md","journal/2026-09-19.md","WRITE:2026-09-20.md"]],[7,1,"o","Find any mirror.",[0,142,0.0,0,"c"],[1,102,0.6,0,"c"],["MEMORY.md","journal/2026-09-19.md","WRITE:2026-09-20.md"]],[8,1,"i","Find the specific mirror shown in the goal image.",[0,491,0.0,1,"i"],[1,30,0.55,0,"c"],["MEMORY.md","journal/2026-09-19.md"]],[9,1,"i","Find the specific nightstand shown in the goal image.",[1,47,0.93,0,"c"],[0,415,0.0,1,"u"],["MEMORY.md","journal/2026-09-19.md","WRITE:2026-09-20.md"]],[10,1,"d","Find this specific nightstand: nightstand with a lamp on it. it is located to the right of the bed and below the pillow.",[0,199,0.0,0,"c"],[0,75,0.0,0,"u"],["MEMORY.md","journal/2026-09-19.md","WRITE:2026-09-20.md"]],[11,1,"i","Find the specific nightstand shown in the goal image.",[1,28,0.21,0,"c"],[1,136,0.76,0,"c"],["MEMORY.md","journal/2026-09-19.md"]],[12,1,"d","Find this specific nightstand: nightstand that has a lamp on it. the nightstand is located next to the bed and there is a pillow on the bed as well. look for the bedside lamp on the nightstand to identify it.",[1,2,1.0,0,"c"],[1,4,1.0,0,"c"],[]],[13,1,"d","Find this specific nightstand: nightstand with a lamp on it. it is located to the right of the bed and below the pillow.",[0,2,0.0,0,"c"],[0,40,0.0,0,"c"],[]],[14,1,"d","Find this specific mirror: mirror in a log cabin. the mirror is located near a shelf.",[1,361,0.26,1,"c"],[0,117,0.0,0,"c"],["MEMORY.md","journal/2026-09-19.md"]],[15,2,"o","Find any window glass.",[0,8,0.0,0,"c"],[0,8,0.0,0,"c"],[]],[16,2,"o","Find any decorative plant.",[1,41,0.69,0,"c"],[1,33,0.86,0,"c"],["MEMORY.md","skills/sanity-check-your-first-look.md","skills/ground-floor-getting-around.md","WRITE:dining-window-nook.md"]],[17,2,"d","Find this specific calendar: calendar located below the refrigerator and to the right of the kitchen lower cabinet.",[1,456,0.17,1,"c"],[1,498,0.2,1,"i"],["rooms/fridge-alcove.md","skills/ground-floor-getting-around.md","rooms/fridge-alcove/photos/2026-09-19-t3-ffridge-alcove-0.png","rooms/fridge-alcove/photos/2026-09-19-t3-ffridge-alcove-1.png","rooms/fridge-alcove/photos/2026-09-19-t3-ffridge-alcove-2.png"]],[18,2,"d","Find this specific decorative plant: decorative plant, which is a cactus. it is located on the desk, which is in the middle area of the frame. to the right of the plant, there is a rug.",[0,494,0.0,1,"u"],[0,490,0.0,1,"i"],["rooms/sewing-room.md","skills/navigate-the-loft.md","rooms/sewing-room/photos/2026-09-19-t14-fsewing-room-0.png","rooms/sewing-room/photos/2026-09-19-t14-fsewing-room-2.png","rooms/sewing-room/photos/2026-09-19-t14-fsewing-room-1.png"]],[19,2,"d","Find this specific rug: wool rug located near the couch, side table, piano, pillow, and table lamp.",[1,77,0.05,0,"c"],[1,109,0.35,0,"c"],["rooms/living-room-seating.md","rooms/west-parlour.md","rooms/piano-corner.md","EDIT:living-room-seating.md"]],[20,2,"i","Find the specific calendar shown in the goal image.",[1,35,0.86,0,"u"],[1,53,0.81,0,"u"],["rooms/fridge-alcove.md"]],[21,2,"d","Find this specific refrigerator: refrigerator that is located below the kitchen top, to the right of the kitchen lower cabinet, and above the kitchen cabinet.",[1,187,0.02,0,"c"],[1,135,0.04,0,"c"],["rooms/fridge-alcove.md","skills/sanity-check-your-first-look.md","rooms/back-hall-by-fridge.md","house.md","journal/2026-09-20.md"]],[22,2,"d","Find this specific decorative plant: decorative plant, which is a cactus. it is located on the desk, which is in the middle area of the frame. to the right of the plant, there is a rug.",[0,485,0.0,1,"u"],[0,478,0.0,1,"i"],["MEMORY.md","rooms/sewing-room.md","skills/distrust-unreachable-reports.md","journal/2026-09-19.md","journal/2026-09-20.md"]],[23,2,"o","Find any refrigerator.",[1,36,0.86,0,"c"],[1,50,0.82,0,"c"],["rooms/fridge-alcove.md"]],[24,2,"i","Find the specific rug shown in the goal image.",[1,127,0.24,0,"u"],[1,480,0.05,1,"u"],["rooms/living-room-seating.md","skills/ground-floor-getting-around.md","journal/2026-09-20.md","MEMORY.md","house.md"]],[25,2,"i","Find the specific piano shown in the goal image.",[1,117,0.4,0,"c"],[0,494,0.0,1,"i"],["rooms/west-parlour.md","rooms/piano-corner.md","skills/ground-floor-getting-around.md","journal/2026-09-20.md","MEMORY.md"]],[26,2,"o","Find any rug.",[1,13,0.06,0,"c"],[0,199,0.0,0,"c"],[]],[27,2,"i","Find the specific rug shown in the goal image.",[1,44,0.04,0,"c"],[1,204,0.33,0,"c"],["rooms/living-room-seating.md"]],[28,2,"o","Find any rug.",[1,21,0.08,0,"c"],[1,9,0.45,0,"c"],[]],[29,2,"i","Find the specific piano shown in the goal image.",[1,21,0.92,0,"c"],[1,13,0.77,0,"c"],["rooms/piano-corner.md"]],[30,2,"d","Find this specific refrigerator: refrigerator that is located below the kitchen top, to the right of the kitchen lower cabinet, and above the kitchen cabinet.",[1,93,0.25,1,"c"],[1,41,0.64,0,"c"],["rooms/fridge-alcove.md","skills/ground-floor-getting-around.md","rooms/kitchen-island.md"]],[31,2,"o","Find any decorative plant.",[0,13,0.0,0,"c"],[0,16,0.0,0,"c"],["rooms/fridge-alcove.md"]],[32,2,"i","Find the specific piano shown in the goal image.",[1,45,0.77,0,"c"],[1,56,0.76,0,"c"],["rooms/piano-corner.md"]],[33,2,"o","Find any piano.",[1,11,1.0,0,"u"],[1,46,0.04,0,"c"],[]],[34,3,"i","Find the specific piano shown in the goal image.",[1,113,0.47,0,"c"],[1,80,0.59,0,"c"],["rooms/piano-corner.md","skills/ground-floor-getting-around.md","skills/distrust-unreachable-reports.md","WRITE:piano-corner.md"]],[35,3,"o","Find any calendar.",[1,113,0.54,0,"c"],[0,496,0.0,1,"i"],["skills/find-a-calendar.md","rooms/back-hall-by-fridge.md","rooms/back-hall-by-fridge/photos/2026-09-20-t3-fback-hall-by-fridge-0.png","rooms/back-hall-by-fridge/photos/2026-09-20-t3-fback-hall-by-fridge-1.png","rooms/back-hall-by-fridge/photos/2026-09-20-t3-fback-hall-by-fridge-2.png"]],[36,3,"i","Find the specific piano shown in the goal image.",[1,105,0.25,0,"c"],[1,221,0.2,0,"c"],["rooms/piano-corner.md","rooms/back-hall-by-fridge.md","EDIT:piano-corner.md"]],[37,3,"o","Find any refrigerator.",[1,84,0.24,0,"c"],[1,34,0.61,0,"c"],["skills/find-fridge.md","rooms/fridge-alcove.md","EDIT:find-fridge.md"]],[38,3,"i","Find the specific piano shown in the goal image.",[1,78,0.29,0,"c"],[1,44,0.76,0,"c"],["rooms/piano-corner.md","house.md","EDIT:piano-corner.md"]],[39,3,"o","Find any piano.",[1,27,0.23,0,"c"],[1,12,1.0,0,"c"],["rooms/piano-corner.md"]],[40,3,"d","Find this specific calendar: calendar located below the refrigerator and to the right of the kitchen lower cabinet.",[1,58,0.61,0,"c"],[1,283,0.21,0,"c"],["skills/find-a-calendar.md","rooms/back-hall-by-fridge.md","EDIT:find-a-calendar.md"]],[41,3,"i","Find the specific piano shown in the goal image.",[1,66,0.79,0,"c"],[1,104,0.75,0,"c"],["rooms/piano-corner.md","rooms/front-door.md","EDIT:piano-corner.md"]],[42,3,"o","Find any refrigerator.",[1,130,0.32,0,"c"],[1,31,0.82,0,"c"],["skills/find-fridge.md","rooms/fridge-alcove.md","WRITE:find-fridge.md"]],[43,3,"d","Find this specific rug: wool rug located near the couch, side table, piano, pillow, and table lamp.",[1,49,0.53,0,"c"],[1,57,0.48,0,"c"],["skills/find-a-rug.md","rooms/hearth-seating.md","rooms/west-parlour.md"]],[44,3,"d","Find this specific piano: the grand piano located to the right and below the cabinet in a log cabin.",[1,44,0.33,0,"c"],[1,38,0.29,0,"c"],["rooms/piano-corner.md"]],[45,3,"o","Find any decorative plant.",[0,10,0.0,0,"c"],[0,31,0.0,0,"c"],["skills/find-a-decorative-plant.md","rooms/piano-corner.md","rooms/sink-window-sill.md","MEMORY.md"]],[46,3,"i","Find the specific window glass shown in the goal image.",[1,46,0.96,0,"u"],[1,74,0.97,0,"u"],["skills/find-a-window.md","rooms/sink-window-sill.md"]],[47,3,"i","Find the specific window glass shown in the goal image.",[1,7,1.0,0,"u"],[1,14,1.0,0,"u"],[]],[48,4,"o","Find any window glass.",[1,16,0.96,0,"c"],[1,17,1.0,0,"c"],["skills/find-a-window.md"]],[49,4,"o","Find any rug.",[1,34,0.03,0,"c"],[1,39,0.03,0,"c"],["skills/find-a-rug.md"]],[50,4,"d","Find this specific window glass: window glass that is located in the kitchen cabinet.",[0,68,0.0,0,"c"],[0,45,0.0,0,"c"],["skills/find-a-window.md","rooms/galley-kitchen.md","rooms/sink-window-sill.md","journal/2026-09-22.md","skills/ground-floor-getting-around.md"]],[51,4,"o","Find any refrigerator.",[1,55,0.26,0,"c"],[1,18,0.62,0,"c"],["skills/find-fridge.md","rooms/galley-kitchen.md"]],[52,4,"d","Find this specific refrigerator: refrigerator that is located below the kitchen top, to the right of the kitchen lower cabinet, and above the kitchen cabinet.",[1,3,1.0,0,"c"],[1,294,0.01,0,"u"],["skills/find-fridge.md"]],[53,4,"o","Find any refrigerator.",[1,0,1.0,0,"c"],[1,12,0.88,0,"c"],[]],[54,4,"i","Find the specific calendar shown in the goal image.",[1,148,0.26,0,"c"],[1,127,0.35,0,"c"],["skills/find-a-calendar.md","rooms/back-hall-by-fridge.md","WRITE:find-a-calendar.md"]],[55,4,"i","Find the specific decorative plant shown in the goal image.",[1,431,0.26,1,"u"],[1,327,0.26,1,"c"],["skills/find-a-decorative-plant.md","rooms/sewing-room.md","skills/navigate-the-loft.md","rooms/upstairs-landing.md","rooms/sewing-room/photos/2026-09-19-t14-fsewing-room-0.png"]],[56,4,"o","Find any decorative plant.",[1,80,0.02,0,"c"],[1,41,0.61,0,"c"],["skills/find-a-decorative-plant.md","WRITE:find-a-decorative-plant.md"]],[57,4,"d","Find this specific rug: wool rug located near the couch, side table, piano, pillow, and table lamp.",[1,84,0.5,0,"c"],[1,408,0.17,1,"c"],["skills/find-a-rug.md","rooms/hearth-seating.md","WRITE:find-a-rug.md"]],[58,4,"d","Find this specific nightstand: nightstand that has a lamp on it. the nightstand is located next to the bed and there is a pillow on the bed as well. look for the bedside lamp on the nightstand to identify it.",[1,81,0.91,0,"c"],[0,27,0.0,0,"c"],["skills/find-nightstand-or-bed.md","rooms/bed-head-corner.md","rooms/upstairs-landing.md","rooms/loft-bedroom.md","WRITE:find-nightstand-or-bed.md"]],[59,4,"o","Find any mirror.",[0,31,0.0,0,"c"],[0,98,0.0,0,"c"],["skills/find-a-mirror.md","rooms/upstairs-landing.md","skills/navigate-the-loft.md","rooms/loft-bathroom.md","rooms/loft-bedroom.md"]],[60,4,"d","Find this specific mirror: mirror with a wooden frame. it is located near the bathroom cabinet and the sink. the mirror is on the right side of the sink and above the bathroom towel.",[0,12,0.0,0,"c"],[0,67,0.0,0,"c"],[]],[61,4,"i","Find the specific nightstand shown in the goal image.",[1,145,0.47,0,"c"],[1,47,0.98,0,"c"],["skills/disambiguate-twin-nightstands.md","rooms/bed-head-corner.md","rooms/loft-bedroom.md","skills/find-nightstand-or-bed.md","journal/2026-09-22.md"]],[62,4,"d","Find this specific mirror: mirror in a log cabin. the mirror is located near a shelf.",[1,75,0.93,0,"u"],[1,229,0.41,0,"c"],["rooms/sewing-room.md","skills/find-a-mirror.md","rooms/upstairs-landing.md","skills/navigate-the-loft.md","journal/2026-09-22.md"]],[63,4,"d","Find this specific nightstand: nightstand with a lamp on it. it is located to the right of the bed and below the pillow.",[0,68,0.0,0,"c"],[0,112,0.0,0,"c"],["rooms/bed-head-corner.md","skills/disambiguate-twin-nightstands.md","skills/navigate-the-loft.md","WRITE:navigate-the-loft.md"]],[64,4,"i","Find the specific nightstand shown in the goal image.",[1,260,0.01,1,"c"],[1,5,0.21,0,"u"],["skills/disambiguate-twin-nightstands.md","rooms/bed-head-corner.md","rooms/eave-window-bedside.md","rooms/eave window bedside.md","rooms/loft-bedroom.md"]],[65,4,"i","Find the specific nightstand shown in the goal image.",[0,177,0.0,0,"c"],[0,496,0.0,1,"i"],["skills/disambiguate-twin-nightstands.md","skills/find-nightstand-or-bed.md","journal/2026-09-22.md","rooms/west-parlour.md","rooms/loft-bedroom.md"]],[66,4,"i","Find the specific mirror shown in the goal image.",[1,263,0.28,1,"c"],[1,98,0.07,0,"c"],["rooms/sewing-room.md","skills/find-a-mirror.md","skills/navigate-the-loft.md"]],[67,5,"i","Find the specific decorative plant shown in the goal image.",[1,123,0.75,0,"u"],[0,470,0.0,1,"u"],["skills/find-a-decorative-plant.md","rooms/treadle-desk-nook.md","rooms/dining-window-nook.md","rooms/blue-rug-dining.md","rooms/treadle-desk-nook/photos/2026-09-22-t8-ftreadle-desk-nook-0.png"]],[68,5,"o","Find any refrigerator.",[1,37,0.96,0,"c"],[1,132,0.47,0,"c"],["skills/find-fridge.md","rooms/galley-kitchen.md","rooms/dining-window-nook.md"]],[69,5,"o","Find any refrigerator.",[1,2,1.0,0,"c"],[1,8,0.84,0,"c"],[]],[70,5,"d","Find this specific calendar: calendar located below the refrigerator and to the right of the kitchen lower cabinet.",[1,207,0.18,0,"c"],[1,357,0.03,1,"c"],["skills/find-a-calendar.md","rooms/back-hall-by-fridge.md","rooms/back-hall-by-fridge/photos/2026-09-22-t7-fback-hall-by-fridge-0.png","rooms/back-hall-by-fridge/photos/2026-09-22-t7-fback-hall-by-fridge-1.png","rooms/back-hall-by-fridge/photos/2026-09-22-t7-fback-hall-by-fridge-2.png"]],[71,5,"o","Find any decorative plant.",[0,27,0.0,0,"c"],[0,19,0.0,0,"c"],["skills/find-a-decorative-plant.md"]],[72,5,"o","Find any piano.",[0,176,0.0,0,"c"],[1,90,0.42,0,"c"],["rooms/piano-corner.md","skills/ground-floor-getting-around.md","EDIT:piano-corner.md"]],[73,5,"i","Find the specific decorative plant shown in the goal image.",[1,100,0.87,0,"u"],[1,115,0.64,0,"c"],["rooms/treadle-desk-nook.md","skills/find-a-decorative-plant.md","journal/2026-09-22.md","journal/2026-09-23.md","WRITE:treadle-desk-nook.md"]],[74,5,"d","Find this specific piano: the grand piano located to the right and below the cabinet in a log cabin.",[1,136,0.61,0,"c"],[1,171,0.65,0,"c"],["rooms/piano-corner.md","skills/ground-floor-getting-around.md","rooms/treadle-desk-nook.md","EDIT:piano-corner.md"]],[75,5,"d","Find this specific decorative plant: decorative plant, which is a cactus. it is located on the desk, which is in the middle area of the frame. to the right of the plant, there is a rug.",[1,479,0.17,1,"c"],[0,455,0.0,1,"c"],["skills/find-a-decorative-plant.md","rooms/sewing-room.md","rooms/treadle-desk-nook.md","rooms/tv-den.md","rooms/lamp-console-corner.md"]],[76,5,"i","Find the specific piano shown in the goal image.",[1,122,0.7,0,"c"],[1,226,0.34,0,"c"],[]],[77,5,"o","Find any decorative plant.",[0,15,0.0,0,"c"],[0,20,0.0,0,"c"],["skills/find-a-decorative-plant.md","rooms/plant-corner-window.md"]],[78,5,"i","Find the specific piano shown in the goal image.",[1,71,0.14,0,"c"],[1,87,0.09,0,"c"],[]],[79,5,"d","Find this specific decorative plant: decorative plant, which is a cactus. it is located on the desk, which is in the middle area of the frame. to the right of the plant, there is a rug.",[1,180,0.59,0,"c"],[1,489,0.23,1,"c"],["rooms/treadle-desk-nook.md","journal/2026-09-22.md","journal/2026-09-23.md","rooms/west-parlour.md"]]]};
+let R=null;
+const GOALS={"wcojb60": "assets/replay/goal_wcojb60.jpg", "4ok340": "assets/replay/goal_4ok340.jpg", "h1zee67": "assets/replay/goal_h1zee67.jpg", "wcojb36": "assets/replay/goal_wcojb36.jpg", "wcojb65": "assets/replay/goal_wcojb65.jpg", "h1zee73": "assets/replay/goal_h1zee73.jpg"};
+
+/* ── nav highlight ── */
+(()=>{const links=[...document.querySelectorAll('.nav ul a')];const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+ const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.toggle('on',l.getAttribute('href')==='#'+e.target.id))}})},{rootMargin:'-45% 0px -50% 0px'});
+ secs.forEach(s=>s&&io.observe(s));
+ document.querySelectorAll('a[aria-disabled]').forEach(a=>a.addEventListener('click',e=>e.preventDefault()));})();
+
+/* ── results tables ── */
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pm=(v,s)=>s==null?v:`${v}<span class="pm">±${s}</span>`;
+const GOAT={cols:['s-SR','SPL','e-SR'],prior:[
+ ['MemoryExplorer†','Qwen2.5-VL-7B','trained',46.4,28.0,'–'],['SSMG-Nav','Qwen-VL-Plus','zero-shot',46.5,34.1,8.6],['EvoMemNav','Qwen3-VL-8B','zero-shot',59.6,38.9,'–'],
+ ['ReEXplore†','GPT-4o','zero-shot',59.8,42.5,'–'],['AstraNav-Memory','Qwen2.5-VL-3B','trained',62.7,56.9,'–'],['STEGNav','GPT-5.4-mini','zero-shot',66.3,39.7,'–'],
+ ['GSMem','GPT-4o','zero-shot',67.2,46.9,'–'],['3D-Mem†','GPT-4o','zero-shot',69.1,48.9,'–'],['MetaNav','GPT-4o','zero-shot',71.4,51.8,'–'],
+ ['HGR†','GPT-4o','zero-shot',72.4,56.2,'–'],['ObsGraph†','GPT-4o','zero-shot',72.7,51.5,'–'],['HIMM†','GPT-4o','zero-shot',72.8,56.1,'–']],
+ ours:[['GPT-4o',[[43.5,.6],[30.2,.5],[6.4,.6]],[[78.3,.5],[57.1,.4],[26.9,.8]],[[77.6,1.0],[56.4,.8],[25.0,2.8]]],
+  ['Qwen3.8-27B',[[41.4,.6],[27.5,.5],[3.1,.5]],[[71.7,.5],[48.2,.4],[14.4,.7]]],
+  ['Opus 5',[[58.9,.9],[34.9,.8],[5.8,.6]],[[81.5,.7],[55.0,.6],[28.6,.8]]],
+  ['GPT-6 Astra',[[65.1,.6],[40.1,.5],[13.6,.7]],[[83.7,.4],[62.3,.3],[36.9,.9]]]],
+ note:'† 278-subtask evaluation. On that subset, NavHarness with GPT-4o reaches 77.6 s-SR / 56.4 SPL. Ours: mean ± s.d. over three seeds.'};
+const IR2R={cols:['s-SR','SPL','e-SR','t-nDTW'],prior:[
+ ['CMA','','trained',19,18,'–',38],['MAP-CMA','','trained',35,32,'–',47],['ETPNav','','trained',28,27,'–',41],['HNR','','trained',30,28,'–',44],['OVER-NAV','','hybrid',35,33,'–',50],['SeqWalker','','trained',36,34,'–',52]],
+ ours:[['Qwen3.8-27B',[[29.0,.9],[21.0,1.1],[0.0,0.0],[36.9,1.2]],[[45.1,1.1],[32.0,.9],[0.0,0.0],[43.2,1.2]]],
+  ['GPT-4o',[[37.0,1.3],[29.0,1.2],[2.8,2.8],[43.1,.9]],[[57.8,1.2],[45.2,1.0],[13.9,2.8],[52.9,1.1]]],
+  ['Opus 5',[[59.3,1.1],[32.8,1.2],[2.8,0.0],[45.1,1.3]],[[78.2,.9],[56.9,1.3],[16.7,2.8],[58.1,1.0]]],
+  ['GPT-6 Astra',[[68.4,1.4],[53.6,.8],[9.3,1.6],[56.8,1.2]],[[85.9,.8],[76.1,.9],[27.8,2.8],[64.2,1.1]]]],
+ note:'CMA uses estimated pose; the other prior methods use simulator pose. Ours: mean ± s.d. over three seeds.'};
+let showAll=false;
+function renderTable(k){
+ const T=k==='goat'?GOAT:IR2R, n=T.cols.length, keep=k==='goat'?5:3;
+ const prior=showAll?T.prior:T.prior.slice(-keep);
+ const f=v=>typeof v==='number'?v.toFixed(1):v;
+ let h=`<table class="t"><thead><tr><th>Method</th>${T.cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`;
+ h+=`<tr class="grp"><td colspan="${n+1}">Prior methods · simulator pose${T.prior.length>keep?` <button class="more" id="more">${showAll?'show fewer':'show all '+T.prior.length}</button>`:''}</td></tr>`;
+ prior.forEach(r=>{h+=`<tr class="prior"><td>${r[0]}${r[1]?`<span class="bb">${r[1]}</span>`:''}</td>${r.slice(3).map(v=>`<td>${v}</td>`).join('')}</tr>`});
+ h+=`<tr class="grp"><td colspan="${n+1}">NavHarness · SLAM pose <span class="gnote">small: same backbone, independent sessions</span></td></tr>`;
+ T.ours.forEach(r=>{const best=r[0]==='GPT-6 Astra';
+  h+=`<tr class="nh${best?' best':''}"><td>${r[0]}</td>${r[2].map((v,j)=>`<td class="hl"><span class="big">${f(v[0])}</span><span class="pm">±${v[1].toFixed(1)}</span><span class="from">${f(r[1][j][0])}</span></td>`).join('')}</tr>`;});
+ h+=`</tbody></table><div class="tnote">${T.note}</div>`;
+ document.getElementById('tbl').innerHTML=h;
+ const m=document.getElementById('more'); if(m) m.onclick=()=>{showAll=!showAll;renderTable(k)};
+ const bell=(id,col,lo,hi)=>{const x=v=>((v-lo)/(hi-lo)*100).toFixed(2)+'%';
+ document.getElementById(id).innerHTML=T.ours.map(r=>{const a=r[1][col][0],b=r[2][col][0];
+  return `<div class="db"><div class="nm">${r[0]}</div><div class="track"><div class="axis"></div><div class="seg" style="left:${x(a)};width:calc(${x(b)} - ${x(a)})"></div>
+  <div class="dot a" style="left:${x(a)}"></div><div class="dot b" style="left:${x(b)}"></div>
+  <div class="lab" style="left:${x(a)}">${a.toFixed(1)}</div><div class="lab b" style="left:${x(b)}">${b.toFixed(1)}</div>
+  <div class="gain" style="left:calc((${x(a)} + ${x(b)})/2)">+${(b-a).toFixed(1)}</div></div></div>`}).join('');};
+ bell('dumbbell',0,k==='goat'?35:25,90); bell('dumbbell2',2,-2,40);
+ document.getElementById('dbsub2').textContent=(k==='goat'?'GOAT-Bench':'IR2R-CE')+' e-SR (%) · every task in the sequence succeeds';
+ document.getElementById('dbsub').textContent=(k==='goat'?'GOAT-Bench':'IR2R-CE')+' s-SR (%) · independent sessions → NavHarness';
+}
+renderTable('goat');
+
+/* ── ablations ── */
+(()=>{const G=[
+ ['A. Session policies','var(--blue)',[['Independent sessions',58.9,.9,34.9,-22.6,-26.3,-19.0],['Single session',54.9,1.1,32.8,-26.6,-30.5,-22.8],['Independent sessions + pre-stop verification',62.4,.8,36.5,-19.1,-22.4,-16.4]]],
+ ['B. Cross-task memory','var(--teal)',[['Clear map after each task (keep records)',68.9,.8,39.8,-12.6,-15.6,-9.7],['Hide earlier task records (keep map)',71.8,.7,41.8,-9.7,-12.5,-7.0],['No cross-task memory',66.8,.9,37.4,-14.7,-16.9,-12.4]]],
+ ['C. Recovery handovers','var(--violet)',[['No recovery (same task budget)',71.1,.9,46.1,-10.4,-13.2,-7.7],['Recovery + empty handover',72.9,.8,44.7,-8.6,-11.3,-6.0],['Recovery + another task’s handover',68.5,1.0,44.8,-13.0,-16.1,-10.0],['Recovery + matched-length summary',73.2,.7,47.0,-8.3,-11.0,-5.7]]],
+ ['D. Completion checks','var(--amber)',[['No pre-stop verification',76.1,.8,47.0,-5.4,-7.8,-3.1],['No post-stop certification',79.0,.6,48.2,-2.5,-4.5,-.6],['One stop view instead of four',78.6,.7,47.9,-2.9,-5.0,-.9]]]];
+ const M=32, w=v=>(Math.abs(v)/M*100).toFixed(2)+'%';
+ let h=`<div class="ref"><span><b>NavHarness (full reference)</b> · Opus 5</span><span>s-SR <b>81.5</b> ± 0.7 &nbsp; SPL <b>55.0</b> ± 0.6</span></div>`;
+ G.forEach(([t,c,rows])=>{h+=`<div class="g" style="--c:${c}">${t}</div>`;rows.forEach(r=>{
+  h+=`<div class="bar" style="--c:${c}"><div class="nm">${r[0]}</div><div class="tr"><div class="fill" style="width:${w(r[4])}"></div><div class="ci" style="right:${w(r[6])};width:calc(${w(r[5])} - ${w(r[6])})"></div></div><div class="v">${r[4].toFixed(1)}<small>s-SR ${r[1].toFixed(1)} · SPL ${r[3].toFixed(1)}</small></div></div>`})});
+ h+=`<div class="tnote" style="padding-left:0;margin-top:10px">Bars grow leftwards from the full harness: longer is a larger loss. Certification also raises record accuracy from 82.6% (accept every claim) to 90.7%, which success rate does not capture.</div>`;
+ document.getElementById('abl').innerHTML=h;})();
+
+/* ── deployment strip ── */
+const CASECOL=k=>k<=4?'#7ab8e6':k<=7?'#e3b06e':k<=9?'#5ccfb6':k<=11?'#ec8f7f':'#c3cad6';
+const CASES={1:['A',[11,17,34,50,68],'Correction that tracks the map frame, not the object','Re-placed markers mostly follow SLAM frame resets, yet the accounts call them “drift”.'],
+2:['A',[15,34,40,44],'A misplaced marker, caught nineteen tasks later','Once re-placed in the current frame, boiler tasks take 51 vs 491 and 93 vs 436 steps.','boiler'],
+3:['C',[17,35,40,42,54],'Moves the simulator never saw','One calendar label re-placed four times as each day’s frame changed; once it misleads.'],
+4:['C',[29,34,36,72,74,78],'Narrowing a label over repeated visits','“piano corner” placements narrow from 1.64 to 1.30 to 0.00 m from the goal.','piano'],
+5:['A',[10,43,56,67,69],'One sentence, read through a note','A note ties “above the staircase handrail” to the freezer-room dresser.','dresser'],
+6:['B',[2,8,61,62],'Arriving already there, and accepted elsewhere','Waking on a marker gives zero-step closures; the control is accepted in the wrong closet.','closet'],
+7:['A',[32,33,78],'A false completion certified into memory','A lamp table certified as the dresser is copied into a room note and a skill.','lamp'],
+8:['A',[28,29,34,35,70,78],'Diagnosing the same fault once, or ten times','The control re-diagnoses a pose snap-back in ten tasks; the full run carries one remedy.'],
+9:['B',[20,26,52,54],'A spurious floor, diagnosed but lost from the summary','The frame-change diagnosis never reaches the consolidated skill; only the remedy does.'],
+10:['B',[13,19,21,36],'Closing an open question','An open question in the notes prompts inspecting both faces of the fridge.','fridge'],
+11:['A',[8,15,40,58,65,69],'Overturned rules, and a route nobody read','Rules driven by own observations were right; one driven by a verdict was wrong.'],
+12:['A',[70],'Declining a correct marker, following a remembered route','Declines an accurate marker on a stale prior, walks landmarks, then recants in the ledger.'],
+13:['C',[56,67,73],'Declining a rule the goal photograph contradicts','A consolidated “avoid” rule is overruled by the goal photograph.','plant'],
+14:['B',[60,65],'A note that misleads, and a journal that recovers','A note sends it to the wrong mirror; the journal holds the lead of a failed attempt.','mirror']};
+const HOUSES={A:'House A',B:'House B',C:'House C'};
+const tip=document.getElementById('tip'), detail=document.getElementById('detail');
+function showTip(e,html){tip.innerHTML=html;tip.style.opacity=1;const x=Math.min(e.clientX+14,innerWidth-330),y=e.clientY+16>innerHeight-140?e.clientY-130:e.clientY+16;tip.style.left=x+'px';tip.style.top=y+'px'}
+function hideTip(){tip.style.opacity=0}
+const MOD={o:'object',d:'description',i:'image'};
+const armTxt=a=>`${a[0]?'<b style="color:var(--ok)">success</b>':'<b style="color:var(--bad)">failure</b>'} · ${a[1]} steps · SPL ${a[2].toFixed(2)}${a[3]?` · ${a[3]} recovery`:''}`;
+function taskDetail(H,i){const t=STRIP[H][i];
+ const cs=Object.entries(CASES).filter(([k,c])=>c[0]===H&&c[1].includes(t[0]));
+ detail.innerHTML=`<div class="dg">${HOUSES[H]} · day ${t[1]} · task ${t[0]} · ${MOD[t[2]]} goal</div><div style="margin-top:4px">“${esc(t[3])}”</div>
+ <div class="arms"><div class="arm" style="--c:var(--full)"><b>NavHarness</b> · ${armTxt(t[4])}${t[6].length?`<div style="margin-top:6px">opened: ${t[6].map(r=>`<code>${esc(r)}</code>`).join('')}</div>`:''}</div>
+ <div class="arm" style="--c:var(--nomem)"><b>No consolidation</b> · ${armTxt(t[5])}</div></div>
+ ${cs.map(([k,c])=>`<div style="margin-top:10px"><span class="k" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:${CASECOL(+k)};color:#081018;font:700 10px/16px Manrope;text-align:center;margin-right:6px">${k}</span>Case ${k}: ${c[2]}${c[4]?` <button class="go" data-go="${c[4]}">Watch replay →</button>`:''}</div>`).join('')}`;
+ bindGo();}
+function caseDetail(k){const c=CASES[k];
+ detail.innerHTML=`<div class="dg"><span style="display:inline-block;width:18px;height:18px;border-radius:50%;background:${CASECOL(+k)};color:#081018;font:700 10px/18px Manrope;text-align:center;margin-right:8px">${k}</span>Case ${k} · ${HOUSES[c[0]]} · ${c[2]}</div><div style="margin-top:6px">${c[3]}</div><div class="muted" style="margin-top:6px;font-size:12.5px">Tasks quoted: ${c[1].join(', ')} (outlined in the strip).</div>${c[4]?`<button class="go" data-go="${c[4]}">Watch the replay →</button>`:''}`;
+ document.querySelectorAll('.cell.case').forEach(x=>x.classList.remove('case'));
+ document.querySelectorAll(`.cell[data-h="${c[0]}"]`).forEach(x=>{if(c[1].includes(+x.dataset.p))x.classList.add('case')});
+ document.querySelectorAll('.cdot').forEach(d=>d.classList.toggle('on',d.dataset.k==k));
+ bindGo();}
+function bindGo(){detail.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{openCase(b.dataset.go);document.getElementById('replays').scrollIntoView()})}
+(()=>{let h='';
+ for(const H of ['A','B','C']){const T=STRIP[H], n=T.length;
+  const full=T.filter(t=>t[4][0]).length, nm=T.filter(t=>t[5][0]).length;
+  const dots=Object.entries(CASES).filter(([k,c])=>c[0]===H).flatMap(([k,c])=>c[1].map(p=>[+k,p]));
+  const lvl={};let dh='';
+  dots.sort((a,b)=>a[1]-b[1]||a[0]-b[0]).forEach(([k,p])=>{/* only first mention of each case per house */});
+  const firsts={};dots.forEach(([k,p])=>{if(!(k in firsts)||p<firsts[k])firsts[k]=p});
+  const placed=[];Object.entries(firsts).sort((a,b)=>a[1]-b[1]).forEach(([k,p])=>{const left=(p-.5)/n*100;let off=0;while(placed.some(q=>Math.abs(q-left-off)<2.4))off+=2.6;placed.push(left+off);
+   dh+=`<button class="cdot" data-k="${k}" style="left:${(left+off).toFixed(2)}%;background:${CASECOL(+k)}" aria-label="Case ${k}">${k}</button>`});
+  const cells=arm=>T.map((t,i)=>`<div class="cell ${t[arm][0]?'s':'f'}${i&&t[1]!==T[i-1][1]?' day':''}" data-h="${H}" data-i="${i}" data-p="${t[0]}"></div>`).join('');
+  const days=[];T.forEach((t,i)=>{if(!days.length||days.at(-1)[0]!==t[1])days.push([t[1],1]);else days.at(-1)[1]++});
+  h+=`<div class="house"><div class="hn"><b>${HOUSES[H]}</b><span>${n} tasks · ${days.length} days</span><span style="color:var(--full)">NavHarness ${full}/${n}</span><span style="color:var(--nomem)">No consolidation ${nm}/${n}</span></div>
+  <div class="rowlab"><span></span><div class="dots">${dh}</div></div>
+  <div class="rowlab"><span><i style="background:var(--full)"></i>NavHarness</span><div class="cells" style="grid-template-columns:repeat(${n},1fr)">${cells(4)}</div></div>
+  <div class="rowlab"><span><i style="background:var(--nomem)"></i>No consol.</span><div class="cells" style="grid-template-columns:repeat(${n},1fr)">${cells(5)}</div></div>
+  <div class="daylabels" style="grid-template-columns:${days.map(d=>d[1]+'fr').join(' ')}">${days.map(d=>`<span>day ${d[0]}</span>`).join('')}</div></div>`;}
+ document.getElementById('houses').innerHTML=h;
+ document.querySelectorAll('.cell').forEach(c=>{const t=STRIP[c.dataset.h][+c.dataset.i];
+  c.addEventListener('mousemove',e=>showTip(e,`<b>${HOUSES[c.dataset.h]} · task ${t[0]} · day ${t[1]}</b><br>${esc(t[3])}<br><span style="color:var(--full)">NavHarness</span> ${armTxt(t[4])}<br><span style="color:var(--nomem)">No consolidation</span> ${armTxt(t[5])}`));
+  c.addEventListener('mouseleave',hideTip);
+  c.addEventListener('click',()=>{document.querySelectorAll('.cell.sel').forEach(x=>x.classList.remove('sel'));document.querySelectorAll(`.cell[data-h="${c.dataset.h}"][data-i="${c.dataset.i}"]`).forEach(x=>x.classList.add('sel'));taskDetail(c.dataset.h,+c.dataset.i)});});
+ document.querySelectorAll('.cdot').forEach(d=>{d.addEventListener('click',()=>caseDetail(d.dataset.k));
+  d.addEventListener('mousemove',e=>showTip(e,`<b>Case ${d.dataset.k}</b> · ${CASES[d.dataset.k][2]}`));d.addEventListener('mouseleave',hideTip)});
+ document.getElementById('caselist').innerHTML=Object.entries(CASES).map(([k,c])=>`<div data-k="${k}"><span class="k" style="background:${CASECOL(+k)}">${k}</span><span>${c[2]} <span class="muted">· ${HOUSES[c[0]]}</span>${c[4]?'<span class="rp">replay</span>':''}</span></div>`).join('');
+ document.querySelectorAll('#caselist div[data-k]').forEach(d=>d.addEventListener('click',()=>caseDetail(d.dataset.k)));
+})();
+
+/* ── replays ── */
+const CASEDEF={
+ dresser:{meta:'Case 5 · House A · day 4 · task 56 · description goal',title:'Reading a note before moving',
+  why:'The phrase “above the staircase handrail” sends the run without consolidation upstairs, although the target is in the freezer room. The full session reads a skill note connecting that same wording to the freezer-room dresser before moving or querying the map, and searches the right room. Both runs start inside the freezer room.',
+  panels:[['full','NavHarness',0,''],['nomem','No consolidation',1,'']]},
+ fridge:{meta:'Case 10 · House B · day 2 task 21 → day 3 task 36',title:'An open question, settled and then used',
+  why:'The house notes leave open whether two refrigerator descriptions are one appliance or two. After completing task 21, the session returns to that question, inspects both faces of the refrigerator and records its answer. On day 3 the goal is a dark photograph: NavHarness recognizes the appliance, while the run without consolidation goes looking for a second refrigerator in the basement.',
+  panels:[['full','NavHarness · task 21',0,'settles the question'],['full','NavHarness · task 36',1,'dark goal photo'],['nomem','No consolidation · task 36',2,'dark goal photo']]},
+ mirror:{meta:'Case 14 · House B · day 4 · task 65 · image goal',title:'A misleading note, and a journal that recovers',
+  why:'Five tasks earlier (task 60) the full run spent its whole budget on the same mirror but recorded a wall left unchecked behind an open door. At task 65 it first follows an incomplete house note to the wrong, black-framed mirror. After recovery it compares the goal image with the note, searches the journal, finds that earlier lead, and reaches the pine-framed mirror. Here the run without consolidation, starting in the same guest room, was faster: memory was both the cause of the detour and the cure.',
+  panels:[['full','NavHarness',0,''],['nomem','No consolidation',1,'']]},
+ boiler:{meta:'Case 2 · House A · day 3 · task 40 · image goal',title:'A repaired marker and a written route',
+  why:'The “laundry bath” marker was misplaced at task 15 in a frame already broken by a tracking loss, sat unused for nineteen tasks, and was re-placed at task 34. At task 40 the full session reads its boiler skill, follows the saved landmark route to the now-reachable marker, and reaches the boiler in 51 steps without recovery. The run without consolidation searches the laundry and five other rooms, recovers once, and runs out of steps 1.33 m from the goal.',
+  panels:[['full','NavHarness',0,''],['nomem','No consolidation',1,'']]},
+ closet:{meta:'Case 6 · House B · day 4 · task 62 · description goal',title:'Arriving already there',
+  why:'The house has two closets with hanging clothes. The full session wakes on its within-day marker for the right one, checks the view, and closes without taking a step, although the skill note it read pointed to the other closet; it records that conflict for consolidation. The run without consolidation stands in the wrong closet, closes after four steps and is accepted by the judge, 9.8 m from the goal. The runs start about 8.8 m apart because task 61 diverged.',
+  panels:[['full','NavHarness',0,''],['nomem','No consolidation',1,'']]},
+ lamp:{meta:'Case 7 · House A · day 2 · tasks 32 → 33',title:'A false completion certified into memory',
+  why:'At task 32 the full session closes at a lamp chest beside the armchair. The judge accepts it and the journal records it as certified, although the true dresser is 6.5 m away. The next task, “Find any dresser”, starts in the same corner and repeats the claim in 16 steps without opening a file; the error later reaches a room note and a skill. The run without consolidation made the same mistake at task 32, after overriding a refusal, but with no certified note it searches afresh at task 33 and succeeds.',
+  panels:[['full','NavHarness · task 32',0,'certified wrongly'],['full','NavHarness · task 33',1,'repeats the claim'],['nomem','No consolidation · task 33',2,'searches afresh']]},
+ piano:{meta:'Case 4 · House C · day 5 · task 72 · object goal',title:'A label that remembered where to stand, not the object',
+  why:'Earlier placements of the “piano corner” label recorded the session’s habit of standing back to frame the piano. Following it, the full run parks about three paces back; the judge accepts, but the environment scores a failure 1.27 m from the goal, while the run without consolidation stands beside the piano in 90 steps. Two tasks later the session re-placed the label at the piano itself, and on tasks 74 and 78 the full run succeeds in fewer steps.',
+  panels:[['full','NavHarness',0,''],['nomem','No consolidation',1,'']]},
+ plant:{meta:'Case 13 · House C · day 5 · task 67 · image goal',title:'Keeping the room, revising the rule',
+  why:'A consolidated skill describes a corner with two floor plants but advises avoiding it as “too tight to frame”. The goal photograph asks for one of those plants. The session uses the note and its stored photographs to locate the corner, rejects the advice, finds a viewpoint, and records a correction that the next consolidation incorporates. The judge returned “unknown”; by environment truth the full run succeeded 0.17 m from the plant.',
+  panels:[['full','NavHarness',0,''],['nomem','No consolidation',1,'']]}};
+const ICON={play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>',pause:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>',
+ next:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 4v16l10-8zM17 4h3v16h-3z"/></svg>',restart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>'};
+const TG={say:'says',read:'reads',grep:'grep',glob:'glob',photos:'opens photos',move:'moves',frame:'looks',map:'map',preview:'preview',goal:'goal',mark:'marks',recovery:'recovery',askrec:'asks recovery',refused:'refused',close:'claims',verdict:'judge',truth:'ground truth'};
+function evHTML(b){
+ switch(b.k){
+ case 'say':return `<span class="tg">${TG.say}</span>${esc(b.text).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\*(.+?)\*/g,'<i>$1</i>').replace(/\n+/g,'<br>')}`;
+ case 'read':return `<span class="tg">reads</span><span class="file">${esc(b.file)}</span>${b.miss?' <span class="muted">(does not exist)</span>':`<pre>${esc(b.lines.join('\n'))}</pre>`}`;
+ case 'grep':return `<span class="tg">grep</span><span class="file">/${esc(b.pattern)}/</span> · ${b.hits} hit${b.hits==1?'':'s'}${b.files.length?' in '+b.files.map(f=>`<span class="file">${esc(f)}</span>`).join(', '):''}`;
+ case 'glob':return `<span class="tg">glob</span><span class="file">${esc(b.pattern)}</span> · ${b.hits} file${b.hits==1?'':'s'}`;
+ case 'photos':return `<span class="tg">opens photos</span><span class="file">rooms/${esc(b.room)}/photos</span> · ${b.imgs.length} stored view${b.imgs.length>1?'s':''}<div class="th">${b.imgs.map(s=>`<img src="${s}" alt="stored view" loading="lazy">`).join('')}</div>`;
+ case 'move':return `<span class="tg">moves</span>${b.moves.join(' · ')}`;
+ case 'frame':return `<span class="tg">looks</span>frame ${b.fr} · ${b.steps} steps used`;
+ case 'map':return `<span class="tg">map</span>${b.floor||''}${b.m2!=null?` · ${b.m2} m² explored · ${b.markers} markers`:''}`;
+ case 'preview':return `<span class="tg">preview</span>route ${b.ok?'reachable':'unreachable'}${b.d!=null?` · ${b.d} m`:''}`;
+ case 'goal':return `<span class="tg">goal</span>opens the goal`;
+ case 'mark':return `<span class="tg">marks</span>“${esc(b.label)}”`;
+ case 'recovery':return `<span class="tg">recovery</span>fresh conversation, same goal · scope: ${esc(b.scope)} · ${b.trigger==='cap'?'turn threshold':'requested by the session'} at step ${b.step}`;
+ case 'askrec':return `<span class="tg">asks recovery</span>(${esc(b.scope)}) ${esc(b.text)}`;
+ case 'refused':return `<span class="tg">refused</span>orchestrator: ${esc(b.why)}`;
+ case 'close':return `<span class="tg">claims ${esc(b.status)}</span>${esc(b.text)}`;
+ case 'verdict':return `<span class="tg">judge · ${esc(b.v)}</span>${esc(b.text)}`;
+ case 'truth':return `<span class="tg">ground truth</span>${b.success?'Success':'Failure'} · ${b.dist} m from the goal · ${b.steps} steps · SPL ${b.spl.toFixed(2)}`;}
+ return '';}
+const players=[];
+function makePlayer(el,ep,armc){
+ const beats=ep.beats, n=beats.length;
+ const goalImg=GOALS[ep.house+ep.pos];
+ el.innerHTML=`<div class="viewer"><div class="empty">${goalImg?'':'Session opening'}</div><img alt="camera frame" style="display:none"><span class="ov"></span><div class="res" style="--c:${armc}"></div></div>
+ <div class="ctrl"><button data-a="restart" aria-label="restart">${ICON.restart}</button><button data-a="play" aria-label="play">${ICON.play}</button><button data-a="next" aria-label="next">${ICON.next}</button><input type="range" min="0" max="${n}" value="0" aria-label="timeline"><span class="cnt">0/${n}</span></div>
+ <div class="log"></div>`;
+ const img=el.querySelector('.viewer img'),ov=el.querySelector('.ov'),res=el.querySelector('.res'),empty=el.querySelector('.empty'),log=el.querySelector('.log'),rng=el.querySelector('input'),cnt=el.querySelector('.cnt'),pb=el.querySelector('[data-a=play]');
+ const P={i:0,timer:null,playing:false};
+ function show(i){P.i=i;rng.value=i;cnt.textContent=i+'/'+n;
+  let src=goalImg||null,lab=goalImg?'goal photograph':'',fr=null;
+  for(let j=0;j<i;j++){if(beats[j].k==='frame'){src=beats[j].img;lab=`frame ${beats[j].fr} · step ${beats[j].steps}`}}
+  if(src){img.style.display='block';if(img.getAttribute('src')!==src)img.src=src;empty.style.display='none';ov.textContent=lab;ov.style.display='block'}else{img.style.display='none';empty.style.display='block';ov.style.display='none'}
+  const tr=beats.slice(0,i).find(b=>b.k==='truth');
+  if(tr){res.innerHTML=`<b>${tr.success?'✓ Success':'✗ Failure'}</b> · ${tr.dist} m from goal · ${tr.steps} steps · SPL ${tr.spl.toFixed(2)}`;res.style.setProperty('--c',tr.success?'var(--ok)':'var(--bad)');res.classList.add('show')}else res.classList.remove('show');
+  const have=log.children.length;
+  if(i<have){while(log.children.length>i)log.lastChild.remove()}
+  else for(let j=have;j<i;j++){const b=beats[j],d=document.createElement('div');d.className='ev '+b.k;if(b.k==='truth')d.style.setProperty('--c',b.success?'var(--ok)':'var(--bad)');d.innerHTML=evHTML(b);log.appendChild(d)}
+  log.scrollTop=log.scrollHeight;}
+ function delay(b){if(!b)return 900;if(b.k==='say')return Math.min(3600,900+b.text.length*18);if(b.k==='read')return 2200;if(b.k==='photos')return 1800;if(b.k==='close'||b.k==='verdict')return 2600;if(b.k==='frame')return 1000;return 650}
+ function tick(){if(!P.playing)return;if(P.i>=n){stop();return}show(P.i+1);P.timer=setTimeout(tick,delay(beats[P.i-1]))}
+ function play(){if(P.i>=n)show(0);P.playing=true;pb.innerHTML=ICON.pause;clearTimeout(P.timer);P.timer=setTimeout(tick,300)}
+ function stop(){P.playing=false;pb.innerHTML=ICON.play;clearTimeout(P.timer)}
+ el.querySelector('[data-a=play]').onclick=()=>P.playing?stop():play();
+ el.querySelector('[data-a=next]').onclick=()=>{stop();if(P.i<n)show(P.i+1)};
+ el.querySelector('[data-a=restart]').onclick=()=>{stop();show(0);play()};
+ rng.oninput=()=>{stop();show(+rng.value)};
+ show(0);P.play=play;P.stop=stop;P.el=el;players.push(P);return P;}
+let current=(location.hash.match(/^#case-(\w+)/)||[])[1]||null;
+let Rp=null;function loadR(){return Rp||(Rp=fetch('assets/replays.json').then(r=>r.json()).then(d=>R=d))}
+async function openCase(k){await loadR();players.forEach(p=>p.stop());players.length=0;current=k;
+ document.querySelectorAll('[data-tabs=case] button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
+ const C=CASEDEF[k], eps=R[k];
+ const firstGoal=eps.map(e=>GOALS[e.house+e.pos]).find(Boolean);
+ const g=eps[C.panels.findIndex(p=>p[0]==='nomem')]||eps[0];
+ let h=`<div class="card rp-head"><div><div class="meta">${C.meta}</div><h3>${C.title}</h3>
+  ${(()=>{const cl=t=>t.replace(' (call get_goal to see it)','');const u=[];eps.forEach(e=>{if(!u.some(x=>x.pos===e.pos))u.push(e)});
+   const gs=[...new Set(u.map(e=>cl(e.goal)))];
+   return gs.length===1?`<div class="goal"><small>goal</small>${esc(gs[0])}</div>`:u.map(e=>`<div class="goal"><small>goal · task ${e.pos}</small>${esc(cl(e.goal))}</div>`).join('')})()}<p class="why">${C.why}</p></div>
+  ${firstGoal?`<div class="gimg"><img src="${firstGoal}" alt="goal photograph">goal photograph</div>`:''}</div>
+  <div class="panels${C.panels.length>2?' three':''}">`;
+ C.panels.forEach((p,i)=>{const col=p[0]==='full'?'var(--full)':'var(--nomem)';h+=`<div class="card panel"><div class="ph"><div><b>${p[1]}</b>${p[3]?`<div class="sub">${p[3]}</div>`:''}</div><span class="armtag" style="--c:${col}">${p[0]==='full'?'full':'control'}</span></div><div class="pbody" data-i="${i}"></div></div>`});
+ h+=`</div><div class="rp-note">Press play on each panel, or scrub the timeline. Long searches are shown with sampled frames; every message, note excerpt and verdict is verbatim from the logs.</div>`;
+ document.getElementById('replay').innerHTML=h;
+ document.querySelectorAll('#replay .pbody').forEach(el=>{const p=C.panels[+el.dataset.i];makePlayer(el,eps[p[2]],p[0]==='full'?'var(--full)':'var(--nomem)')});
+ if(seen)players.forEach(p=>p.play());}
+let seen=false;
+new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting&&!seen){seen=true;players.forEach(p=>p.play())}})},{threshold:.25}).observe(document.getElementById('replay'));
+document.querySelectorAll('[data-tabs]').forEach(t=>t.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+ if(t.dataset.tabs==='bench'){t.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));renderTable(b.dataset.k)}else openCase(b.dataset.k)}));
+new IntersectionObserver((es,o)=>{if(es.some(e=>e.isIntersecting)){o.disconnect();openCase(current||'dresser')}},{rootMargin:'900px 0px'}).observe(document.getElementById('replays'));
+
+/* ── copy bibtex ── */
+document.getElementById('copy').onclick=async()=>{const b=document.getElementById('copy');try{await navigator.clipboard.writeText(document.getElementById('bib').textContent);b.textContent='Copied'}catch(e){b.textContent='Select & copy'}setTimeout(()=>b.textContent='Copy',1600)};
+</script>
+</body>
+</html>

@@ -40,7 +40,7 @@ profile:
 about:
   heading: "About Me"
   paragraphs:
-    - "Hi, I am a first-year Ph.D. student at the <a href='https://www.adelaide.edu.au/aiml/'>Australian Institute for Machine Learning (AIML)</a>, <a href='https://www.adelaide.edu.au/'>Adelaide University</a>, supervised by <a href='http://www.qi-wu.me/'>A/Prof. Qi Wu</a> and <a href='https://people.csiro.au/L/J/ryan-liu'>A/Prof. Jiajun Liu</a>. I am a member of the <a href='https://v3alab.github.io/'>Vision and Visualisation for Autonomous AI Lab (V3A Lab)</a>, where I work on embodied AI, vision-language reasoning, and autonomous agents."
+    - "Hi, I am a second-year Ph.D. student at the <a href='https://www.adelaide.edu.au/aiml/'>Australian Institute for Machine Learning (AIML)</a>, <a href='https://www.adelaide.edu.au/'>Adelaide University</a>, supervised by <a href='http://www.qi-wu.me/'>A/Prof. Qi Wu</a> and <a href='https://people.csiro.au/L/J/ryan-liu'>A/Prof. Jiajun Liu</a>. I am a member of the <a href='https://v3alab.github.io/'>Vision and Visualisation for Autonomous AI Lab (V3A Lab)</a>, where I work on embodied AI, vision-language reasoning, and autonomous agents."
     - "Prior to my Ph.D. studies, I received my Master’s degree from the University of Adelaide, now Adelaide University, where I was mentored by <a href='https://gengzezhou.github.io/'>Dr. Gengze Zhou</a>. Since 2026, I have been focusing on agentic AI for embodied AI tasks under the mentorship of <a href='https://gengzezhou.github.io/'>Dr. Gengze Zhou</a> and <a href='https://sihaoevery.github.io/'>Dr. Sihao Lin</a>. I also collaborate closely with <a href='https://jianzhou0420.github.io/'>Jian Zhou</a>, Zerui Li, and <a href='https://sj-li.com/'>Dr. Shijie Li</a>."
     - "My research focuses on building explainable and embodied AI systems for autonomous agents that can perceive, reason, learn, and navigate in complex 3D environments. I am particularly interested in evaluating and improving multimodal large language models for 3D understanding, spatial reasoning, lifelong learning, and ultra-long-horizon vision-and-language navigation. Recently, I have been exploring agentic AI frameworks for embodied tasks such as VLN, aiming to integrate perception, reasoning, memory, and decision-making into unified autonomous systems. More broadly, I am dedicated to bridging the gap between simulator-based embodied AI research and real-world robotic applications."
 
@@ -71,6 +71,20 @@ research:
 projects:
   heading: "Publications"
   items:
+    - title: "NavHarness: Towards Lifelong Embodied Navigation"
+      venue: "arXiv preprint, 2026"
+      authors: "<strong>Xunyi Zhao</strong><sup>*</sup>, Jian Zhou<sup>*</sup>, Sihao Lin, Gengze Zhou, Zerui Li, Xinyu Yan, Jiajun Liu, Anton van den Hengel, Qi Wu"
+      note: "<sup>*</sup> Equal contribution"
+      image: "assets/projects/navharness-tp.jpg"
+      image_alt: "NavHarness thumbnail"
+      placeholder: "NavHarness"
+      links:
+        - label: "Paper"
+          url: "#"  # TODO: arXiv link once posted
+        - label: "Code"
+          url: "https://github.com/billzhao1030/NavHarness"
+        - label: "Project"
+          url: "NavHarness/"
     - title: "VLN-MME: Diagnosing MLLMs as Language-guided Visual Navigation Agents"
       venue: "Annual Meeting of the Association for Computational Linguistics (ACL), 2026"
       authors: "<strong>Xunyi Zhao</strong>, Gengze Zhou<sup>†</sup>, Qi Wu"
