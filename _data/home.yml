@@ -109,6 +109,8 @@ projects:
       links:
         - label: "Paper"
           url: "https://arxiv.org/abs/2607.26148"
+        - label: "Code"
+          url: "https://github.com/jianzhou0420/MIP"
         - label: "Project"
           url: "https://jianzhou0420.github.io/src/works/MIP/"
     - title: "Ask When It Pays: Cost-Aware Open-Ended Interaction for Instance Goal Navigation"
