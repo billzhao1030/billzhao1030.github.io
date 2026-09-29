@@ -49,6 +49,8 @@ news:
   items:
     - date: "2026.10"
       text: "I open-sourced <a href='SurveyAtlas/'>SurveyAtlas</a> (<a href='https://github.com/billzhao1030/SurveyAtlas'>code</a>), a living literature survey: LLM agents harvest, classify and deep-read a field's papers, verify the reported results, and publish a searchable website with Q&A, a research map and leaderboards. The first atlas, <a href='SurveyAtlas/navatlas/'>NavAtlas</a>, covers 3,000+ embodied-navigation papers."
+    - date: "2026.09"
+      text: "Our new preprint <a href='https://arxiv.org/abs/2609.34276'>NavHarness: Towards Lifelong Embodied Navigation</a> is out on arXiv, with <a href='https://github.com/billzhao1030/NavHarness'>code</a> and a <a href='NavHarness/'>project page</a>! A training-free harness that makes memory processing part of the navigation loop, reaching 83.7% s-SR on GOAT-Bench with SLAM-estimated poses."
     - date: "2026.07"
       text: "Our new preprint <a href='https://arxiv.org/abs/2607.26148'>Embodied Agents Take Control</a> is out on arXiv! Given only a monocular RGB camera and four discrete actions, a general-purpose agent already rivals industrial-scale navigation policies on VLN."
     - date: "2026.06"
@@ -82,7 +84,7 @@ projects:
       placeholder: "NavHarness"
       links:
         - label: "Paper"
-          url: "#"  # TODO: arXiv link once posted
+          url: "https://arxiv.org/abs/2609.34276"
         - label: "Code"
           url: "https://github.com/billzhao1030/NavHarness"
         - label: "Project"
