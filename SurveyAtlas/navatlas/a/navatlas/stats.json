@@ -1,0 +1,517 @@
+{
+ "built_at": "2026-10-01T11:42:28+00:00",
+ "funnel": {
+  "harvested": 20480,
+  "scope_out": 7717,
+  "scope_core": 2212,
+  "scope_aerial": 454,
+  "scope_adjacent": 481,
+  "prefilter_drop": 9583,
+  "duplicate": 33
+ },
+ "n_papers": 3147,
+ "n_core": 2212,
+ "n_venue": 1849,
+ "n_dblp": 0,
+ "n_bib_official": 1258,
+ "n_bib_venue": 1714,
+ "venue_src": {
+  "none": 856,
+  "openalex": 59,
+  "arxiv-comment": 173,
+  "semantic-scholar": 1121,
+  "override": 3
+ },
+ "queries": [
+  {
+   "key": "vln-vl",
+   "query": "abs:\"vision-and-language navigation\"",
+   "hits": 323,
+   "core": 286,
+   "src": "arxiv"
+  },
+  {
+   "key": "vln-vl2",
+   "query": "abs:\"vision language navigation\"",
+   "hits": 209,
+   "core": 149,
+   "src": "arxiv"
+  },
+  {
+   "key": "vln-abbr",
+   "query": "abs:VLN",
+   "hits": 502,
+   "core": 415,
+   "src": "arxiv"
+  },
+  {
+   "key": "vln-broad",
+   "query": "all:vision AND all:language AND all:navigation",
+   "hits": 1750,
+   "core": 769,
+   "src": "arxiv"
+  },
+  {
+   "key": "vln-instr",
+   "query": "abs:instruction AND abs:navigation AND abs:embodied",
+   "hits": 254,
+   "core": 166,
+   "src": "arxiv"
+  },
+  {
+   "key": "vln-instr2",
+   "query": "abs:\"navigation instructions\"",
+   "hits": 118,
+   "core": 77,
+   "src": "arxiv"
+  },
+  {
+   "key": "vln-lang",
+   "query": "abs:\"language-guided navigation\" OR abs:\"language guided navigation\" OR abs:\"language-conditioned navigation\"",
+   "hits": 25,
+   "core": 17,
+   "src": "arxiv"
+  },
+  {
+   "key": "vln-nlnav",
+   "query": "abs:\"natural language\" AND abs:navigation AND abs:agent",
+   "hits": 412,
+   "core": 221,
+   "src": "arxiv"
+  },
+  {
+   "key": "bm-r2r",
+   "query": "abs:\"Room-to-Room\" OR abs:R2R",
+   "hits": 300,
+   "core": 232,
+   "src": "arxiv"
+  },
+  {
+   "key": "bm-rxr",
+   "query": "abs:RxR OR abs:\"Room-Across-Room\"",
+   "hits": 101,
+   "core": 86,
+   "src": "arxiv"
+  },
+  {
+   "key": "bm-reverie",
+   "query": "abs:REVERIE OR abs:\"remote embodied\"",
+   "hits": 87,
+   "core": 79,
+   "src": "arxiv"
+  },
+  {
+   "key": "bm-soon",
+   "query": "abs:SOON AND abs:navigation",
+   "hits": 61,
+   "core": 25,
+   "src": "arxiv"
+  },
+  {
+   "key": "bm-dialog",
+   "query": "abs:CVDN OR abs:\"dialog navigation\" OR abs:\"dialogue navigation\" OR abs:\"navigation from dialog\" OR abs:\"cooperative vision-and-dialog\"",
+   "hits": 36,
+   "core": 28,
+   "src": "arxiv"
+  },
+  {
+   "key": "bm-touchdown",
+   "query": "abs:Touchdown AND abs:navigation",
+   "hits": 18,
+   "core": 9,
+   "src": "arxiv"
+  },
+  {
+   "key": "bm-streetnav",
+   "query": "abs:\"street view\" AND abs:navigation",
+   "hits": 38,
+   "core": 11,
+   "src": "arxiv"
+  },
+  {
+   "key": "bm-vlnce",
+   "query": "abs:\"VLN-CE\" OR (abs:\"continuous environments\" AND abs:navigation)",
+   "hits": 99,
+   "core": 89,
+   "src": "arxiv"
+  },
+  {
+   "key": "objnav",
+   "query": "abs:ObjectNav OR abs:\"object navigation\" OR abs:\"object-goal navigation\" OR abs:\"object goal navigation\"",
+   "hits": 289,
+   "core": 249,
+   "src": "arxiv"
+  },
+  {
+   "key": "objnav2",
+   "query": "abs:\"object search\" AND abs:embodied",
+   "hits": 25,
+   "core": 11,
+   "src": "arxiv"
+  },
+  {
+   "key": "ovnav",
+   "query": "abs:\"open-vocabulary\" AND abs:navigation",
+   "hits": 168,
+   "core": 86,
+   "src": "arxiv"
+  },
+  {
+   "key": "semnav",
+   "query": "abs:\"semantic navigation\" OR abs:\"semantic goal navigation\" OR abs:\"semantic visual navigation\"",
+   "hits": 72,
+   "core": 47,
+   "src": "arxiv"
+  },
+  {
+   "key": "pointnav",
+   "query": "abs:PointNav OR abs:\"point-goal navigation\" OR abs:\"point goal navigation\"",
+   "hits": 47,
+   "core": 39,
+   "src": "arxiv"
+  },
+  {
+   "key": "imgnav",
+   "query": "abs:ImageNav OR abs:\"image-goal navigation\" OR abs:\"image goal navigation\" OR abs:\"image-goal\"",
+   "hits": 82,
+   "core": 60,
+   "src": "arxiv"
+  },
+  {
+   "key": "instnav",
+   "query": "abs:\"instance image navigation\" OR abs:\"instance-image\" OR abs:\"instance navigation\" OR abs:\"InstanceNav\"",
+   "hits": 60,
+   "core": 15,
+   "src": "arxiv"
+  },
+  {
+   "key": "pixnav",
+   "query": "abs:\"pixel navigation\" OR abs:PixNav OR abs:\"pixel-guided navigation\"",
+   "hits": 2,
+   "core": 1,
+   "src": "arxiv"
+  },
+  {
+   "key": "multigoal",
+   "query": "abs:\"GOAT-Bench\" OR abs:\"multi-object navigation\" OR abs:\"lifelong navigation\" OR abs:MultiON OR abs:\"GO to Any Thing\" OR abs:\"multimodal lifelong\"",
+   "hits": 51,
+   "core": 46,
+   "src": "arxiv"
+  },
+  {
+   "key": "audionav",
+   "query": "abs:\"audio-visual navigation\" OR abs:SoundSpaces OR abs:\"audio-goal\"",
+   "hits": 45,
+   "core": 32,
+   "src": "arxiv"
+  },
+  {
+   "key": "eqa",
+   "query": "abs:\"embodied question answering\"",
+   "hits": 66,
+   "core": 11,
+   "src": "arxiv"
+  },
+  {
+   "key": "socialnav",
+   "query": "abs:\"social navigation\" AND (abs:embodied OR abs:habitat OR abs:simulation)",
+   "hits": 75,
+   "core": 23,
+   "src": "arxiv"
+  },
+  {
+   "key": "tracknav",
+   "query": "abs:\"embodied visual tracking\" OR (abs:\"person following\" AND abs:embodied)",
+   "hits": 15,
+   "core": 4,
+   "src": "arxiv"
+  },
+  {
+   "key": "explore",
+   "query": "abs:exploration AND abs:embodied AND abs:navigation",
+   "hits": 270,
+   "core": 145,
+   "src": "arxiv"
+  },
+  {
+   "key": "mobmanip",
+   "query": "abs:\"open-vocabulary mobile manipulation\" OR (abs:\"mobile manipulation\" AND abs:navigation AND abs:embodied)",
+   "hits": 38,
+   "core": 3,
+   "src": "arxiv"
+  },
+  {
+   "key": "embnav",
+   "query": "abs:embodied AND abs:navigation",
+   "hits": 1032,
+   "core": 490,
+   "src": "arxiv"
+  },
+  {
+   "key": "visnav",
+   "query": "abs:\"visual navigation\"",
+   "hits": 409,
+   "core": 247,
+   "src": "arxiv"
+  },
+  {
+   "key": "goalnav",
+   "query": "abs:\"goal-oriented navigation\" OR abs:\"goal-conditioned navigation\" OR abs:\"goal-driven navigation\" OR (abs:\"target-driven\" AND abs:navigation)",
+   "hits": 63,
+   "core": 42,
+   "src": "arxiv"
+  },
+  {
+   "key": "navfm",
+   "query": "abs:\"navigation foundation model\" OR abs:\"general navigation model\" OR abs:\"navigation foundation models\" OR abs:\"visual navigation model\"",
+   "hits": 24,
+   "core": 21,
+   "src": "arxiv"
+  },
+  {
+   "key": "sim-habitat",
+   "query": "abs:habitat AND abs:navigation",
+   "hits": 175,
+   "core": 118,
+   "src": "arxiv"
+  },
+  {
+   "key": "sim-mp3d",
+   "query": "abs:matterport AND abs:navigation",
+   "hits": 28,
+   "core": 20,
+   "src": "arxiv"
+  },
+  {
+   "key": "sim-thor",
+   "query": "(abs:\"AI2-THOR\" AND abs:navigation) OR abs:ProcTHOR OR abs:RoboTHOR",
+   "hits": 86,
+   "core": 61,
+   "src": "arxiv"
+  },
+  {
+   "key": "sim-gibson",
+   "query": "abs:gibson AND abs:navigation",
+   "hits": 51,
+   "core": 48,
+   "src": "arxiv"
+  },
+  {
+   "key": "sim-hm3d",
+   "query": "abs:HM3D",
+   "hits": 144,
+   "core": 125,
+   "src": "arxiv"
+  },
+  {
+   "key": "llm-nav",
+   "query": "abs:navigation AND abs:\"large language model\"",
+   "hits": 1612,
+   "core": 199,
+   "src": "arxiv"
+  },
+  {
+   "key": "llm-nav2",
+   "query": "abs:navigation AND abs:LLM AND abs:embodied",
+   "hits": 142,
+   "core": 57,
+   "src": "arxiv"
+  },
+  {
+   "key": "vlm-nav",
+   "query": "abs:navigation AND abs:\"vision-language model\"",
+   "hits": 535,
+   "core": 200,
+   "src": "arxiv"
+  },
+  {
+   "key": "vlm-nav2",
+   "query": "abs:navigation AND abs:VLM AND abs:embodied",
+   "hits": 130,
+   "core": 64,
+   "src": "arxiv"
+  },
+  {
+   "key": "vla-nav",
+   "query": "abs:\"vision-language-action\" AND abs:navigation",
+   "hits": 118,
+   "core": 37,
+   "src": "arxiv"
+  },
+  {
+   "key": "zs-nav",
+   "query": "abs:\"zero-shot\" AND abs:navigation",
+   "hits": 654,
+   "core": 288,
+   "src": "arxiv"
+  },
+  {
+   "key": "agent-nav",
+   "query": "abs:\"embodied agent\" AND abs:navigation",
+   "hits": 305,
+   "core": 178,
+   "src": "arxiv"
+  },
+  {
+   "key": "agentic-nav",
+   "query": "abs:agentic AND abs:navigation",
+   "hits": 4273,
+   "core": 946,
+   "src": "arxiv"
+  },
+  {
+   "key": "multiagent",
+   "query": "abs:\"multi-agent\" AND abs:navigation AND abs:language",
+   "hits": 141,
+   "core": 9,
+   "src": "arxiv"
+  },
+  {
+   "key": "wm-nav",
+   "query": "abs:\"world model\" AND abs:navigation",
+   "hits": 297,
+   "core": 59,
+   "src": "arxiv"
+  },
+  {
+   "key": "mllm-nav",
+   "query": "abs:navigation AND abs:\"multimodal large language model\"",
+   "hits": 133,
+   "core": 31,
+   "src": "arxiv"
+  },
+  {
+   "key": "survey-nav",
+   "query": "ti:survey AND ti:navigation",
+   "hits": 49,
+   "core": 18,
+   "src": "arxiv"
+  },
+  {
+   "key": "ti-nav",
+   "query": "(ti:navigation OR ti:navigate OR ti:navigating) AND (cat:cs.CV OR cat:cs.RO OR cat:cs.AI OR cat:cs.LG OR cat:cs.CL)",
+   "hits": 4664,
+   "core": 1431,
+   "src": "arxiv"
+  },
+  {
+   "key": "ti-explore",
+   "query": "ti:exploration AND ti:embodied",
+   "hits": 76,
+   "core": 20,
+   "src": "arxiv"
+  },
+  {
+   "key": "audionav",
+   "query": "(OpenAlex)",
+   "hits": 134,
+   "core": 39,
+   "src": "openalex"
+  },
+  {
+   "key": "bm",
+   "query": "(OpenAlex)",
+   "hits": 8562,
+   "core": 194,
+   "src": "openalex"
+  },
+  {
+   "key": "embnav",
+   "query": "(OpenAlex)",
+   "hits": 289,
+   "core": 177,
+   "src": "openalex"
+  },
+  {
+   "key": "eqa",
+   "query": "(OpenAlex)",
+   "hits": 97,
+   "core": 12,
+   "src": "openalex"
+  },
+  {
+   "key": "imgnav",
+   "query": "(OpenAlex)",
+   "hits": 109,
+   "core": 82,
+   "src": "openalex"
+  },
+  {
+   "key": "llmnav",
+   "query": "(OpenAlex)",
+   "hits": 331,
+   "core": 161,
+   "src": "openalex"
+  },
+  {
+   "key": "multigoal",
+   "query": "(OpenAlex)",
+   "hits": 71,
+   "core": 51,
+   "src": "openalex"
+  },
+  {
+   "key": "navfm",
+   "query": "(OpenAlex)",
+   "hits": 149,
+   "core": 49,
+   "src": "openalex"
+  },
+  {
+   "key": "objnav",
+   "query": "(OpenAlex)",
+   "hits": 553,
+   "core": 384,
+   "src": "openalex"
+  },
+  {
+   "key": "pointnav",
+   "query": "(OpenAlex)",
+   "hits": 62,
+   "core": 48,
+   "src": "openalex"
+  },
+  {
+   "key": "semnav",
+   "query": "(OpenAlex)",
+   "hits": 459,
+   "core": 207,
+   "src": "openalex"
+  },
+  {
+   "key": "visnav",
+   "query": "(OpenAlex)",
+   "hits": 909,
+   "core": 230,
+   "src": "openalex"
+  },
+  {
+   "key": "vln-abbr",
+   "query": "(OpenAlex)",
+   "hits": 684,
+   "core": 555,
+   "src": "openalex"
+  },
+  {
+   "key": "vln-lang",
+   "query": "(OpenAlex)",
+   "hits": 687,
+   "core": 144,
+   "src": "openalex"
+  },
+  {
+   "key": "vln-vl",
+   "query": "(OpenAlex)",
+   "hits": 517,
+   "core": 432,
+   "src": "openalex"
+  },
+  {
+   "key": "vln-vl2",
+   "query": "(OpenAlex)",
+   "hits": 336,
+   "core": 239,
+   "src": "openalex"
+  }
+ ]
+}

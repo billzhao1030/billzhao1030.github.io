@@ -1,0 +1,332 @@
+{
+ "scopes": [
+  {
+   "code": "core",
+   "label": "Core",
+   "desc": "Embodied navigation is the paper's main subject (method, benchmark, dataset, simulator, survey or analysis)."
+  },
+  {
+   "code": "adjacent",
+   "label": "Adjacent",
+   "desc": "Navigation is a substantial but secondary part: EQA, mobile manipulation / rearrangement, embodied instruction following, general embodied agents or VLAs with a navigation evaluation, 3D grounding built for navigation."
+  },
+  {
+   "code": "aerial",
+   "label": "Aerial (parked)",
+   "desc": "UAV / drone / aerial vision-language navigation or tracking. Kept, but out of the first survey."
+  },
+  {
+   "code": "out",
+   "label": "Out of scope",
+   "desc": "Not embodied navigation: web/GUI/app navigation, autonomous driving, pure geometric motion planning / SLAM / LiDAR obstacle avoidance / legged locomotion with no goal semantics, 2D crowd simulation, manipulation-only, text-only, non-robotics uses of the word navigation."
+  }
+ ],
+ "tasks": [
+  {
+   "code": "VLN",
+   "label": "Instruction VLN",
+   "desc": "Follow fine-grained route instructions (R2R, RxR, R4R, VLN-CE, Touchdown-style)."
+  },
+  {
+   "code": "GoalVLN",
+   "label": "Goal-oriented VLN",
+   "desc": "High-level language goal / remote object grounding (REVERIE, SOON, 'find the X in the Y')."
+  },
+  {
+   "code": "DialogNav",
+   "label": "Dialog / Interactive",
+   "desc": "Dialogue, question asking, ask-for-help or human-in-the-loop navigation (CVDN, HANNA, NDH)."
+  },
+  {
+   "code": "ObjectNav",
+   "label": "ObjectNav",
+   "desc": "Object-goal navigation to a category, incl. open-vocabulary / zero-shot ObjectNav (HM3D, MP3D, OVON)."
+  },
+  {
+   "code": "InstanceNav",
+   "label": "Instance Nav",
+   "desc": "Navigate to a specific object instance given an image or description (Instance-ImageNav, InstanceNav, text-goal)."
+  },
+  {
+   "code": "ImageNav",
+   "label": "ImageNav",
+   "desc": "Image-goal navigation."
+  },
+  {
+   "code": "PixelNav",
+   "label": "PixelNav",
+   "desc": "Pixel-goal navigation (goal given as a pixel in the current view, PixNav)."
+  },
+  {
+   "code": "PointNav",
+   "label": "PointNav",
+   "desc": "Point-goal / coordinate navigation."
+  },
+  {
+   "code": "MultiGoal",
+   "label": "Multi-goal / Lifelong",
+   "desc": "Sequential multi-object or multimodal lifelong navigation (MultiON, GOAT, GOAT-Bench)."
+  },
+  {
+   "code": "AudioNav",
+   "label": "Audio-visual Nav",
+   "desc": "Audio-goal or audio-visual navigation (SoundSpaces)."
+  },
+  {
+   "code": "SocialNav",
+   "label": "Social / Tracking",
+   "desc": "Human-aware navigation, human following, embodied visual tracking."
+  },
+  {
+   "code": "Exploration",
+   "label": "Exploration",
+   "desc": "Active exploration, coverage, map building for embodied agents."
+  },
+  {
+   "code": "EQA",
+   "label": "Embodied QA",
+   "desc": "Navigate to answer questions (EQA, OpenEQA, HM-EQA)."
+  },
+  {
+   "code": "MobileManip",
+   "label": "Mobile Manipulation",
+   "desc": "Navigation as part of mobile manipulation / rearrangement / OVMM."
+  },
+  {
+   "code": "GeneralNav",
+   "label": "Generalist Nav",
+   "desc": "One model/agent across several navigation task families, or general-purpose navigation foundation model."
+  }
+ ],
+ "settings": [
+  {
+   "code": "discrete",
+   "label": "Discrete graph",
+   "desc": "Nav-graph / panoramic viewpoints (Matterport3D simulator)."
+  },
+  {
+   "code": "continuous",
+   "label": "Continuous sim",
+   "desc": "Continuous control in a 3D simulator (Habitat, AI2-THOR, Isaac, iGibson)."
+  },
+  {
+   "code": "outdoor",
+   "label": "Outdoor / street",
+   "desc": "Street-view or outdoor ground environments."
+  },
+  {
+   "code": "real",
+   "label": "Real robot",
+   "desc": "Deployed or evaluated on a physical robot."
+  }
+ ],
+ "paradigms": [
+  {
+   "code": "specialist",
+   "label": "Task-specific learning",
+   "line": "learned",
+   "desc": "Policy trained for the task from scratch or on frozen small encoders via IL/RL: seq2seq, cross-modal attention, RL, learned modular mapping (SemExp), graph planners. Dominant 2017-2021."
+  },
+  {
+   "code": "pretrain",
+   "label": "Large-scale pretraining",
+   "line": "learned",
+   "desc": "Transformer vision-language pretraining for navigation (PREVALENT, VLN-BERT, HAMT, DUET), large-scale data generation/augmentation (ScaleVLN), self-supervised visual pretraining (OVRL), cross-embodiment navigation foundation models without an LLM (GNM, ViNT, NoMaD)."
+  },
+  {
+   "code": "fm-tuned",
+   "label": "Foundation model fine-tuned",
+   "line": "learned",
+   "desc": "An LLM / VLM / video-LLM / VLA backbone whose weights are fine-tuned (SFT, RL, adapters) into the navigation policy or planner (NavGPT-2, NaVid, Uni-NaVid, NaVILA, StreamVLN)."
+  },
+  {
+   "code": "zs-modular",
+   "label": "Zero-shot modular",
+   "line": "training-free",
+   "desc": "No navigation-specific weight updates for the decision model. Frozen CLIP / detectors / LLM / VLM composed in a FIXED human-designed pipeline: value maps, frontiers, scene graphs, LLM-as-planner called once per step (CoW, ESC, VLFM, NavGPT, MapGPT, InstructNav, SG-Nav)."
+  },
+  {
+   "code": "agentic",
+   "label": "Agentic",
+   "line": "training-free",
+   "desc": "The LLM/VLM owns the control flow: chooses tools / skills / modes, self-reflects and replans, manages its own memory, or several agents collaborate (DiscussNav, multi-agent, tool-using nav agents). Agent HARNESSES are agentic too — systems whose contribution is the orchestration layer around the model (control loop, context / memory management, tools, verification) or that write / evolve code, skills, prompts or policies (self-evolving, agent-as-optimizer); give those the Harness trait as well. Fine-tuned agents still count here if the agent loop is the contribution."
+  },
+  {
+   "code": "none",
+   "label": "No method",
+   "line": "-",
+   "desc": "Benchmark, dataset, simulator, survey or analysis with no new navigation method."
+  }
+ ],
+ "contribs": [
+  {
+   "code": "method",
+   "label": "Method"
+  },
+  {
+   "code": "benchmark",
+   "label": "Benchmark"
+  },
+  {
+   "code": "dataset",
+   "label": "Dataset / data engine"
+  },
+  {
+   "code": "simulator",
+   "label": "Simulator / platform"
+  },
+  {
+   "code": "survey",
+   "label": "Survey"
+  },
+  {
+   "code": "analysis",
+   "label": "Analysis / study"
+  },
+  {
+   "code": "system",
+   "label": "Real-robot system"
+  }
+ ],
+ "traits": [
+  {
+   "code": "LLM",
+   "desc": "uses a large language model"
+  },
+  {
+   "code": "VLM",
+   "desc": "uses a vision-language model / MLLM"
+  },
+  {
+   "code": "VLA",
+   "desc": "vision-language-action model"
+  },
+  {
+   "code": "WorldModel",
+   "desc": "world model / future prediction / imagination"
+  },
+  {
+   "code": "Map",
+   "desc": "explicit metric or semantic map / value map"
+  },
+  {
+   "code": "Graph",
+   "desc": "topological graph or scene graph"
+  },
+  {
+   "code": "Memory",
+   "desc": "long-term memory mechanism"
+  },
+  {
+   "code": "RL",
+   "desc": "reinforcement learning (incl. RL fine-tuning of FMs)"
+  },
+  {
+   "code": "IL",
+   "desc": "imitation / behaviour cloning"
+  },
+  {
+   "code": "DataGen",
+   "desc": "data generation / augmentation / synthesis"
+  },
+  {
+   "code": "Reasoning",
+   "desc": "chain-of-thought / explicit reasoning"
+  },
+  {
+   "code": "MultiAgent",
+   "desc": "multiple agents or experts"
+  },
+  {
+   "code": "Harness",
+   "desc": "agent harness / scaffold / self-evolving: the orchestration layer around the model is the contribution, or the agent writes / evolves code, skills, prompts or policies (always together with paradigm agentic)"
+  },
+  {
+   "code": "ToolUse",
+   "desc": "tool / API / skill calling"
+  },
+  {
+   "code": "Sim2Real",
+   "desc": "sim-to-real transfer"
+  },
+  {
+   "code": "3D",
+   "desc": "3D representation (point cloud, NeRF, 3DGS, BEV)"
+  },
+  {
+   "code": "Efficiency",
+   "desc": "efficiency / latency / compression"
+  },
+  {
+   "code": "Robustness",
+   "desc": "robustness / safety / adversarial / failure recovery"
+  },
+  {
+   "code": "Continual",
+   "desc": "continual / lifelong / test-time adaptation"
+  }
+ ],
+ "benchmarks": {
+  "Instruction VLN": [
+   "R2R",
+   "R2R-CE",
+   "RxR",
+   "RxR-CE",
+   "R4R",
+   "R2R-Last",
+   "IR2R",
+   "IR2R-CE",
+   "LHPR-VLN",
+   "VLN-CE"
+  ],
+  "Goal VLN": [
+   "REVERIE",
+   "SOON",
+   "REVERIE-CE"
+  ],
+  "Dialog": [
+   "CVDN",
+   "HANNA",
+   "TEACh",
+   "DialFRED"
+  ],
+  "Outdoor": [
+   "Touchdown",
+   "Map2Seq",
+   "StreetNav"
+  ],
+  "ObjectNav": [
+   "HM3D-ObjNav",
+   "MP3D-ObjNav",
+   "Gibson-ObjNav",
+   "RoboTHOR-ObjNav",
+   "ProcTHOR-ObjNav",
+   "HM3D-OVON",
+   "HSSD-ObjNav"
+  ],
+  "Instance/Image": [
+   "HM3D-IIN",
+   "Gibson-ImageNav",
+   "HM3D-ImageNav",
+   "TextNav"
+  ],
+  "PointNav": [
+   "Gibson-PointNav",
+   "HM3D-PointNav",
+   "MP3D-PointNav"
+  ],
+  "Multi-goal": [
+   "GOAT-Bench",
+   "MultiON"
+  ],
+  "Other": [
+   "SoundSpaces",
+   "MP3D-EQA",
+   "OpenEQA",
+   "HM-EQA",
+   "HomeRobot-OVMM",
+   "Habitat3-SocialNav",
+   "ALFRED"
+  ]
+ }
+}

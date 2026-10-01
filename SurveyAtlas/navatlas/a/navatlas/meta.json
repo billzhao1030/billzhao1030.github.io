@@ -1,0 +1,515 @@
+{
+ "id": "navatlas",
+ "title": "NavAtlas",
+ "subtitle": "Embodied Navigation Literature Atlas",
+ "field": "Embodied Navigation",
+ "description": "VLN, ObjectNav, Instance / Image / Pixel / PointNav, multi-goal & lifelong, audio, social, EQA and generalist navigation models — from RL-era specialists to training-free agents (incl. agent harnesses).",
+ "bulk_date": "2026-09-29",
+ "timeline_start": 2017,
+ "min_year": 2010,
+ "classify_model": "sonnet",
+ "read_skip_scopes": [
+  "aerial",
+  "out"
+ ],
+ "read_opus_top": 300,
+ "built_at": "2026-10-01T11:42:28+00:00",
+ "n_papers": 3147,
+ "n_core": 2212,
+ "n_venue_core": 1356,
+ "n_read": 2694,
+ "n_results": 9806,
+ "surveys": [],
+ "by_year": {
+  "2014": 2,
+  "2015": 3,
+  "2016": 5,
+  "2017": 16,
+  "2018": 49,
+  "2019": 80,
+  "2020": 116,
+  "2021": 138,
+  "2022": 163,
+  "2023": 194,
+  "2024": 310,
+  "2025": 492,
+  "2026": 631
+ },
+ "ui": {
+  "task_groups": [
+   [
+    "Language-driven",
+    [
+     "VLN",
+     "GoalVLN",
+     "DialogNav"
+    ]
+   ],
+   [
+    "Goal-driven",
+    [
+     "ObjectNav",
+     "InstanceNav",
+     "ImageNav",
+     "PixelNav",
+     "PointNav",
+     "MultiGoal",
+     "AudioNav"
+    ]
+   ],
+   [
+    "Beyond goal-reaching",
+    [
+     "SocialNav",
+     "Exploration",
+     "EQA",
+     "MobileManip",
+     "GeneralNav"
+    ]
+   ]
+  ],
+  "paradigm_lines": {
+   "learned": "Learned (weights trained on nav data)",
+   "training-free": "Training-free",
+   "-": "No method"
+  },
+  "paradigm_note": "Learned line: is the decision model trained on navigation data? Training-free line: who owns the control flow — a fixed pipeline or the model itself?",
+  "timeline_intro": "From task-specific RL/IL policies, through vision-language pretraining, to foundation-model navigators and training-free agents.",
+  "ask_examples": [
+   "How far behind fine-tuned methods are training-free VLN agents on R2R-CE?",
+   "Which zero-shot methods lead HM3D ObjectNav, and what do they rely on?",
+   "What memory designs do lifelong navigation agents use on GOAT-Bench?",
+   "Which VLN methods were deployed on real robots, and how well did they work?"
+  ],
+  "presets": [
+   [
+    "Instruction VLN",
+    {
+     "tk": [
+      "VLN"
+     ]
+    }
+   ],
+   [
+    "R2R-CE",
+    {
+     "bm": [
+      "R2R-CE"
+     ]
+    }
+   ],
+   [
+    "Zero-shot ObjectNav",
+    {
+     "tk": [
+      "ObjectNav"
+     ],
+     "pd": [
+      "zs-modular",
+      "agentic"
+     ]
+    }
+   ],
+   [
+    "Agentic (incl. harness)",
+    {
+     "pd": [
+      "agentic"
+     ]
+    }
+   ],
+   [
+    "Harness only",
+    {
+     "tr": [
+      "Harness"
+     ]
+    }
+   ],
+   [
+    "FM navigators",
+    {
+     "pd": [
+      "fm-tuned"
+     ]
+    }
+   ],
+   [
+    "Benchmarks & datasets",
+    {
+     "ct": [
+      "benchmark",
+      "dataset",
+      "simulator"
+     ]
+    }
+   ],
+   [
+    "Surveys",
+    {
+     "ct": [
+      "survey"
+     ]
+    }
+   ],
+   [
+    "Real robot",
+    {
+     "st": [
+      "real"
+     ]
+    }
+   ],
+   [
+    "Most cited",
+    {
+     "sort": "cited"
+    }
+   ],
+   [
+    "Recently added",
+    {
+     "sort": "added"
+    }
+   ]
+  ],
+  "surveys": [
+   {
+    "id": "vln",
+    "title": "Vision-and-language navigation: instruction, goal and dialog",
+    "blurb": "Language-driven navigation only (instruction VLN, goal-oriented VLN, dialog). Organised along the paradigm axis, so the narrative reads as a history: seq2seq/RL → VL pretraining → foundation-model navigators → zero-shot pipelines → agents (incl. agent harnesses).",
+    "base": {
+     "tk": [
+      "VLN",
+      "GoalVLN",
+      "DialogNav"
+     ],
+     "sc": [
+      "core"
+     ]
+    },
+    "sections": [
+     [
+      "Tasks, datasets & benchmarks",
+      "R2R, RxR, REVERIE, SOON, CVDN, VLN-CE, long-horizon…",
+      {
+       "ct": [
+        "benchmark",
+        "dataset",
+        "simulator"
+       ]
+      }
+     ],
+     [
+      "Task-specific learning",
+      "seq2seq, speaker-follower, RL/IL, graph planners",
+      {
+       "pd": [
+        "specialist"
+       ]
+      }
+     ],
+     [
+      "Vision-language pretraining & data scaling",
+      "VLN-BERT, HAMT, DUET, ScaleVLN",
+      {
+       "pd": [
+        "pretrain"
+       ]
+      }
+     ],
+     [
+      "Foundation-model navigators",
+      "fine-tuned LLM / VLM / video-LLM / VLA",
+      {
+       "pd": [
+        "fm-tuned"
+       ]
+      }
+     ],
+     [
+      "Zero-shot modular navigation",
+      "frozen LLM/VLM in a fixed pipeline",
+      {
+       "pd": [
+        "zs-modular"
+       ]
+      }
+     ],
+     [
+      "Agentic navigation",
+      "the model owns the control flow — tools, reflection, multi-agent, harnesses",
+      {
+       "pd": [
+        "agentic"
+       ]
+      }
+     ],
+     [
+      "Continuous & real-world VLN",
+      "VLN-CE, sim-to-real, robots",
+      {
+       "st": [
+        "continuous",
+        "real"
+       ]
+      }
+     ],
+     [
+      "Surveys & analyses",
+      "prior surveys, diagnostics",
+      {
+       "ct": [
+        "survey",
+        "analysis"
+       ]
+      }
+     ]
+    ]
+   },
+   {
+    "id": "embnav",
+    "title": "Embodied Navigation in the Foundation-Model Era",
+    "blurb": "All goal specifications — language, object, image, point, audio, multi-goal. Organised by task family, with the paradigm shift as the running thread inside each section.",
+    "base": {
+     "sc": [
+      "core"
+     ]
+    },
+    "sections": [
+     [
+      "Instruction & goal-oriented VLN",
+      "",
+      {
+       "tk": [
+        "VLN",
+        "GoalVLN",
+        "DialogNav"
+       ]
+      }
+     ],
+     [
+      "Object-goal navigation",
+      "closed-set → open-vocabulary",
+      {
+       "tk": [
+        "ObjectNav"
+       ]
+      }
+     ],
+     [
+      "Instance, image & pixel goals",
+      "",
+      {
+       "tk": [
+        "InstanceNav",
+        "ImageNav",
+        "PixelNav"
+       ]
+      }
+     ],
+     [
+      "Point-goal navigation & exploration",
+      "",
+      {
+       "tk": [
+        "PointNav",
+        "Exploration"
+       ]
+      }
+     ],
+     [
+      "Multi-goal & lifelong navigation",
+      "MultiON, GOAT, GOAT-Bench",
+      {
+       "tk": [
+        "MultiGoal"
+       ]
+      }
+     ],
+     [
+      "Audio, social & question-driven navigation",
+      "",
+      {
+       "tk": [
+        "AudioNav",
+        "SocialNav",
+        "EQA"
+       ]
+      }
+     ],
+     [
+      "Generalist navigation models",
+      "one model across tasks",
+      {
+       "tk": [
+        "GeneralNav"
+       ]
+      }
+     ],
+     [
+      "Real-world deployment",
+      "",
+      {
+       "st": [
+        "real"
+       ]
+      }
+     ],
+     [
+      "Benchmarks, simulators & datasets",
+      "",
+      {
+       "ct": [
+        "benchmark",
+        "dataset",
+        "simulator"
+       ]
+      }
+     ]
+    ]
+   },
+   {
+    "id": "agentic",
+    "title": "Training-free & Agentic Embodied Navigation",
+    "blurb": "The newest line: no navigation training of the decision model. From zero-shot modular pipelines (value maps, frontiers, LLM planners) to agents that pick tools, reflect and collaborate, and harnesses that write their own code.",
+    "base": {
+     "sc": [
+      "core"
+     ],
+     "pd": [
+      "zs-modular",
+      "agentic"
+     ]
+    },
+    "sections": [
+     [
+      "Zero-shot modular pipelines",
+      "",
+      {
+       "pd": [
+        "zs-modular"
+       ]
+      }
+     ],
+     [
+      "Agentic navigators",
+      "incl. agent harnesses",
+      {
+       "pd": [
+        "agentic"
+       ]
+      }
+     ],
+     [
+      "Agent harnesses & self-evolving systems",
+      "the orchestration layer is the contribution",
+      {
+       "pd": [
+        "agentic"
+       ],
+       "tr": [
+        "Harness"
+       ]
+      }
+     ],
+     [
+      "Spatial representations: maps & graphs",
+      "",
+      {
+       "tr": [
+        "Map",
+        "Graph",
+        "3D"
+       ]
+      }
+     ],
+     [
+      "Memory",
+      "",
+      {
+       "tr": [
+        "Memory"
+       ]
+      }
+     ],
+     [
+      "Reasoning & reflection",
+      "",
+      {
+       "tr": [
+        "Reasoning"
+       ]
+      }
+     ],
+     [
+      "Multi-agent collaboration",
+      "",
+      {
+       "tr": [
+        "MultiAgent"
+       ]
+      }
+     ],
+     [
+      "Tools & skills",
+      "",
+      {
+       "tr": [
+        "ToolUse"
+       ]
+      }
+     ],
+     [
+      "World models & imagination",
+      "",
+      {
+       "tr": [
+        "WorldModel"
+       ]
+      }
+     ]
+    ]
+   }
+  ],
+  "roadmap": [
+   [
+    "01",
+    "Collect & classify",
+    "Multi-query arXiv + OpenAlex harvest, rule prefilter, LLM scope/task/paradigm labels, venue + BibTeX resolution.",
+    "done"
+   ],
+   [
+    "02",
+    "Deep reading",
+    "Per-paper agent reads the full text: motivation, method components, key results, limitations — written into each paper page.",
+    "done"
+   ],
+   [
+    "03",
+    "Benchmark tables",
+    "Extract SR / SPL / NE / nDTW per split into leaderboards (R2R, R2R-CE, RxR-CE, REVERIE, HM3D ObjectNav, …).",
+    "done"
+   ],
+   [
+    "04",
+    "Citations",
+    "Official BibTeX for every accepted paper; arXiv entries upgraded as papers get accepted.",
+    "done"
+   ],
+   [
+    "05",
+    "Write",
+    "Draft a survey from a live outline: writer packs per section, LaTeX results tables and figures generated from the data (./atlas survey).",
+    "done"
+   ],
+   [
+    "∞",
+    "Keep up",
+    "Scheduled incremental harvest → classify new papers → reading queue → rebuild.",
+    "done"
+   ]
+  ]
+ },
+ "domain_ready": true
+}
