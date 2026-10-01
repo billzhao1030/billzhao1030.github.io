@@ -134,6 +134,40 @@
           </ul>
         </section>
 
+        {% if data.software.items and data.software.items != empty %}
+        <section id="projects">
+          <div class="section-header">
+            <h2>{{ data.software.heading }}</h2>
+            {% if data.software.description and data.software.description != empty %}
+            <p>{{ data.software.description }}</p>
+            {% endif %}
+          </div>
+          <ul class="publication-list">
+            {% for project in data.software.items %}
+            <li class="publication">
+              <div class="project-thumb">
+                <img src="{{ project.image | relative_url }}" alt="{{ project.image_alt }}">
+              </div>
+              <div>
+                <span class="venue">{{ project.venue }}</span>
+                <h3>{{ project.title }}</h3>
+                {% if project.description and project.description != empty %}
+                <p>{{ project.description }}</p>
+                {% endif %}
+                <div class="links">
+                  {% for link in project.links %}
+                  {% if link.url and link.url != empty %}
+                  <a href="{{ link.url }}">{{ link.label }}</a>
+                  {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+        </section>
+        {% endif %}
+
         {% assign professional_items = data.experience.professional.items %}
         {% assign teaching_items = data.experience.teaching.items %}
         {% assign conference_categories = data.experience.services.conference.categories %}

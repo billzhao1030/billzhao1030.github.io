@@ -47,6 +47,8 @@ about:
 news:
   heading: "News"
   items:
+    - date: "2026.10"
+      text: "I open-sourced <a href='SurveyAtlas/'>SurveyAtlas</a> (<a href='https://github.com/billzhao1030/SurveyAtlas'>code</a>), a living literature survey: LLM agents harvest, classify and deep-read a field's papers, verify the reported results, and publish a searchable website with Q&A, a research map and leaderboards. The first atlas, <a href='SurveyAtlas/navatlas/'>NavAtlas</a>, covers 3,000+ embodied-navigation papers."
     - date: "2026.07"
       text: "Our new preprint <a href='https://arxiv.org/abs/2607.26148'>Embodied Agents Take Control</a> is out on arXiv! Given only a monocular RGB camera and four discrete actions, a general-purpose agent already rivals industrial-scale navigation policies on VLN."
     - date: "2026.06"
@@ -141,6 +143,23 @@ projects:
           url: "https://github.com/william13077/VLNTube"
         - label: "Project"
           url: "https://sihaoevery.github.io/vlnverse/"
+
+software:
+  heading: "Projects"
+  description: "Open-source tools I build and maintain."
+  items:
+    - title: "SurveyAtlas: Living Literature Surveys"
+      venue: "Open source · MIT · 2026"
+      description: "Turns a research field into a self-updating survey website. LLM agents harvest arXiv and OpenAlex, classify papers into a field taxonomy, deep-read them and check every reported number against the paper text. The site offers a faceted library, Q&A with citations, a task × paradigm map, a timeline and protocol-aware leaderboards, and rebuilds itself every day. NavAtlas, the first atlas, covers 3,147 embodied-navigation papers."
+      image: "assets/projects/surveyatlas-tp.jpg"
+      image_alt: "SurveyAtlas project page"
+      links:
+        - label: "Project"
+          url: "SurveyAtlas/"
+        - label: "Demo"
+          url: "SurveyAtlas/navatlas/"
+        - label: "Code"
+          url: "https://github.com/billzhao1030/SurveyAtlas"
 
 experience:
   heading: "Experience"
