@@ -140,18 +140,25 @@ h2{font:600 clamp(34px,4vw,52px)/1.08 var(--serif);letter-spacing:-.015em;margin
 .mini h4{margin:0 0 6px;font-size:16px}
 .mini p{margin:0;font-size:14px;color:var(--ink2)}
 .mini code,.steps code{font:12.5px var(--mono);color:var(--accent);background:rgba(79,95,240,.08);padding:1px 6px;border-radius:5px}
-.pipe{margin-top:56px;position:relative}
-.pipe svg{width:100%;height:auto;overflow:visible}
-.node rect{fill:var(--surface);stroke:var(--line2)}
-.node text{fill:var(--ink);font:600 15px var(--sans)}
-.node .n{fill:var(--ink);font:600 24px var(--serif)}
-.node .s{fill:var(--muted);font:500 12px var(--sans)}
-.flow{fill:none;stroke:url(#flowg);stroke-width:2;stroke-dasharray:4 9;animation:dash 1.2s linear infinite;opacity:.85}
-@keyframes dash{to{stroke-dashoffset:-26}}
-.dotp{fill:var(--accent);filter:drop-shadow(0 0 5px rgba(79,95,240,.7))}
-.pipe-notes{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:36px}
-.pipe-notes div{border-left:2px solid var(--line2);padding:2px 0 2px 16px;font-size:14px;color:var(--ink2)}
-.pipe-notes b{display:block;color:var(--ink);font-size:15px;margin-bottom:4px}
+.funnel{margin-top:54px;display:grid;gap:14px}
+.frow{display:grid;grid-template-columns:92px 220px 1fr;gap:26px;align-items:center;padding:22px 28px;border:1px solid var(--line);background:var(--surface);border-radius:var(--r)}
+.fstep{display:flex;align-items:center;gap:10px}
+.fic{width:44px;height:44px;flex:none;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(79,95,240,.16),rgba(139,92,246,.12))}
+.fic svg{width:22px;height:22px;fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.fno{font:600 14px var(--mono);color:var(--muted)}
+.fnum b{display:block;font:600 44px/1 var(--serif);letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.fnum span{display:block;margin-top:6px;font-size:15px;color:var(--muted)}
+.fbody h3{margin:0 0 4px;font-size:20px;font-weight:650}
+.fbody p{margin:0;font-size:16.5px;line-height:1.55;color:var(--ink2)}
+.fbar{margin-top:14px;height:10px;border-radius:6px;background:var(--line)}
+.fbar i{display:block;height:100%;width:var(--w);border-radius:6px;background:linear-gradient(90deg,#4f5ff0,#8b5cf6 60%,#d97706);transform:scaleX(0);transform-origin:left;transition:transform 1.2s cubic-bezier(.2,.7,.2,1) .2s}
+.frow.in .fbar i{transform:scaleX(1)}
+.outcomes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.ocard{display:grid;grid-template-columns:44px 1fr;gap:20px;padding:26px 28px;border-radius:var(--r);border:1px solid rgba(79,95,240,.35);background:linear-gradient(150deg,rgba(79,95,240,.08),rgba(139,92,246,.04)),var(--surface)}
+.ocard > div > b{display:block;font:600 44px/1 var(--serif);font-variant-numeric:tabular-nums}
+.ocard h3{margin:6px 0 8px;font-size:20px;font-weight:650}
+.ocard p{margin:0;font-size:16.5px;line-height:1.55;color:var(--ink2)}
+.ocard .pct{font-weight:700;color:var(--accent)}
 .stats{display:grid;grid-template-columns:1.5fr 1fr;gap:22px;margin-top:50px}
 .chart{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:24px 24px 16px}
 .chart h4{margin:0 0 2px;font-size:16px}
@@ -193,10 +200,11 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;
 footer a{color:var(--ink2)}
 @media (max-width:980px){
   .nav nav{display:none}.counters{grid-template-columns:repeat(2,auto)}
-  .vs,.show,.stats,.build{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}.pipe-notes,.big4{grid-template-columns:1fr 1fr}
+  .vs,.show,.stats,.build,.outcomes{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}.big4{grid-template-columns:1fr 1fr}
+  .frow{grid-template-columns:64px 1fr;gap:16px}.frow .fbody{grid-column:1/-1}.fno{display:none}
   .tabs{grid-template-columns:1fr 1fr}.hero-year{display:none}
 }
-@media (max-width:620px){.grid3,.pipe-notes{grid-template-columns:1fr}.tabs{grid-template-columns:1fr}section.sec{padding:84px 0}}
+@media (max-width:620px){.grid3{grid-template-columns:1fr}.tabs{grid-template-columns:1fr}section.sec{padding:84px 0}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
 </style>
 <script>try{if(localStorage.getItem('sa-theme')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}</script>
@@ -289,13 +297,34 @@ footer a{color:var(--ink2)}
 <section class="sec tint" id="pipeline"><div class="wrap">
   <p class="kicker reveal">How it works</p>
   <h2 class="reveal">From twenty thousand records to a verified survey</h2>
-  <p class="sub reveal">Recall first, precision from the classifier, trust from verification. Numbers below are NavAtlas's own funnel.</p>
-  <div class="pipe reveal" id="pipe"></div>
-  <div class="pipe-notes">
-    <div class="reveal"><b>Harvest &amp; merge</b>About fifty arXiv queries plus OpenAlex, deduplicated across sources and versions, then cheap rule prefilters.</div>
-    <div class="reveal"><b>Classify</b>Headless Claude labels 40 papers per call into the field taxonomy; a second Opus pass re-judges low-confidence cases.</div>
-    <div class="reveal"><b>Deep read &amp; verify</b>Full text is read into structured notes; every reported number is searched for verbatim, and an LLM judge flags protocol deviations.</div>
-    <div class="reveal"><b>Build &amp; publish</b>Leaderboards, maps and BibTeX are rebuilt; the static site redeploys from a 23 MB snapshot with no API calls.</div>
+  <p class="sub reveal">Recall first, precision from the classifier, trust from verification. The numbers are NavAtlas's own funnel.</p>
+  <div class="funnel">
+    <div class="frow reveal">
+      <div class="fstep"><span class="fic"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><span class="fno">01</span></div>
+      <div class="fnum"><b data-k="harvested">20,480</b><span>records harvested</span></div>
+      <div class="fbody"><h3>Harvest</h3><p>About fifty arXiv queries plus OpenAlex, written for recall rather than precision.</p><div class="fbar"><i style="--w:100%"></i></div></div>
+    </div>
+    <div class="frow reveal">
+      <div class="fstep"><span class="fic"><svg viewBox="0 0 24 24"><path d="M4 5h16l-6 7v6l-4 2v-8z"/></svg></span><span class="fno">02</span></div>
+      <div class="fnum"><b data-k="classified">10,897</b><span>after rule prefilters</span></div>
+      <div class="fbody"><h3>Merge &amp; prefilter</h3><p>Duplicates across sources and versions are merged; cheap rules drop what is obviously off-topic.</p><div class="fbar"><i style="--w:73%"></i></div></div>
+    </div>
+    <div class="frow reveal">
+      <div class="fstep"><span class="fic"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 16.5h7M16.5 13v7"/></svg></span><span class="fno">03</span></div>
+      <div class="fnum"><b data-k="papers">3,147</b><span>papers kept in scope</span></div>
+      <div class="fbody"><h3>Classify with Claude</h3><p>Headless Claude labels 40 papers per call into the field taxonomy; Opus re-judges the uncertain ones.</p><div class="fbar"><i style="--w:39%"></i></div></div>
+    </div>
+    <div class="frow reveal">
+      <div class="fstep"><span class="fic"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 5v16M8 7h7M8 11h7"/></svg></span><span class="fno">04</span></div>
+      <div class="fnum"><b data-k="read">2,694</b><span>papers deep-read</span></div>
+      <div class="fbody"><h3>Deep read</h3><p>Each paper's full text becomes structured notes: problem, key idea, method, insight, results, limitations.</p><div class="fbar"><i style="--w:36%"></i></div></div>
+    </div>
+  </div>
+  <div class="outcomes">
+    <div class="ocard reveal"><span class="fic"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span>
+      <div><b data-k="results">9,806</b><h3>reported results, verified</h3><p><b class="pct" data-k="verified" data-pct="1">97.6%</b> of the numbers are found verbatim in the paper text, and an LLM judge flags protocol deviations, so subsets are never ranked with full splits.</p></div></div>
+    <div class="ocard reveal"><span class="fic"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg></span>
+      <div><b>Daily</b><h3>rebuilt and published</h3><p>Leaderboards, maps and BibTeX are rebuilt on a schedule, and the static site redeploys from a 23&nbsp;MB snapshot with no API calls.</p></div></div>
   </div>
 </div></section>
 
@@ -525,25 +554,6 @@ footer a{color:var(--ink2)}
   const auto = () => { clearInterval(timer); timer = setInterval(() => pick((cur + 1) % FEATS.length), 6000); };
   tabs.addEventListener('click', (e) => { const b = e.target.closest('.tab'); if (!b) return; pick(+b.dataset.i); clearInterval(timer); show.classList.add('paused'); });
   pick(0); new IntersectionObserver((es) => { if (es[0].isIntersecting && !show.classList.contains('paused')) auto(); else clearInterval(timer); }, { threshold: 0.3 }).observe(show);
-
-  // ── pipeline diagram ──
-  function pipeline(st) {
-    const s = st || { harvested: 20480, classified: 10897, papers: 3147, read: 2694, results: 9806, verified: 0.976 };
-    const N = [['Harvest', fmt(s.harvested), 'arXiv + OpenAlex'], ['Prefilter', fmt(s.classified), 'sent to the classifier'], ['Classify', fmt(s.papers), 'kept in scope'],
-      ['Deep read', fmt(s.read), 'full-text notes'], ['Verify', fmt(s.results), `results · ${(s.verified * 100).toFixed(1)}% verbatim`], ['Publish', 'daily', 'site · tables · LaTeX']];
-    const w = 1100, h = 190, bw = 156, gap = (w - bw * N.length) / (N.length - 1);
-    let svg = `<svg viewBox="0 0 ${w} ${h}"><defs><linearGradient id="flowg" x1="0" x2="1"><stop offset="0" stop-color="#4f5ff0"/><stop offset=".6" stop-color="#8b5cf6"/><stop offset="1" stop-color="#d97706"/></linearGradient></defs>`;
-    N.forEach(([t, n, sub], i) => {
-      const x = i * (bw + gap);
-      if (i) { const x0 = x - gap + 2, x1 = x - 2; svg += `<path class="flow" id="f${i}" d="M${x0} 92 C ${x0 + gap / 2} 92, ${x1 - gap / 2} 92, ${x1} 92"/>`;
-        if (!RM) for (let k = 0; k < 2; k++) svg += `<circle class="dotp" r="3"><animateMotion dur="${1.6 + i * 0.1}s" begin="${k * 0.8}s" repeatCount="indefinite"><mpath href="#f${i}"/></animateMotion></circle>`; }
-      svg += `<g class="node"><rect x="${x}" y="22" width="${bw}" height="140" rx="16"/><text x="${x + bw / 2}" y="58" text-anchor="middle">${t}</text>
-        <text class="n" x="${x + bw / 2}" y="104" text-anchor="middle">${n}</text><text class="s" x="${x + bw / 2}" y="132" text-anchor="middle">${sub}</text></g>`;
-    });
-    $('#pipe').innerHTML = svg + '</svg>';
-  }
-  pipeline(null);
-  fetch('navatlas/a/navatlas/overview.json').then((r) => r.json()).then((O) => pipeline(O.stats)).catch(() => {});
 
   // ── charts ──
   function yearsChart(O) {
