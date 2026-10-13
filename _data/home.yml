@@ -75,6 +75,19 @@ research:
 projects:
   heading: "Publications"
   items:
+    - title: "SurveyAtlas: A Living Literature Review for Embodied Navigation"
+      venue: "Preprint, 2026"
+      authors: "<strong>Xunyi Zhao</strong>, Jian Zhou, Sihao Lin, Xinyu Yan, Jiajun Liu, Qi Wu"
+      image: "assets/projects/surveyatlas-tp.jpg"
+      image_alt: "SurveyAtlas thumbnail"
+      placeholder: "SurveyAtlas"
+      links:
+        - label: "Paper"
+          url: ""  # TODO: arXiv link once posted (an empty url hides the link)
+        - label: "Code"
+          url: "https://github.com/billzhao1030/SurveyAtlas"
+        - label: "Project"
+          url: "SurveyAtlas/"
     - title: "NavHarness: Towards Lifelong Embodied Navigation"
       venue: "arXiv preprint, 2026"
       authors: "<strong>Xunyi Zhao</strong><sup>*</sup>, Jian Zhou<sup>*</sup>, Sihao Lin, Gengze Zhou, Zerui Li, Xinyu Yan, Jiajun Liu, Anton van den Hengel, Qi Wu"
