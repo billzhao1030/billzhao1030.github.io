@@ -83,7 +83,7 @@ projects:
       placeholder: "SurveyAtlas"
       links:
         - label: "Paper"
-          url: ""  # TODO: arXiv link once posted (an empty url hides the link)
+          url: "SurveyAtlas/paper.pdf"
         - label: "Code"
           url: "https://github.com/billzhao1030/SurveyAtlas"
         - label: "Project"

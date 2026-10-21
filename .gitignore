@@ -9,3 +9,5 @@ VLN-MME/*.md
 *.pdf
 CLAUDE.md
 /doc
+# The SurveyAtlas paper is served from its project page.
+!SurveyAtlas/paper.pdf
