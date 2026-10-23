@@ -160,6 +160,8 @@ projects:
     - title: "Structure over Reasoning: Unified Zero-Shot Navigation with a Small Vision-Language Model"
       venue: "Preprint, 2026"
       authors: "Zeqi Li, <strong>Xunyi Zhao</strong>, Zerui Li, Sihao Lin, Qi Wu, Shijie Li"
+      image: "assets/projects/structure-over-reasoning-tp.png"
+      image_alt: "Structure over Reasoning thumbnail"
       placeholder: "Structure over Reasoning"
       links:
         - label: "Paper"
