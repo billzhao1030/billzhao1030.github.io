@@ -293,6 +293,22 @@
       padding: 0;
     }
 
+    /* entries whose thumbnail has not landed yet keep the column's shape */
+    .project-thumb .placeholder {
+      justify-self: stretch;
+      align-self: stretch;
+      display: grid;
+      place-items: center;
+      padding: 10px;
+      border: 1px dashed var(--line);
+      border-radius: 10px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 650;
+      line-height: 1.25;
+      text-align: center;
+    }
+
     .project-thumb img {
       position: absolute;
       inset: 0;

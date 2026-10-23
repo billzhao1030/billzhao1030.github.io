@@ -157,6 +157,13 @@ projects:
           url: ""
         - label: "Project"
           url: "IVLN/"
+    - title: "Structure over Reasoning: Unified Zero-Shot Navigation with a Small Vision-Language Model"
+      venue: "Preprint, 2026"
+      authors: "Zeqi Li, <strong>Xunyi Zhao</strong>, Zerui Li, Sihao Lin, Qi Wu, Shijie Li"
+      placeholder: "Structure over Reasoning"
+      links:
+        - label: "Paper"
+          url: "https://arxiv.org/abs/2610.25130"
     - title: "VLNVerse: A Benchmark for Vision-Language Navigation with Versatile, Embodied, Realistic Simulation and Evaluation"
       venue: "Preprint 2025"
       authors: "Sihao Lin*, Zerui Li*, <strong>Xunyi Zhao</strong>*, Gengze Zhou, Liuyi Wang, Rong Wei, Rui Tang, Juncheng Li, Hanqing Wang, Jiangmiao Pang, Anton van den Hengel, Jiajun Liu, Qi Wu"

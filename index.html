@@ -109,7 +109,11 @@
             {% for project in data.projects.items %}
             <li class="publication">
               <div class="project-thumb">
+                {% if project.image and project.image != empty %}
                 <img src="{{ project.image | relative_url }}" alt="{{ project.image_alt }}">
+                {% else %}
+                <span class="placeholder">{{ project.placeholder | default: project.title }}</span>
+                {% endif %}
               </div>
               <div>
                 <span class="venue">{{ project.venue }}</span>
@@ -146,7 +150,11 @@
             {% for project in data.software.items %}
             <li class="publication">
               <div class="project-thumb">
+                {% if project.image and project.image != empty %}
                 <img src="{{ project.image | relative_url }}" alt="{{ project.image_alt }}">
+                {% else %}
+                <span class="placeholder">{{ project.placeholder | default: project.title }}</span>
+                {% endif %}
               </div>
               <div>
                 <span class="venue">{{ project.venue }}</span>
