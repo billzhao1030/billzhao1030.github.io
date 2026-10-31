@@ -48,6 +48,8 @@ news:
   heading: "News"
   items:
     - date: "2026.10"
+      text: "New blog post: <a href='blog/atomic-skills-and-an-agent/'>Atomic Skills, One Grip, and an Agent</a> — two simulated Shadow hands solve random Rubik's cubes with twelve RL-trained face turns that always return to one grip, a CFOP agent (a planner or a language model) and an executor. See the <a href='ShadowRubik/'>interactive project page</a>."
+    - date: "2026.10"
       text: "I open-sourced <a href='SurveyAtlas/'>SurveyAtlas</a> (<a href='https://github.com/billzhao1030/SurveyAtlas'>code</a>), a living literature survey: LLM agents harvest, classify and deep-read a field's papers, verify the reported results, and publish a searchable website with Q&A, a research map and leaderboards. The first atlas, <a href='SurveyAtlas/navatlas/'>NavAtlas</a>, covers 3,000+ embodied-navigation papers."
     - date: "2026.09"
       text: "Our new preprint <a href='https://arxiv.org/abs/2609.34276'>NavHarness: Towards Lifelong Embodied Navigation</a> is out on arXiv, with <a href='https://github.com/billzhao1030/NavHarness'>code</a> and a <a href='NavHarness/'>project page</a>! A training-free harness that makes memory processing part of the navigation loop, reaching 83.7% s-SR on GOAT-Bench with SLAM-estimated poses."

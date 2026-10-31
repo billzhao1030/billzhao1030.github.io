@@ -1,0 +1,432 @@
+---
+layout: null
+title: "Atomic Skills, One Grip, and an Agent: Why We Stopped Training a Cube-Solving Policy"
+excerpt: "Two Shadow hands solve random Rubik's cubes in simulation without any end-to-end cube policy: twelve RL-trained face turns that all end in the same grip, an agent that plans CFOP, and an executor that chains them. What made it work, what did not, and why the same recipe reaches 4×4 to 7×7."
+---
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Atomic Skills, One Grip, and an Agent</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <style>
+    :root{
+      --bg:#fdfdfb;--ink:#1b1d21;--muted:#6b7280;--faint:#9aa1ab;
+      --line:#e6e7e3;--line-soft:#eeefea;--accent:#2f6f5e;--accent-soft:#eef4f1;
+      --code-bg:#f3f4f0;--warn:#a2543a;--warn-soft:#f6ece7;
+    }
+    *{box-sizing:border-box}
+    html{-webkit-text-size-adjust:100%}
+    body{margin:0;background:var(--bg);color:var(--ink);
+      font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+      font-size:17px;line-height:1.7;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+    .container{max-width:920px;margin:0 auto;padding:0 26px}
+
+    .tabs{display:flex;gap:26px;padding:30px 0 0;font-size:14px}
+    .tabs__link{color:var(--muted);text-decoration:none;letter-spacing:.01em;
+      padding-bottom:3px;border-bottom:1.5px solid transparent;transition:color .15s}
+    .tabs__link:hover{color:var(--ink)}
+    .tabs__link.is-active{color:var(--ink);border-bottom-color:var(--accent)}
+
+    .post-page__header{padding:48px 0 6px}
+    .post-page__date{margin:0 0 12px;font-family:'JetBrains Mono',monospace;font-size:13px;
+      letter-spacing:.06em;color:var(--faint)}
+    .post-page__title{margin:0;font-size:clamp(28px,4.6vw,40px);font-weight:700;
+      letter-spacing:-.022em;line-height:1.14}
+    .post-page__authors{margin:14px 0 0;font-size:14.5px;color:var(--muted)}
+    .post-page__authors strong{color:#2c2f34;font-weight:600}
+    .readtime{margin:6px 0 0;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--faint)}
+
+    .prose{padding:12px 0 8px}
+    .prose p{margin:0 0 1.2em}
+    .prose strong{font-weight:600;color:#15171a}
+    .prose em{font-style:italic;color:#33363b}
+    .prose a{color:var(--accent);text-decoration:none;border-bottom:1px solid #cfe0d9}
+    .prose a:hover{border-bottom-color:var(--accent)}
+
+    .lede{font-size:18.5px;line-height:1.58;color:#34383d;margin:6px 0 0;padding-bottom:4px}
+    .lede em{color:#1d2b26;font-style:normal;font-weight:600}
+
+    .prose h2{font-size:clamp(20px,2.8vw,25px);font-weight:700;letter-spacing:-.012em;line-height:1.24;
+      margin:1.7em 0 .35em;padding-top:1.3em;border-top:1px solid var(--line)}
+    .prose h2 .sn{color:var(--accent);font-weight:700;margin-right:.5em;
+      font-family:'JetBrains Mono',monospace;font-size:.8em}
+
+    code{font-family:'JetBrains Mono',monospace;font-size:.86em;background:var(--code-bg);
+      border-radius:4px;padding:.1em .4em;color:#2c2f34;border:1px solid #e8e9e4}
+
+    .cap{font-size:14px;line-height:1.5;color:#6b7078;text-align:center;max-width:640px;margin:.1em auto 1.5em}
+    .cap strong{color:#2c3a35;font-weight:600}
+
+    .chip{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.5;
+      background:var(--accent-soft);color:#2c3a35;border:1px solid #cfe0d9;border-radius:20px;
+      padding:2px 10px;margin:.1em .2em .1em 0}
+
+    /* works / doesn't-work result card */
+    .result{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:1.4em 0 .6em}
+    @media(max-width:560px){.result{grid-template-columns:1fr}}
+    .rcol{border:1px solid var(--line);border-radius:11px;padding:13px 16px;background:#fff}
+    .rcol.ok{border-color:#bcd9cd;background:#f2f8f5}
+    .rcol.no{border-color:#e6c6ba;background:#f9efeb}
+    .rcol h4{margin:0 0 .4em;font-size:13.5px;letter-spacing:.01em}
+    .rcol.ok h4{color:var(--accent)}
+    .rcol.no h4{color:var(--warn)}
+    .rcol ul{margin:0;padding-left:1.05em}
+    .rcol li{font-size:13.5px;line-height:1.5;margin:.3em 0;color:#41454b}
+    .rcol li::marker{color:var(--faint)}
+
+    /* SVG figures */
+    svg.fig{width:100%;height:auto;max-width:800px;display:block;margin:1.5em auto .5em}
+    .fig text{font-family:'Inter',system-ui,sans-serif;font-size:13px;fill:var(--ink)}
+    .fig .t{font-weight:600}
+    .fig .dim{fill:var(--muted);font-size:11.5px}
+    .fig .mono{font-family:'JetBrains Mono',monospace;font-size:11.5px;fill:#4b5058}
+    .fig .box{fill:#ffffff;stroke:#c9cbc4;stroke-width:1.2}
+    .fig .accent{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.6}
+    .fig .warn{fill:var(--warn-soft);stroke:var(--warn);stroke-width:1.4}
+    .fig .at{fill:var(--accent);font-weight:600}
+    .fig .wt{fill:var(--warn);font-weight:600}
+    .fig .ghost{fill:none;stroke:#c9cbc4;stroke-width:1.1;stroke-dasharray:5 4}
+    .fig .ghostA{fill:none;stroke:var(--accent);stroke-width:1.2;stroke-dasharray:5 4}
+    .fig .edge{stroke:#8b9096;stroke-width:1.4;fill:none;marker-end:url(#bl-m)}
+    .fig .edgeA{stroke:var(--accent);stroke-width:1.6;fill:none;marker-end:url(#bl-a)}
+    .fig .edgeAd{stroke:var(--accent);stroke-width:1.6;fill:none;stroke-dasharray:6 5;marker-end:url(#bl-a)}
+
+    blockquote{margin:1.9em 0;padding:16px 20px;background:var(--accent-soft);border-left:3px solid var(--accent);
+      border-radius:0 6px 6px 0;font-size:16px;line-height:1.6;color:#2c3a35}
+    blockquote strong{color:#1d2b26}
+
+    details.fold{margin:1.4em 0;border:1px solid var(--line);border-radius:8px;background:#fbfbf8}
+    details.fold summary{cursor:pointer;padding:10px 16px;font-size:13px;color:var(--muted);
+      font-weight:500;user-select:none;list-style-position:inside}
+    details.fold summary:hover{color:var(--ink)}
+    details.fold[open] summary{border-bottom:1px solid var(--line-soft)}
+    .refs{margin-top:10px;padding:4px 18px 2px}
+    .refs__item{position:relative;padding-left:2.9em;margin:0 0 .6em;font-size:13.5px;line-height:1.55;color:#41454b}
+    .refs__n{position:absolute;left:0;top:0;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--faint)}
+    .refs__item em{font-style:italic;color:#5c6066}
+    .refs a{color:var(--accent);border-bottom:1px solid #cfe0d9}
+
+    .footer{margin-top:44px;padding:24px 0 60px;border-top:1px solid var(--line);
+      font-size:13px;color:var(--faint);font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+
+    @media(max-width:600px){ body{font-size:16px} }
+  
+    .vid{display:block;width:100%;max-width:800px;margin:1.4em auto .4em;border-radius:10px;border:1px solid var(--line);background:#eceee9}
+    .vgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:1.3em 0 .4em}
+    .vgrid figure{margin:0}
+    .vgrid video{width:100%;border-radius:8px;border:1px solid var(--line);background:#eceee9;display:block}
+    .vgrid figcaption{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);text-align:center;margin-top:3px}
+    @media(max-width:620px){.vgrid{grid-template-columns:repeat(2,1fr)}}
+    table.num{width:100%;border-collapse:collapse;margin:1.2em 0 .4em;font-size:14.5px}
+    table.num th,table.num td{padding:7px 10px;border-bottom:1px solid var(--line-soft);text-align:left;vertical-align:top}
+    table.num th{font-weight:600;color:#2c2f34;border-bottom:1.5px solid var(--line)}
+    table.num td.r{text-align:right;font-family:'JetBrains Mono',monospace;font-size:13.5px;white-space:nowrap}
+    .callout{margin:1.5em 0;padding:14px 18px;border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:0 8px 8px 0;font-size:16px}
+    .callout.warn{border-left-color:var(--warn);background:var(--warn-soft)}
+    .projlink{display:inline-block;margin:.3em 0 1em;padding:8px 16px;border:1px solid var(--accent);border-radius:999px;color:var(--accent)!important;font-size:15px}
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <nav class="tabs">
+      <a class="tabs__link" href="../../index.html">Home</a>
+      <a class="tabs__link is-active" href="../">Blog</a>
+    </nav>
+
+    <article class="post-page">
+      <header class="post-page__header">
+        <p class="post-page__date">2026-10-31</p>
+        <h1 class="post-page__title">Atomic Skills, One Grip, and an Agent: Why We Stopped Training a Cube-Solving Policy</h1>
+        <p class="readtime">~18 min read · simulation results · <a href="../../ShadowRubik/">project page</a></p>
+      </header>
+
+      <div class="prose">
+
+        <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+          <marker id="bl-m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b9096"/></marker>
+          <marker id="bl-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2f6f5e"/></marker>
+        </defs></svg>
+
+        <p class="lede">
+          Every robot that has solved a Rubik's cube so far has done it the same way at heart: an optimal solver writes
+          down twenty-odd moves, and a learned controller is made strong enough to execute <em>whatever</em> that solver
+          says. We went the other way. Two simulated Shadow hands learn <em>twelve</em> face turns, each one forced to finish
+          in the same standard grip; an agent plans the solve the way a person does, with CFOP; an executor chains the
+          turns. Nine random scrambles in a row, nine solved. This post is about why that decomposition is the right one,
+          what it took to make it hold, and where it still does not.
+        </p>
+
+        <video class="vid" src="../../ShadowRubik/assets/grid9.mp4" poster="../../ShadowRubik/assets/grid9.jpg" autoplay muted loop playsinline></video>
+        <p class="cap">Nine random scrambles, solved by the same twelve skills and the same planner. Every game is cut to about a minute; the bar under each one is the CFOP stage. Simulation (MuJoCo Warp), rendered in Isaac Sim.</p>
+
+        <p><a class="projlink" href="../../ShadowRubik/">Interactive project page → drag the 3D replay, step through each solve, watch the language-model agent think</a></p>
+
+        <h2><span class="sn">01</span>Two robots, one assumption</h2>
+
+        <p>
+          OpenAI's Dactyl (2019) is the landmark: one Shadow hand, a recurrent policy trained in simulation with automatic
+          domain randomization at a scale few labs can afford, executing the face rotations and flips that Kociemba's
+          solver produces, on a real robot [1]. A paper from this month puts an ANYmal-D quadruped on a 0.4&nbsp;m,
+          4.6&nbsp;kg cube: an RGB-D pipeline reconstructs the cube, Kociemba's two-phase solver plans, and four learned
+          whole-body skills (two flips, two two-layer rotations) plus locomotion carry it out; it reports three hardware
+          solves of roughly thirty steps in eight to nine minutes [2]. Both are real-world systems, which ours is not
+          yet. That deserves saying first.
+        </p>
+        <p>
+          But look at what both take for granted. The <em>plan</em> is an optimal solver's output, and the
+          <em>controller</em> is shaped to that plan: Dactyl's policy must survive any sequence of face turns and flips the
+          solver throws at it, so the burden of generality falls on one network and its training budget; the quadruped's
+          skill set is whatever the giant cube and Kociemba's move alphabet require. Neither design has a place where a
+          better plan, a different method, or a bigger cube can come in without retraining the part that touches the
+          cube. That is the assumption we wanted to drop.
+        </p>
+
+        <h2><span class="sn">02</span>The bet: a contract, not a policy</h2>
+
+        <p>
+          Our hands hold the cube the way a cuber does — left thumb and middle finger pinching the F and B centres, right
+          thumb on the FR edge, right middle and ring fingers behind, the index fingers resting behind the top corners.
+          We call this the <strong>standard grip</strong>, and everything rests on one rule about it:
+        </p>
+        <div class="callout"><strong>Every atomic move starts in the standard grip and must end in it.</strong>
+          A move is not "turn R"; it is "turn R <em>and come home</em>". Only then does it count.</div>
+        <p>
+          That rule is what turns a pile of skills into a vocabulary. If every move leaves the hands in the same place,
+          any sequence of moves is executable by concatenation; the planner never has to know what the fingers are doing,
+          and the skills never have to know what comes next. The cost is paid once, per move, at training time.
+        </p>
+
+        <svg class="fig" viewBox="0 0 780 300" role="img" aria-label="Pipeline. The cube state goes to an agent (CFOP planner or a language model) which emits a sequence of atomic moves. An executor takes each move from a library of twelve face turns plus rotations, each a reference trajectory plus an RL policy that ends in the standard grip, and runs it on two Shadow hands on UR10e arms in simulation. Checks happen only at the end of each CFOP stage; a failed check sends the real state back to the agent to replan.">
+          <text x="30" y="58" class="dim">cube state</text>
+          <path class="edge" d="M100,54 H138"/>
+          <rect x="138" y="26" width="168" height="58" rx="9" class="accent"/>
+          <text x="222" y="50" text-anchor="middle" class="at">agent</text>
+          <text x="222" y="68" text-anchor="middle" class="dim">CFOP planner · or an LLM</text>
+          <path class="edgeA" d="M306,55 H350"/>
+          <text x="328" y="44" text-anchor="middle" class="dim">moves</text>
+          <rect x="350" y="26" width="170" height="58" rx="9" class="box"/>
+          <text x="435" y="50" text-anchor="middle" class="t">executor</text>
+          <text x="435" y="68" text-anchor="middle" class="dim">one move at a time</text>
+          <path class="edge" d="M520,55 H564"/>
+          <rect x="564" y="26" width="186" height="58" rx="9" class="box"/>
+          <text x="657" y="50" text-anchor="middle" class="t">two Shadow hands</text>
+          <text x="657" y="68" text-anchor="middle" class="dim">on UR10e arms · sim</text>
+          <rect x="300" y="128" width="270" height="92" rx="10" class="ghostA"/>
+          <text x="435" y="150" text-anchor="middle" class="at">atomic move library</text>
+          <text x="435" y="171" text-anchor="middle" class="mono">R R' U U' L L' D D' F F' B B' · x'</text>
+          <text x="435" y="191" text-anchor="middle" class="dim">reference trajectory + RL residual</text>
+          <text x="435" y="208" text-anchor="middle" class="dim">every move ends in the standard grip</text>
+          <path class="edgeAd" d="M435,128 V84"/>
+          <path class="edge" d="M657,84 V250 H222 V84"/>
+          <text x="440" y="270" text-anchor="middle" class="dim">check only after each CFOP stage (stickers + grip) — on failure, replan from the real state</text>
+        </svg>
+        <p class="cap">The agent never sees a finger; the skills never see the plan. The standard grip is the interface between them.</p>
+
+        <h2><span class="sn">03</span>The twelve moves</h2>
+
+        <p>
+          Each face turn is a hand-designed reference trajectory — which fingers move, where the wrist goes, the
+          order of releases — plus a policy trained with PPO to output small corrections on top of it. The reference
+          gets the structure right; RL makes it robust to the contact physics we cannot script. The arms' shoulders and
+          elbows never move. Success is measured over 512 games in a fixed environment: the layer must stop within
+          90°±3° and the hands must be back in the standard grip (fingertips within 8&nbsp;mm, cube within 8&nbsp;mm and
+          8° of where it started).
+        </p>
+
+        <div class="vgrid">
+          <figure><video src="../../ShadowRubik/assets/m_R.mp4" autoplay muted loop playsinline></video><figcaption>R · 99.4%</figcaption></figure>
+          <figure><video src="../../ShadowRubik/assets/m_U.mp4" autoplay muted loop playsinline></video><figcaption>U · 95.7%</figcaption></figure>
+          <figure><video src="../../ShadowRubik/assets/m_F.mp4" autoplay muted loop playsinline></video><figcaption>F · 98.6%</figcaption></figure>
+          <figure><video src="../../ShadowRubik/assets/m_D.mp4" autoplay muted loop playsinline></video><figcaption>D · 93.6%</figcaption></figure>
+        </div>
+        <p class="cap">Four of the twelve. Each clip is the whole move: turn, then come home.</p>
+
+        <table class="num">
+          <tr><th>Move</th><th>How the hands do it</th><th style="text-align:right">back in grip</th><th style="text-align:right">time</th></tr>
+          <tr><td>R / R'</td><td>right wrist turns the R layer</td><td class="r">99.4 / 98.2%</td><td class="r">2.8 / 2.4 s</td></tr>
+          <tr><td>U / U'</td><td>right index flicks from the UBR edge / pushes back</td><td class="r">95.7 / 99.2%</td><td class="r">2.9 / 2.0 s</td></tr>
+          <tr><td>L / L'</td><td>mirror of R' / R, done by the left hand</td><td class="r">100 / 97.1%</td><td class="r">7.1 / 7.1 s</td></tr>
+          <tr><td>D / D'</td><td>ring fingers flick the bottom layer</td><td class="r">93.6 / 100%</td><td class="r">7.5 / 4.9 s</td></tr>
+          <tr><td>F / F'</td><td>regrip, right index flicks tangentially from the UFR corner / its mirror</td><td class="r">98.6 / 99.4%</td><td class="r">6.2 / 11.8 s</td></tr>
+          <tr><td>B / B'</td><td>regrip, right index lifts DBR while the thumb holds the cube / its mirror</td><td class="r">100 / 95.9%</td><td class="r">5.4 / 11.7 s</td></tr>
+        </table>
+        <p class="cap">Times are the move plus its way home, as recorded. The slow ones go through the mirrored grip and back.</p>
+
+        <h2><span class="sn">04</span>What it actually took to make moves come home</h2>
+
+        <p>
+          Getting a layer to 90° was the easy part; most moves did that in a day. Getting the hands <em>back</em> took
+          weeks, and the lessons are the most transferable thing in this project.
+        </p>
+        <p>
+          <strong>A way back only works from the starts it was trained on.</strong> When a move ends with the cube
+          within about 5&nbsp;mm and 5° of home, training the way back directly on that move's <em>real</em> end
+          states — not on a clean idealised start — reaches 100% in a few dozen iterations; that is how B's way back
+          went from 81.6% to 100%. When the move leaves the cube 10&nbsp;mm or 15° off, no amount of RL on the way back
+          recovers it. We tried long two-stage returns, "wrench" regrips, re-centring through other grips; none of them
+          moved the number.
+        </p>
+        <p>
+          <strong>So fix the move, not the way back.</strong> Two examples. The index finger flicking B used to drag
+          the whole cube 9&nbsp;mm sideways; having the right thumb pull the cube the other way during the flick kept it
+          within 4.6&nbsp;mm, and B's chain went from 6% to 100%. F was worse: the index pressed on the middle of the
+          UFR corner's top sticker, and most of that force pointed at the cube's centre, shoving the whole cube. Moving the
+          contact out to the corner made the push mostly tangential; the cube's offset after F dropped from 9.1&nbsp;mm to
+          4.5&nbsp;mm and F went from 0% to 98.6% end to end. Nothing about the learning changed. The geometry of the
+          contact did.
+        </p>
+        <p>
+          <strong>Mirrors are free.</strong> L, L', B' and F' are not trained at all: they are the mirror images of R',
+          R, B and F, run on the mirrored grip with the policy's observations and actions reflected, followed by a short
+          regrip back to the standard grip. Four of twelve moves cost nothing beyond the regrip.
+        </p>
+        <p>
+          <strong>Check rarely.</strong> A person solving a cube looks at it a handful of times, not after every turn.
+          Our executor checks the stickers and the grip only at the end of each CFOP stage — seven times a solve — and
+          between moves only asks whether the cube is still in hand and the layer is not stuck halfway. Measuring the
+          grip after every move had cost 32&nbsp;s per move; it was also unnecessary.
+        </p>
+
+        <h2><span class="sn">05</span>The agent: CFOP, rewritten for hands</h2>
+
+        <p>
+          The planner solves the way speedcubers do: white cross, four first-two-layer pairs, orient the last layer,
+          permute it. The published CFOP formulas are written for human wrists and use whole-cube rotations (x, y, z),
+          wide turns and slice turns. We rewrote every one of them into the twelve face turns: a wide or slice turn is one
+          or two face turns plus a rotation, and a rotation can be pushed to the end of the formula by relabelling the
+          faces after it and then dropped. Every rewrite is re-checked on a simulator. All <strong>119</strong> cases
+          — 41 F2L, 57 OLL, 21 PLL — have a version the hands can do.
+        </p>
+        <p>
+          The planner then chooses among equivalent formulas by what the hands are good at, not by length: each move's
+          cost is −log of its measured success plus 0.1 × its seconds. F' and B' take 11.8&nbsp;s each, so the planner
+          only spends them when they save several fast turns. On four random scrambles, motion time per solve fell from an
+          average of 393&nbsp;s to <strong>240&nbsp;s</strong>, with every checkpoint still passing.
+        </p>
+        <table class="num">
+          <tr><th>End-to-end, random scrambles (simulation)</th><th style="text-align:right">result</th></tr>
+          <tr><td>Nine scrambles (fixed seed, none picked), planner + executor</td><td class="r">9 / 9 solved</td></tr>
+          <tr><td>Checkpoints (stickers match and hands in the standard grip)</td><td class="r">63 / 63</td></tr>
+          <tr><td>Quarter turns per solve</td><td class="r">55–71</td></tr>
+          <tr><td>Motion time, success-and-time-aware planner (4 games)</td><td class="r">393 → 240 s</td></tr>
+        </table>
+
+        <h2><span class="sn">06</span>A language model can be the agent</h2>
+
+        <p>
+          Because the interface is a list of face turns, the planner is replaceable. We gave the job to an Opus session
+          through <code>claude -p</code>: for each CFOP stage it sees the cube, is told the stage's goal and the face
+          turns the hands can do, and may try a sequence on a copy of the cube before answering. It gets no formula
+          library and no hints from our planner. Its answer is checked on the logical cube and handed to the executor.
+        </p>
+        <table class="num">
+          <tr><th>What the model sees</th><th>Tool</th><th style="text-align:right">outcome</th></tr>
+          <tr><td>Sticker net + "what is solved" line</td><td>try a sequence, text back</td><td class="r">solved; 7/7 stages right first time; 93–101 quarter turns; $2.4–3.6</td></tr>
+          <tr><td>Pictures of the cube from all sides, nothing else</td><td>try a sequence, a picture back</td><td class="r">solved; 8 asks (one F2L pair redone once); 89 quarter turns</td></tr>
+          <tr><td>Pictures only</td><td>none</td><td class="r">cross and first pair right first time; later stages blocked by the provider's safety filter, unfinished</td></tr>
+        </table>
+        <p>
+          The hands then executed the model's own 93-move solution: every checkpoint passed. The weak spot is honest and
+          visible in the replay on the project page: the model does not know the F2L cases by heart, so it works each
+          pair out by trial — 42 to 56 tool turns per solve. A person who has looked at the cube from all sides and knows
+          the cases does it in about seven decisions. Closing that gap (letting the model look around first, check once,
+          and recall cases instead of searching) is our next agent experiment.
+        </p>
+
+        <h2><span class="sn">07</span>One network for all of it</h2>
+
+        <p>
+          Twelve moves, each with several segments, trained as separate policies is still a lot of networks. On a second
+          machine we distil all of them into <strong>one</strong> policy that receives the move and segment as input:
+          58 segments, a 418-dimensional observation, 44 actions. It first imitates each move's own policy, then trains
+          with PPO on all of them at once. Measured the same way — whole move, 512 games, home or not — the shared
+          network currently matches the dedicated policies at 100% on <strong>9 of 13</strong> moves (R, R', U, L, L',
+          D', F', B', x'). The remaining four fail at a way back or at a flick whose start the shared network leaves
+          slightly different from what the reference expects. A finding worth keeping: per-segment scores did not predict
+          whole-move success at all — 0.755 vs 0.760 per segment hid a drop from six moves passing to three — so we only
+          select checkpoints by whole-move results.
+        </p>
+
+        <h2><span class="sn">08</span>Why this is the path to 4×4 through 7×7</h2>
+
+        <p>
+          Here the argument stops being about one cube. Big cubes are solved by reduction (the Yau method): build the
+          centres, pair the edges, then finish as a 3×3. Our sticker-only Yau planner solves random 4×4 to 7×7 scrambles
+          — 20 of 20 in our benchmark, five per order — and it is worth looking at <em>what</em> it asks for:
+        </p>
+        <table class="num">
+          <tr><th>Order</th><th style="text-align:right">outer face turns</th><th style="text-align:right">single inner-layer turns</th><th style="text-align:right">rotations</th></tr>
+          <tr><td>4×4</td><td class="r">79.9%</td><td class="r">14.4%</td><td class="r">5.6%</td></tr>
+          <tr><td>5×5</td><td class="r">77.6%</td><td class="r">18.5%</td><td class="r">3.9%</td></tr>
+          <tr><td>6×6</td><td class="r">74.0%</td><td class="r">23.3%</td><td class="r">2.7%</td></tr>
+          <tr><td>7×7</td><td class="r">72.0%</td><td class="r">26.1%</td><td class="r">2.0%</td></tr>
+        </table>
+        <p>
+          Three quarters of every big-cube solve is the moves the hands already have. What is new is one family — turn a
+          single inner layer — and a few rotations. Under our design that is a handful of additional atomic skills, each
+          trained once against the same standard-grip contract, and the planner does the rest. Under an end-to-end design
+          it is a new cube, a new action distribution, and a new training run at full cost. That asymmetry is the whole
+          case for atomic skills plus an agent: the expensive part (contact-rich control) is small, local and reusable;
+          the part that grows with the problem (search over a huge state space) is exactly what planners and language
+          models are good at.
+        </p>
+        <div class="callout warn">To be clear about the status: the 4×4–7×7 numbers above are from the planner alone.
+          The hands have not executed a big-cube solve, and the inner-layer skill has not been trained.</div>
+
+        <h2><span class="sn">09</span>What is not done</h2>
+
+        <p>
+          <strong>It is simulation.</strong> Physics is MuJoCo Warp, rendering is Isaac Sim, the cube is a carefully
+          modelled 56&nbsp;mm puzzle with realistic turning torque and friction — but no real hand has touched it. The
+          robots in [1] and [2] are real; ours is not yet.
+        </p>
+        <p>
+          <strong>Segments are snapped.</strong> The executor starts each move segment from that segment's clean,
+          trained start, so in the recordings the hands jump a few millimetres between segments (up to 8&nbsp;mm in the
+          worst place, inside F'). It is a crutch for the remaining drift, and we show it rather than hide it.
+        </p>
+        <p>
+          <strong>Rotations are mostly unsolved.</strong> x' works (93.8%): the right wrist turns R' with the cube locked,
+          the left ring finger slides underneath, and the hands land back in the grip. y' turns all the way with a relay
+          between the hands and its way home is improving, but it is not yet reliable; y, z, z' and x follow from it.
+          The 3×3 solver does not need them — it was rewritten without rotations — but human-style big-cube solving will.
+        </p>
+        <p>
+          <strong>Perception is assumed.</strong> The agent is handed the cube state, or ideal renders of it. Real
+          cube-state estimation, as both prior systems built, is still to do.
+        </p>
+
+        <h2><span class="sn">10</span>The takeaway</h2>
+        <p>
+          The interesting design decision in a dexterous system is not the size of the policy; it is where you draw the
+          interface. Draw it at "any sequence an optimal solver emits" and every bit of generality has to be bought with
+          training. Draw it at "a small set of moves that always come home" and generality is free above the line: a new
+          method, a new planner, a language model, a bigger cube. Below the line, the work is real and it is specific —
+          where a thumb pushes, which way a fingertip slides — but it is finished once per move.
+        </p>
+
+        <details class="fold"><summary>References</summary>
+        <div class="refs">
+          <p class="refs__item"><span class="refs__n">[1]</span> OpenAI, I. Akkaya et al., "Solving Rubik's Cube with a Robot Hand," 2019. arXiv:<a href="https://arxiv.org/abs/1910.07113">1910.07113</a>.</p>
+          <p class="refs__item"><span class="refs__n">[2]</span> Amiet et al., quadruped solving a giant Rubik's cube with whole-body skills, 2026. arXiv:<a href="https://arxiv.org/abs/2610.24610">2610.24610</a>.</p>
+          <p class="refs__item"><span class="refs__n">[3]</span> J. Fridrich, the CFOP method; formulas from speedcubedb.com and cubingcheatsheet.com, each re-verified on our simulator.</p>
+          <p class="refs__item"><span class="refs__n">[4]</span> The Yau method for big cubes (reduction: centres, three cross edges, remaining centres, last cross edge, edge pairing, 3×3 stage).</p>
+        </div>
+        </details>
+
+        <p style="margin-top:1.6em">
+          <a href="../">&larr; Back to blog</a> &nbsp;·&nbsp; <a href="../../ShadowRubik/">Project page</a>
+        </p>
+      </div>
+    </article>
+
+    <footer class="footer">&copy; Xunyi Zhao</footer>
+  </main>
+</body>
+</html>
