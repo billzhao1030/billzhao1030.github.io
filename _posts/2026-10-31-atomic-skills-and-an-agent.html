@@ -509,5 +509,28 @@ excerpt: "Two Shadow hands solve random Rubik's cubes in simulation without any 
 
     <footer class="footer">&copy; Xunyi Zhao</footer>
   </main>
+<script>
+/* Looping clips: fetch each short clip once into memory (no re-fetch on every loop) and only play the ones on screen,
+   so a dozen loops never hold the browser's connections while a long video is playing. */
+(() => {
+  const clips = [...document.querySelectorAll("video[autoplay]")];
+  const vis = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.play().catch(() => {}); } else { e.target.pause(); }
+  }), { rootMargin: "200px" });
+  clips.forEach(v => {
+    const src = v.getAttribute("src");
+    v.removeAttribute("autoplay"); v.pause(); v.preload = "none";
+    if (!src) return;
+    fetch(src).then(r => r.ok ? r.blob() : null).then(b => {
+      if (b && b.size < 4e6) { v.src = URL.createObjectURL(b); }
+      vis.observe(v);
+    }).catch(() => vis.observe(v));
+  });
+  /* while a video with controls is playing, the looping clips wait */
+  document.querySelectorAll("video[controls]").forEach(v => { if (clips.includes(v)) return;
+    v.addEventListener("play", () => clips.forEach(c => { if (c !== v) c.pause(); }));
+  });
+})();
+</script>
 </body>
 </html>
