@@ -85,6 +85,24 @@ nav.top .links a { text-decoration: none; } nav.top .links a:hover { color: var(
 .stat .n { font: 700 clamp(26px, 3.4vw, 38px)/1.1 "Space Grotesk"; }
 .stat .l { color: var(--mute); font-size: 13.5px; margin-top: 4px; }
 
+/* versions */
+.vtag { background: var(--a1); color: #fff; border-radius: 99px; padding: 3px 8px; letter-spacing: .06em; }
+.versions { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+.ver-card { display: flex; flex-direction: column; overflow: hidden; padding: 0; text-decoration: none; color: inherit; min-width: 0; }
+a.ver-card { transition: transform .2s, box-shadow .2s; }
+a.ver-card:hover { transform: translateY(-3px); box-shadow: 0 18px 50px -16px rgba(30, 30, 80, .3); }
+.ver-card img { display: block; width: 100%; aspect-ratio: 16 / 7; object-fit: cover; background: #ccd; }
+.ver-card .vbody { padding: 16px 20px 18px; }
+.ver-card .vhead { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }
+.ver-card .vhead b { font: 700 13px "JetBrains Mono", monospace; color: #fff; background: linear-gradient(120deg, var(--a1), var(--a2)); padding: 3px 10px; border-radius: 99px; }
+.ver-card .vstate { font-size: 12px; color: var(--mute); text-transform: uppercase; letter-spacing: .1em; }
+.ver-card h3 { font-size: 22px; margin-bottom: 4px; }
+.ver-card p { margin: 0; color: var(--ink2); font-size: 15px; }
+.ver-card .vlink { display: inline-block; margin-top: 10px; font-weight: 600; font-size: 14.5px; color: var(--a1); }
+.ver-card.v-next { border-style: dashed; border-color: rgba(108, 92, 255, .35); background: rgba(255, 255, 255, .35); justify-content: center; }
+.ver-card.v-next .vhead b { background: transparent; color: var(--a1); border: 1px dashed var(--a1); }
+@media (max-width: 760px) { .versions { grid-template-columns: 1fr; } }
+
 /* 3D replay */
 .viewer { display: grid; grid-template-columns: 1fr; gap: 0; overflow: hidden; padding: 0; }
 .viewer .stage { position: relative; height: min(64vh, 620px); background:
@@ -120,7 +138,7 @@ nav.top .links a { text-decoration: none; } nav.top .links a:hover { color: var(
 .moves { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
 .mv { position: relative; overflow: hidden; border-radius: 16px; padding: 0; }
 .mv video { width: 100%; display: block; aspect-ratio: 4 / 3; object-fit: cover; background: #ccd; }
-.mv .cap { padding: 9px 12px 11px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.mv .cap { padding: 7px 12px 9px; display: flex; justify-content: center; }
 .mv .cap b { font: 700 18px "Space Grotesk"; }
 .mv .cap span { font-size: 11.5px; color: var(--mute); text-align: right; line-height: 1.3; }
 .mv .pct { position: absolute; top: 8px; right: 8px; font: 700 12px Inter; color: #fff; background: rgba(15, 18, 34, .55);
@@ -250,14 +268,14 @@ nav.top .btn { white-space: nowrap; }
 
 <nav class="top"><div class="bar glass">
   <a class="logo" href="#"><img src="assets/favicon.svg" alt="">ShadowRubik</a>
-  <div class="links"><a href="#replay">3D replay</a><a href="#how">How it works</a><a href="#moves">Atomic moves</a><a href="#games">Nine solves</a><a href="#clips">Clips</a><a href="#agent">Agent</a><a href="#cot">Agent replay</a><a href="#numbers">Numbers</a><a href="#limits">Limits</a></div>
-  <a class="btn ghost" href="../blog/atomic-skills-and-an-agent/" style="padding:8px 14px;font-size:14px">Read the essay ↗</a>
+  <div class="links"><a href="#versions">Versions</a><a href="#replay">3D replay</a><a href="#how">How it works</a><a href="#moves">Moves</a><a href="#games">Nine solves</a><a href="#clips">Clips</a><a href="#agent">LLM agent</a><a href="#cot">Agent replay</a></div>
+  <a class="btn ghost" href="../blog/atomic-skills-and-an-agent/" style="padding:8px 14px;font-size:14px">Read the v1 post ↗</a>
 </div></nav>
 
 <header class="hero"><div class="wrap">
-  <span class="eyebrow reveal">● Simulation · Shadow Hand × 2 · UR10e × 2</span>
+  <span class="eyebrow reveal"><span class="vtag">v1</span> 3×3 · Simulation · Shadow Hand × 2 · UR10e × 2</span>
   <h1 class="reveal">Twelve <span class="grad">Atomic Moves</span>. One <span class="grad">Agent</span>.<br>A Rubik's Cube Solved the Way Humans Do.</h1>
-  <p class="lede reveal">Two Shadow hands learn twelve face turns with reinforcement learning, each ending in the same standard grip. An agent plans <b>Cross → F2L → OLL → PLL</b>, and the hands execute it step by step, back to the grip every time. No end-to-end policy, no 20-move optimal solver — CFOP, like a human cuber.</p>
+  <p class="lede reveal">Twelve moves learned with RL, each ending in the same grip. An agent plans <b>Cross → F2L → OLL → PLL</b>; the hands execute. CFOP, like a human cuber.</p>
   <div class="hero-video glass reveal"><video src="assets/grid9.mp4" poster="assets/grid9.jpg" autoplay muted loop playsinline></video></div>
   <div class="stats">
     <div class="stat glass reveal"><div class="n grad">9 / 9</div><div class="l">random scrambles solved end to end</div></div>
@@ -265,14 +283,31 @@ nav.top .btn { white-space: nowrap; }
     <div class="stat glass reveal"><div class="n">63 / 63</div><div class="l">checkpoints passed (stickers and grip)</div></div>
     <div class="stat glass reveal"><div class="n">≈ 64</div><div class="l">quarter turns per solve on average</div></div>
   </div>
-  <div class="cta reveal" style="margin:30px 0 0"><a class="btn primary" href="#replay">Explore the 3D replay</a><a class="btn ghost" href="#games">See nine random solves</a></div>
+  <div class="cta reveal" style="margin:30px 0 0"><a class="btn primary" href="#replay">Explore the 3D replay</a><a class="btn ghost" href="#games">See nine random solves</a><a class="btn ghost" href="../blog/atomic-skills-and-an-agent/">Read the v1 post</a></div>
 
 </div></header>
+
+<!-- Versions: one card per version. To add v2, copy the v1 card (drop "v-now" from v1) and replace the "next" card. -->
+<section id="versions" style="padding-top:56px"><div class="wrap">
+  <span class="eyebrow reveal">Versions</span>
+  <h2 class="reveal">One project, version by version</h2>
+  <div class="versions">
+    <a class="ver-card glass reveal v-now" href="../blog/atomic-skills-and-an-agent/">
+      <img src="assets/grid9.jpg" alt="Nine random 3×3 scrambles solved by two Shadow hands" loading="lazy">
+      <div class="vbody"><div class="vhead"><b>v1</b><span class="vstate">current</span></div>
+        <h3>The 3×3, solved</h3><p>Twelve atomic moves, one grip, a CFOP agent — or a language model.</p><span class="vlink">Read the v1 post →</span></div>
+    </a>
+    <div class="ver-card glass reveal v-next">
+      <div class="vbody"><div class="vhead"><b>next</b><span class="vstate">in progress</span></div>
+        <h3>Bigger cubes</h3><p>Later versions take the same moves and the same grip further.</p></div>
+    </div>
+  </div>
+</div></section>
 
 <section id="replay"><div class="wrap">
   <span class="eyebrow reveal">Interactive</span>
   <h2 class="reveal">The real simulation, in your browser</h2>
-  <p class="sub reveal">Every body of one recorded solve — both Shadow hands, both UR10e arms and all 26 cubies — replayed from its simulated poses. Drag to orbit, scroll to zoom, scrub the timeline. The bar below follows the solve stage by stage.</p>
+  <p class="sub reveal">One recorded solve — both hands, both arms, all 26 cubies — replayed in your browser. Drag to orbit, scrub the timeline.</p>
   <div class="viewer glass reveal">
     <div class="stage" id="replayStage"><div class="loading" id="replayLoading">Loading the recording…</div>
       <div class="hint">Drag to orbit · scroll to zoom · right-drag to pan</div></div>
@@ -290,7 +325,7 @@ nav.top .btn { white-space: nowrap; }
 <section id="how"><div class="wrap">
   <span class="eyebrow reveal">How it works</span>
   <h2 class="reveal">Look, plan, act, check — and always come home</h2>
-  <p class="sub reveal">A person's hands fall back into "holding the cube" after every turn; that is what lets turns chain. We made it explicit: every atomic move is <i>turn a layer + return to the standard grip</i>. With that one contract, moves compose like building blocks.</p>
+  <p class="sub reveal">Every atomic move is <i>turn a layer + return to the standard grip</i>. With that one contract, moves compose like building blocks.</p>
   <div class="flow glass reveal">
     <svg viewBox="0 0 1100 230" role="img" aria-label="Look, plan, act, check loop">
       <defs>
@@ -312,7 +347,6 @@ nav.top .btn { white-space: nowrap; }
       </g>
     </svg>
   </div>
-<div class="ins"><div class="in1 glass reveal"><span class=big>1 grip</span><b>The contract that makes moves compose</b><p>Every atomic move ends in the same standard grip. Any move can follow any other, so a formula is just a list — no per-pair transitions to learn.</p></div><div class="in1 glass reveal"><span class=big>≤ 5 mm</span><b>A way back only accepts starts it has seen</b><p>Trained on a move's real end states, a return reaches 100% when the cube ends within ~5 mm; at 10 mm and beyond it does not train at all. The fix is upstream: make the move itself not push the cube.</p></div><div class="in1 glass reveal"><span class=big>0 → 100%</span><b>Fix the move, not the return</b><p>B slid the cube 9 mm until the right thumb held it while the index flicked (return 0% → 100%). F pushed it down until the index flicked tangentially from the corner (9.1 → 4.5 mm; whole chain 98.6%).</p></div></div>
   <div class="points" style="margin-top:16px">
     <div class="point glass reveal"><div class="ic" style="background:linear-gradient(135deg,#6c5cff,#8f84ff)">↺</div><h3>One standard grip</h3><p>Left thumb and middle finger pinch the F and B centres; the right hand owns the R layer. Every move starts and ends here, so the policies never see each other's leftovers.</p></div>
     <div class="point glass reveal"><div class="ic" style="background:linear-gradient(135deg,#00b3ff,#5fd0ff)">⌁</div><h3>Learned with RL</h3><p>Each move is a reference path plus a policy that learns per-motor corrections (MuJoCo Warp + PPO). Its way back is trained on the move's real end states.</p></div>
@@ -323,61 +357,54 @@ nav.top .btn { white-space: nowrap; }
 <section id="moves"><div class="wrap">
   <span class="eyebrow reveal">Atomic moves</span>
   <h2 class="reveal">Twelve moves, one contract</h2>
-  <p class="sub reveal">Each clip is a full atomic move: turn the layer, then return to the standard grip. The badge is how often it ends back in the grip in 512 fixed-environment games.</p>
-  <div class="moves" id="movesGrid"></div>
-  <div class="ins"><div class="in1 glass reveal"><span class=big>4 of 12</span><b>Mirrors come for free</b><p>L, L', B' and F' are the mirror images of trained policies, run on the mirrored grip — L 100%, L' 97.1%, B' 95.9%, F' 99.4% — with no new training.</p></div><div class="in1 glass reveal"><span class=big>2–12 s</span><b>Moves are not equally cheap</b><p>U' takes 2.0 s, R 2.8 s; moves that switch grips first (L, D, F', B') take 5–12 s. The agent sees these costs.</p></div><div class="in1 glass reveal"><span class=big>93.6–100%</span><b>Every move comes home</b><p>Each of the twelve moves returns to the standard grip in 93.6–100% of 512 games, measured on the full move + way back.</p></div></div>
+  <p class="sub reveal">Turn the layer, then come home to the standard grip.</p>
+  <div class="moves" id="movesGrid">
+    <div class="mv glass"><video src="assets/m_R.mp4" poster="assets/m_R.jpg" autoplay muted loop playsinline preload="metadata"></video><div class="cap"><b>R</b></div></div>
+    <div class="mv glass"><video src="assets/m_Rp.mp4" poster="assets/m_Rp.jpg" autoplay muted loop playsinline preload="metadata"></video><div class="cap"><b>R'</b></div></div>
+    <div class="mv glass"><video src="assets/m_U.mp4" poster="assets/m_U.jpg" autoplay muted loop playsinline preload="metadata"></video><div class="cap"><b>U</b></div></div>
+    <div class="mv glass"><video src="assets/m_Up.mp4" poster="assets/m_Up.jpg" autoplay muted loop playsinline preload="metadata"></video><div class="cap"><b>U'</b></div></div>
+    <div class="mv glass"><video src="assets/m_L.mp4" poster="assets/m_L.jpg" autoplay muted loop playsinline preload="metadata"></video><div class="cap"><b>L</b></div></div>
+    <div class="mv glass"><video src="assets/m_Lp.mp4" poster="assets/m_Lp.jpg" autoplay muted loop playsinline preload="metadata"></video><div class="cap"><b>L'</b></div></div>
+    <div class="mv glass"><video src="assets/m_D.mp4" poster="assets/m_D.jpg" autoplay muted loop playsinline preload="metadata"></video><div class="cap"><b>D</b></div></div>
+    <div class="mv glass"><video src="assets/m_Dp.mp4" poster="assets/m_Dp.jpg" autoplay muted loop playsinline preload="metadata"></video><div class="cap"><b>D'</b></div></div>
+    <div class="mv glass"><video src="assets/m_F.mp4" poster="assets/m_F.jpg" autoplay muted loop playsinline preload="metadata"></video><div class="cap"><b>F</b></div></div>
+    <div class="mv glass"><video src="assets/m_Fp.mp4" poster="assets/m_Fp.jpg" autoplay muted loop playsinline preload="metadata"></video><div class="cap"><b>F'</b></div></div>
+    <div class="mv glass"><video src="assets/m_B.mp4" poster="assets/m_B.jpg" autoplay muted loop playsinline preload="metadata"></video><div class="cap"><b>B</b></div></div>
+    <div class="mv glass"><video src="assets/m_Bp.mp4" poster="assets/m_Bp.jpg" autoplay muted loop playsinline preload="metadata"></video><div class="cap"><b>B'</b></div></div>
+  </div>
 </div></section>
 
 <section id="games"><div class="wrap">
   <span class="eyebrow reveal">Nine random solves</span>
   <h2 class="reveal">Nine scrambles, nine solves</h2>
-  <p class="sub reveal">Scrambles are random (fixed seed, nothing picked). Each recording is about one minute (≈ 7–11× real time: real turning plays slower, waits and returns faster). Each card pairs the hands' recording with a draggable 3D cube replaying the same solution move by move. Click a card for the full view, with step controls.</p>
+  <p class="sub reveal">Random scrambles, nothing picked. Each recording next to a 3D cube replaying the same solution — click a card to step through it.</p>
   <div class="games" id="gamesGrid"></div>
-  <div class="ins"><div class="in1 glass reveal"><span class=big>119 / 119</span><b>CFOP without rotations</b><p>All 41 F2L, 57 OLL and 21 PLL cases rewritten into the hands' face turns — wide and slice moves become face turns plus a rotation, and rotations are relabelled away — every rewrite re-verified.</p></div><div class="in1 glass reveal"><span class=big>393 → 240 s</span><b>Pick formulas by success and time</b><p>The agent's cost is −log(success) + 0.1 × seconds per move. F' and B' (11.8 s) are used only when they save several fast moves; four random games went from 393 s to 240 s on average.</p></div><div class="in1 glass reveal"><span class=big>7 looks</span><b>Look a few times, then just act</b><p>A solve looks at the cube once per stage — cross, four F2L pairs, OLL, PLL — and checks stickers and grip there; if a check fails, it replans from the real state.</p></div></div>
 </div></section>
 
 <section id="clips"><div class="wrap">
   <span class="eyebrow reveal">More clips</span>
   <h2 class="reveal">Chains, mirrors, a rotation, a whole solve</h2>
-  <p class="sub reveal">Every recording here shows the first-person view on the left and the whole robot on the right. Because each move ends in the standard grip, the executor simply plays one after another.</p>
+  <p class="sub reveal">First person on the left, the whole robot on the right.</p>
   <div class="clips">
-    <div class="clip glass reveal"><video src="assets/demo_chain_RU.mp4" poster="assets/demo_chain_RU.jpg" controls muted loop playsinline preload="metadata"></video><p><b>R U R' U', then back.</b> Eight moves in a row: the sequence scrambles the cube and its inverse restores it, each move ending in the grip.</p></div>
-    <div class="clip glass reveal"><video src="assets/demo_chain_L.mp4" poster="assets/demo_chain_L.jpg" controls muted loop playsinline preload="metadata"></video><p><b>L U L' R.</b> For L and L' the hands pass through the two-handed grip into the mirrored grip, run the mirrored policy, and come back.</p></div>
-    <div class="clip glass reveal"><video src="assets/demo_xp.mp4" poster="assets/demo_xp.jpg" controls muted loop playsinline preload="metadata"></video><p><b>x' rotation · 93.8%.</b> The right wrist turns R' with the whole cube locked, the left ring finger supports it from below, and both hands land back in the grip.</p></div>
-    <div class="clip glass reveal"><video src="assets/demo_game.mp4" poster="assets/demo_game.jpg" controls muted loop playsinline preload="metadata"></video><p><b>One random scramble, start to finish.</b> The planner's 55 quarter turns, 7 of 7 checkpoints, solved. Playback about 2.5× for normal motion and faster for slow starts, returns and waits.</p></div>
+    <div class="clip glass reveal"><video src="assets/demo_chain_RU.mp4" poster="assets/demo_chain_RU.jpg" controls muted loop playsinline preload="metadata"></video><p><b>R U R' U', then back.</b></p></div>
+    <div class="clip glass reveal"><video src="assets/demo_chain_L.mp4" poster="assets/demo_chain_L.jpg" controls muted loop playsinline preload="metadata"></video><p><b>L U L' R.</b> The left hand takes over for L.</p></div>
+    <div class="clip glass reveal"><video src="assets/demo_xp.mp4" poster="assets/demo_xp.jpg" controls muted loop playsinline preload="metadata"></video><p><b>x' rotation.</b> The whole cube turns over in hand, back to the grip.</p></div>
+    <div class="clip glass reveal"><video src="assets/demo_game.mp4" poster="assets/demo_game.jpg" controls muted loop playsinline preload="metadata"></video><p><b>One random scramble, start to finish.</b></p></div>
   </div>
 </div></section>
 
 <section id="agent"><div class="wrap">
   <span class="eyebrow reveal">The agent</span>
   <h2 class="reveal">The agent can be a planner — or a language model</h2>
-  <p class="sub reveal">The same atomic moves can be driven by an Opus session. It sees the cube, is told the stage goal and which face turns the hands can do, and may try sequences on a cube tool before answering. No formula library, no planner hints.</p>
-  <div class="agent">
-    <div class="card glass reveal">
-      <h3 style="font-size:20px">Opus solves a random scramble in seven thoughts</h3>
-      <div class="quote">"The cross is done and the DFL corner is already in its slot, but its white faces L — wrong way round. Its FL edge is up at UB. I'll take the pair out of the FL slot and reinsert it."</div>
-      <div class="quote">"The white-green-orange corner for FR is stuck at DBL. Lift it out with the B face first."</div>
-      <p style="color:var(--mute);font-size:13px;margin:0">From an earlier run on another scramble (game 3), thinking aloud in Chinese; translated. The replay below is a newer run, in English, on game 1.</p>
-      <div class="kv"><div><b>7 / 7</b><span>stages right first time</span></div><div><b>93</b><span>quarter turns</span></div><div><b>$3.64</b><span>for the whole solve</span></div></div>
-      <p style="color:var(--mute);font-size:13px;margin-top:14px">Then the hands executed that 93-move solution: every checkpoint passed, cube solved.</p>
-      <p style="margin:18px 0 0"><a class="btn ghost" href="#cot">Watch a full agent replay below ↓</a></p>
-    </div>
-    <div class="card glass reveal">
-      <h3 style="font-size:20px">Harder: pictures only</h3>
-      <p style="color:var(--ink2);font-size:15px">No sticker grid, no "how much is solved" summary — just a picture of the cube from all sides, and a tool that only returns pictures.</p>
-      <div class="kv"><div><b>8</b><span>thoughts (one slot redone once)</span></div><div><b>89</b><span>quarter turns</span></div><div><b>✓</b><span>solved</span></div></div>
-      <p style="color:var(--mute);font-size:13px;margin-top:16px">Same scramble as the run on the left (game 3). Pictures only, no tool at all: the cross and first F2L pair came out right first time; the later stages were stopped by the model's safety filter before it answered, so that run is unfinished.</p>
-    </div>
-  </div>
-  <div class="clip glass reveal agent-run"><video src="assets/demo_llm.mp4" poster="assets/demo_llm.jpg" controls muted loop playsinline preload="metadata"></video><p><b>The hands executing Opus's own solution.</b> 93 quarter turns from the language model, every checkpoint passed, cube solved. Same playback speed-up as the executor clips.</p></div>
-  <div class="ins"><div class="in1 glass reveal"><span class=big>7 / 7</span><b>Given the sticker grid</b><p>Opus answered every stage right on the first try (93 quarter turns, $3.64), trying sequences on the cube tool 4–12 times per stage.</p></div><div class="in1 glass reveal"><span class=big>8</span><b>Given pictures only</b><p>With just a picture of the cube from all sides and a tool that returns pictures, it still solved it — one F2L slot needed a second try.</p></div><div class="in1 glass reveal"><span class=big>93 / 93</span><b>Its moves are executable</b><p>The hands carried out Opus's 93-turn solution move by move; every checkpoint passed and the cube ended solved.</p></div></div>
+  <p class="sub reveal">Swap the planner for an Opus session. No formula library, no hints — the hands execute whatever it decides.</p>
+  <div class="clip glass reveal agent-run"><video src="assets/demo_llm.mp4" poster="assets/demo_llm.jpg" controls muted loop playsinline preload="metadata"></video><p><b>The hands executing Opus's own solution.</b> Solved.</p></div>
 </div></section>
 
 
 <section id="cot"><div class="wrap">
   <span class="eyebrow reveal">Agent replay</span>
   <h2 class="reveal">Watch the model think its way through a solve</h2>
-  <p class="sub reveal">An Opus session solves a random scramble one CFOP stage at a time. It has <b>no formula library</b> — only one tool that tries a sequence on a copy of the cube and reports what is solved. Each try is previewed on the cube, then undone; when its answer passes the check, the cube really turns and the next stage begins.</p>
+  <p class="sub reveal">One CFOP stage at a time, trying sequences on a copy of the cube before it answers.</p>
   <div class="cotmeta reveal" id="cotMeta"></div>
   <div class="cot glass reveal">
     <div class="left">
@@ -391,29 +418,9 @@ nav.top .btn { white-space: nowrap; }
   <p class="reveal" style="color:var(--mute);font-size:13px;margin-top:12px">The 💭 lines are the think-aloud the model was asked to write for viewers before each tool call — not a transcript of its internal reasoning. Timing is compressed; the numbers above are the real per-stage times and costs.</p>
 </div></section>
 
-<section id="numbers"><div class="wrap">
-  <span class="eyebrow reveal">Numbers</span>
-  <h2 class="reveal">How often each move comes home</h2>
-  <p class="sub reveal">Move done and back in the standard grip, 512 fixed-environment games each. The agent picks formulas by these rates and by each move's time.</p>
-  <div class="glass reveal" style="padding:8px 6px;overflow-x:auto">
-    <table class="num"><thead><tr><th>Move</th><th>How the hands do it</th><th>Back to grip</th><th>Time</th></tr></thead><tbody id="numRows"></tbody></table>
-  </div>
-</div></section>
-
-<section id="limits" style="padding-top:40px"><div class="wrap">
-  <span class="eyebrow reveal">Honest limits</span>
-  <h2 class="reveal">What this is not, yet</h2>
-  <div class="ins"><div class="in1 glass reveal"><span class=big>≤ 8 mm</span><b>Snaps between segments</b><p>Each segment starts from its clean, trained start; the recordings jump a few millimetres there (2–4 mm typically, 8.2 mm before F'). A learned in-hand correction would remove this.</p></div><div class="in1 glass reveal"><span class=big>1×</span><b>Simulated once, reused</b><p>Since every move starts from the same clean grip, each kind of move is simulated once and its recording reused, recoloured from the cube's real permutation.</p></div><div class="in1 glass reveal"><span class=big>x' only</span><b>Whole-cube rotations</b><p>Only x' is trained (93.8%). y' turns 90° with a two-hand relay but still pushes the cube 13–19 mm; y, z, z' and x wait on it.</p></div></div>
-</div></section>
-
 <footer><div class="wrap">
-  <b style="color:var(--ink)">Notes on the recordings</b>
-  <ol>
-    <li>Between segments the hands and cube are reset to that segment's clean start, so the hands jump a few millimetres (at most 8 mm) in the recordings.</li>
-    <li>Every move starts from the same clean grip, so each kind of move is simulated once and its recording reused; the cube's colours are redrawn from its real permutation.</li>
-    <li>Videos play faster than real time. Each solve is cut to about one minute: real turning plays at about 3–4×, the slow starts and ends of turns, the returns and the waits much faster — about 7–11× overall (shown on each game). A solve takes 7–11 minutes of simulated time in these recordings.</li>
-  </ol>
-  <p>Physics: MuJoCo Warp. Rendering: Isaac Sim RTX. Hands: Shadow Dexterous Hand ×2 on UR10e ×2. All in simulation. · <a href="../blog/atomic-skills-and-an-agent/">The essay behind this page</a> · <a href="../">Xunyi Zhao</a></p>
+  <p>Videos play faster than real time; between move segments the hands are reset to a clean start, so they can jump a few millimetres.</p>
+  <p>Physics: MuJoCo Warp. Rendering: Isaac Sim RTX. Hands: Shadow Dexterous Hand ×2 on UR10e ×2. All in simulation. · <a href="../blog/atomic-skills-and-an-agent/">v1 post</a> · <a href="../">Xunyi Zhao</a></p>
 </div></footer>
 
 <div class="modal" id="modal"><div class="box glass">
@@ -455,19 +462,6 @@ function setProg(segs, stages, done) {
   segs.forEach((g, s) => { g.classList.toggle("cur", s === cur);
     g.querySelector(".fill").style.width = (per[s] ? 100 * got[s] / per[s] : (s < cur ? 100 : 0)) + "%"; });
 }
-
-// ---------------------------------------------------------------- atomic moves + numbers
-const MOVES = [
-  ["R", "m_R", 99.4, "right wrist turns up", 2.8], ["R'", "m_Rp", 98.2, "right wrist turns down", 2.4],
-  ["U", "m_U", 95.7, "right index flicks", 2.9], ["U'", "m_Up", 99.2, "right index pushes back", 2.0],
-  ["L", "m_L", 100, "mirror of R', left hand", 7.1], ["L'", "m_Lp", 97.1, "mirror of R", 7.1],
-  ["D", "m_D", 93.6, "left ring finger flicks", 7.5], ["D'", "m_Dp", 100, "right ring finger flicks", 4.9],
-  ["F", "m_F", 98.6, "regrip, index flicks along F", 6.2], ["F'", "m_Fp", 99.4, "mirror of F, left index", 11.8],
-  ["B", "m_B", 100, "index lifts DBR, thumb holds", 5.4], ["B'", "m_Bp", 95.9, "mirror of B", 11.7]];
-document.getElementById("movesGrid").innerHTML = MOVES.map(m => `<div class="mv glass reveal in"><video src="assets/${m[1]}.mp4" autoplay muted loop playsinline preload="metadata"></video>
-  <span class="pct">${m[2]}%</span><div class="cap"><b>${m[0]}</b><span>${m[3]}</span></div></div>`).join("");
-document.getElementById("numRows").innerHTML = MOVES.map(m => `<tr><td><code>${m[0]}</code></td><td>${m[3]}</td>
-  <td><b>${m[2]}%</b><div class="bar"><i style="width:${m[2]}%"></i></div></td><td>${m[4]} s</td></tr>`).join("");
 
 // ---------------------------------------------------------------- a procedural 3x3 cube (white down, green front)
 const FACE_COL = { U: 0xffd500, D: 0xffffff, F: 0x009b48, B: 0x0046ad, R: 0xff5800, L: 0xb71234 };
