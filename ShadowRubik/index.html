@@ -226,8 +226,19 @@ footer ol { padding-left: 18px; } footer li { margin: 6px 0; }
   .points, .agent { grid-template-columns: 1fr; } .stats { grid-template-columns: 1fr 1fr; }
   nav.top .links { display: none; }
 }
+/* more clips: wide side-by-side recordings (first person | wide view) */
+.clips { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.clip { padding: 10px; border-radius: 22px; }
+.clip.wide { grid-column: 1 / -1; }
+.clip video { width: 100%; display: block; border-radius: 14px; aspect-ratio: 8 / 3; object-fit: cover; background: #c9ccd8; }
+.clip p { margin: 10px 6px 4px; font-size: 14px; line-height: 1.5; color: var(--ink2); }
+.clip p b { color: var(--ink); }
+.agent-run { margin-top: 16px; }
+nav.top .btn { white-space: nowrap; }
+@media (max-width: 900px) { .clips { grid-template-columns: 1fr; } }
 @media (max-width: 620px) {
   .wrap { padding: 0 16px; } section { padding: 64px 0; }
+  .hero .eyebrow { letter-spacing: .07em; font-size: 11px; }
   .games { grid-template-columns: 1fr; } .moves { grid-template-columns: 1fr 1fr; }
   .modal .two { grid-template-columns: 1fr; } .progress span { font-size: 9.5px !important; }
   .now { min-width: 0; text-align: left; }
@@ -239,7 +250,7 @@ footer ol { padding-left: 18px; } footer li { margin: 6px 0; }
 
 <nav class="top"><div class="bar glass">
   <a class="logo" href="#"><img src="assets/favicon.svg" alt="">ShadowRubik</a>
-  <div class="links"><a href="#replay">3D replay</a><a href="#how">How it works</a><a href="#moves">Atomic moves</a><a href="#games">Nine solves</a><a href="#agent">Agent</a><a href="#cot">Agent replay</a><a href="#numbers">Numbers</a><a href="#limits">Limits</a></div>
+  <div class="links"><a href="#replay">3D replay</a><a href="#how">How it works</a><a href="#moves">Atomic moves</a><a href="#games">Nine solves</a><a href="#clips">Clips</a><a href="#agent">Agent</a><a href="#cot">Agent replay</a><a href="#numbers">Numbers</a><a href="#limits">Limits</a></div>
   <a class="btn ghost" href="../blog/atomic-skills-and-an-agent/" style="padding:8px 14px;font-size:14px">Read the essay ↗</a>
 </div></nav>
 
@@ -325,6 +336,18 @@ footer ol { padding-left: 18px; } footer li { margin: 6px 0; }
   <div class="ins"><div class="in1 glass reveal"><span class=big>119 / 119</span><b>CFOP without rotations</b><p>All 41 F2L, 57 OLL and 21 PLL cases rewritten into the hands' face turns — wide and slice moves become face turns plus a rotation, and rotations are relabelled away — every rewrite re-verified.</p></div><div class="in1 glass reveal"><span class=big>393 → 240 s</span><b>Pick formulas by success and time</b><p>The agent's cost is −log(success) + 0.1 × seconds per move. F' and B' (11.8 s) are used only when they save several fast moves; four random games went from 393 s to 240 s on average.</p></div><div class="in1 glass reveal"><span class=big>7 looks</span><b>Look a few times, then just act</b><p>A solve looks at the cube once per stage — cross, four F2L pairs, OLL, PLL — and checks stickers and grip there; if a check fails, it replans from the real state.</p></div></div>
 </div></section>
 
+<section id="clips"><div class="wrap">
+  <span class="eyebrow reveal">More clips</span>
+  <h2 class="reveal">Chains, mirrors, a rotation, a whole solve</h2>
+  <p class="sub reveal">Every recording here shows the first-person view on the left and the whole robot on the right. Because each move ends in the standard grip, the executor simply plays one after another.</p>
+  <div class="clips">
+    <div class="clip glass reveal"><video src="assets/demo_chain_RU.mp4" poster="assets/demo_chain_RU.jpg" controls muted loop playsinline preload="metadata"></video><p><b>R U R' U', then back.</b> Eight moves in a row: the sequence scrambles the cube and its inverse restores it, each move ending in the grip.</p></div>
+    <div class="clip glass reveal"><video src="assets/demo_chain_L.mp4" poster="assets/demo_chain_L.jpg" controls muted loop playsinline preload="metadata"></video><p><b>L U L' R.</b> For L and L' the hands pass through the two-handed grip into the mirrored grip, run the mirrored policy, and come back.</p></div>
+    <div class="clip glass reveal"><video src="assets/demo_xp.mp4" poster="assets/demo_xp.jpg" controls muted loop playsinline preload="metadata"></video><p><b>x' rotation · 93.8%.</b> The right wrist turns R' with the whole cube locked, the left ring finger supports it from below, and both hands land back in the grip.</p></div>
+    <div class="clip glass reveal"><video src="assets/demo_game.mp4" poster="assets/demo_game.jpg" controls muted loop playsinline preload="metadata"></video><p><b>One random scramble, start to finish.</b> The planner's 55 quarter turns, 7 of 7 checkpoints, solved. Playback about 2.5× for normal motion and faster for slow starts, returns and waits.</p></div>
+  </div>
+</div></section>
+
 <section id="agent"><div class="wrap">
   <span class="eyebrow reveal">The agent</span>
   <h2 class="reveal">The agent can be a planner — or a language model</h2>
@@ -346,6 +369,7 @@ footer ol { padding-left: 18px; } footer li { margin: 6px 0; }
       <p style="color:var(--mute);font-size:13px;margin-top:16px">Same scramble as the run on the left (game 3). Pictures only, no tool at all: the cross and first F2L pair came out right first time; the later stages were stopped by the model's safety filter before it answered, so that run is unfinished.</p>
     </div>
   </div>
+  <div class="clip glass reveal agent-run"><video src="assets/demo_llm.mp4" poster="assets/demo_llm.jpg" controls muted loop playsinline preload="metadata"></video><p><b>The hands executing Opus's own solution.</b> 93 quarter turns from the language model, every checkpoint passed, cube solved. Same playback speed-up as the executor clips.</p></div>
   <div class="ins"><div class="in1 glass reveal"><span class=big>7 / 7</span><b>Given the sticker grid</b><p>Opus answered every stage right on the first try (93 quarter turns, $3.64), trying sequences on the cube tool 4–12 times per stage.</p></div><div class="in1 glass reveal"><span class=big>8</span><b>Given pictures only</b><p>With just a picture of the cube from all sides and a tool that returns pictures, it still solved it — one F2L slot needed a second try.</p></div><div class="in1 glass reveal"><span class=big>101 / 101</span><b>Its moves are executable</b><p>The hands carried out an Opus solution move by move; every checkpoint passed and the cube ended solved.</p></div></div>
 </div></section>
 

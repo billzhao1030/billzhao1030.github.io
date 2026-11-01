@@ -115,20 +115,57 @@ excerpt: "Two Shadow hands solve random Rubik's cubes in simulation without any 
       font-size:13px;color:var(--faint);font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
 
     @media(max-width:600px){ body{font-size:16px} }
-  
-    .vid{display:block;width:100%;max-width:800px;margin:1.4em auto .4em;border-radius:10px;border:1px solid var(--line);background:#eceee9}
-    .vgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:1.3em 0 .4em}
+
+    /* captions: .prose p would otherwise pin them to the left */
+    .prose p.cap{margin:.5em auto 1.6em}
+    .readtime a{color:var(--accent);text-decoration:none;border-bottom:1px solid #cfe0d9}
+
+    /* videos */
+    .vid{display:block;width:100%;margin:1.5em 0 0;border-radius:10px;border:1px solid var(--line);background:#eceee9}
+    .vid.narrow{max-width:520px;margin-left:auto;margin-right:auto}
+    .vgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:1.5em 0 0}
     .vgrid figure{margin:0}
-    .vgrid video{width:100%;border-radius:8px;border:1px solid var(--line);background:#eceee9;display:block}
-    .vgrid figcaption{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);text-align:center;margin-top:3px}
-    @media(max-width:620px){.vgrid{grid-template-columns:repeat(2,1fr)}}
-    table.num{width:100%;border-collapse:collapse;margin:1.2em 0 .4em;font-size:14.5px}
+    .vgrid video{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;border:1px solid var(--line);background:#eceee9;display:block}
+    .vgrid figcaption{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);text-align:center;margin-top:4px;line-height:1.35}
+    .vgrid figcaption b{display:block;font-size:13px;color:var(--ink);font-weight:500}
+    @media(max-width:760px){.vgrid{grid-template-columns:repeat(4,1fr)}}
+    @media(max-width:480px){.vgrid{grid-template-columns:repeat(3,1fr)}}
+
+    /* interactive demos on the project page */
+    .demos{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:1.6em 0 .6em}
+    .prose a.demo{display:block;border:1px solid var(--line);border-bottom:1px solid var(--line);border-radius:10px;
+      background:#fff;overflow:hidden;color:var(--ink);transition:border-color .15s,transform .15s}
+    .prose a.demo:hover{border-color:var(--accent);transform:translateY(-1px)}
+    .demo img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;object-position:center;background:#eceee9;border-bottom:1px solid var(--line-soft)}
+    .demo span{display:block;padding:9px 12px 11px;font-size:13.5px;line-height:1.45;color:var(--muted)}
+    .demo span b{display:block;color:var(--ink);font-weight:600;font-size:14.5px;margin-bottom:1px}
+    @media(max-width:640px){.demos{grid-template-columns:1fr}.demo img{aspect-ratio:2/1}}
+
+    /* tables: scroll inside their own box instead of widening the page */
+    .tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1.3em 0 1.5em}
+    table.num{width:100%;border-collapse:collapse;font-size:14.5px;line-height:1.5}
     table.num th,table.num td{padding:7px 10px;border-bottom:1px solid var(--line-soft);text-align:left;vertical-align:top}
     table.num th{font-weight:600;color:#2c2f34;border-bottom:1.5px solid var(--line)}
+    table.num th.r{text-align:right}
     table.num td.r{text-align:right;font-family:'JetBrains Mono',monospace;font-size:13.5px;white-space:nowrap}
+    table.num td.o{font-size:14px;color:#41454b}
+    table.num.narrow{max-width:560px}
+    .prose .tablewrap + p.cap{margin-top:-.8em}
+    @media(max-width:600px){
+      table.num{font-size:13.5px}
+      table.num th,table.num td{padding:6px 7px}
+      table.num td.r{font-size:12.5px;white-space:normal}
+    }
+
+    /* the pipeline figure keeps a readable size on phones and scrolls sideways */
+    .figscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .m-only{display:none}
+    @media(max-width:600px){.figscroll svg.fig{min-width:600px}.m-only{display:inline}}
+
     .callout{margin:1.5em 0;padding:14px 18px;border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:0 8px 8px 0;font-size:16px}
     .callout.warn{border-left-color:var(--warn);background:var(--warn-soft)}
-    .projlink{display:inline-block;margin:.3em 0 1em;padding:8px 16px;border:1px solid var(--accent);border-radius:999px;color:var(--accent)!important;font-size:15px}
+
+    .post-comments{margin-top:36px}
   </style>
 </head>
 
@@ -162,10 +199,15 @@ excerpt: "Two Shadow hands solve random Rubik's cubes in simulation without any 
           what it took to make it hold, and where it still does not.
         </p>
 
-        <video class="vid" src="../../ShadowRubik/assets/grid9.mp4" poster="../../ShadowRubik/assets/grid9.jpg" autoplay muted loop playsinline></video>
+        <video class="vid" src="../../ShadowRubik/assets/grid9.mp4" poster="../../ShadowRubik/assets/grid9.jpg" autoplay controls muted loop playsinline></video>
         <p class="cap">Nine random scrambles, solved by the same twelve skills and the same planner. Every game is cut to about a minute; the bar under each one is the CFOP stage. Simulation (MuJoCo Warp), rendered in Isaac Sim.</p>
 
-        <p><a class="projlink" href="../../ShadowRubik/">Interactive project page → drag the 3D replay, step through each solve, watch the language-model agent think</a></p>
+        <p>Three interactive demos live on the <a href="../../ShadowRubik/">project page</a>:</p>
+        <div class="demos">
+          <a class="demo" href="../../ShadowRubik/#replay"><img src="../../ShadowRubik/assets/thumb_replay.jpg" alt="3D replay of a recorded solve: both hands and the cube in the browser" loading="lazy"><span><b>3D replay →</b>One recorded solve, every body replayed in the browser. Drag to orbit, scrub the timeline.</span></a>
+          <a class="demo" href="../../ShadowRubik/#games"><img src="../../ShadowRubik/assets/thumb_games.jpg" alt="Cards for the nine random solves, each pairing the recording with a 3D cube" loading="lazy"><span><b>Nine solves, step by step →</b>Each recording next to a 3D cube you can step through move by move.</span></a>
+          <a class="demo" href="../../ShadowRubik/#cot"><img src="../../ShadowRubik/assets/thumb_agent.jpg" alt="Agent replay: the cube on the left, the model's think-aloud on the right" loading="lazy"><span><b>Agent replay →</b>A language model solves a scramble stage by stage, trying sequences on a copy of the cube.</span></a>
+        </div>
 
         <h2><span class="sn">01</span>Two robots, one assumption</h2>
 
@@ -194,6 +236,8 @@ excerpt: "Two Shadow hands solve random Rubik's cubes in simulation without any 
           thumb on the FR edge, right middle and ring fingers behind, the index fingers resting behind the top corners.
           We call this the <strong>standard grip</strong>, and everything rests on one rule about it:
         </p>
+        <video class="vid narrow" src="../../ShadowRubik/assets/demo_grip.mp4" poster="../../ShadowRubik/assets/demo_grip.jpg" controls muted loop playsinline preload="metadata"></video>
+        <p class="cap">The standard grip, held still while the camera circles it. Both UR10e arms are mirror-symmetric; only the hands touch the cube.</p>
         <div class="callout"><strong>Every atomic move starts in the standard grip and must end in it.</strong>
           A move is not "turn R"; it is "turn R <em>and come home</em>". Only then does it count.</div>
         <p>
@@ -201,8 +245,10 @@ excerpt: "Two Shadow hands solve random Rubik's cubes in simulation without any 
           any sequence of moves is executable by concatenation; the planner never has to know what the fingers are doing,
           and the skills never have to know what comes next. The cost is paid once, per move, at training time.
         </p>
+        <video class="vid" src="../../ShadowRubik/assets/demo_chain_RU.mp4" poster="../../ShadowRubik/assets/demo_chain_RU.jpg" controls muted loop playsinline preload="metadata"></video>
+        <p class="cap">Concatenation in practice: <strong>R U R' U'</strong> scrambles the cube, its inverse brings it back — eight moves back to back, each one ending in the grip. Left: first person; right: wide view.</p>
 
-        <svg class="fig" viewBox="0 0 780 300" role="img" aria-label="Pipeline. The cube state goes to an agent (CFOP planner or a language model) which emits a sequence of atomic moves. An executor takes each move from a library of twelve face turns plus rotations, each a reference trajectory plus an RL policy that ends in the standard grip, and runs it on two Shadow hands on UR10e arms in simulation. Checks happen only at the end of each CFOP stage; a failed check sends the real state back to the agent to replan.">
+        <div class="figscroll"><svg class="fig" viewBox="0 0 780 300" role="img" aria-label="Pipeline. The cube state goes to an agent (CFOP planner or a language model) which emits a sequence of atomic moves. An executor takes each move from a library of twelve face turns plus rotations, each a reference trajectory plus an RL policy that ends in the standard grip, and runs it on two Shadow hands on UR10e arms in simulation. Checks happen only at the end of each CFOP stage; a failed check sends the real state back to the agent to replan.">
           <text x="30" y="58" class="dim">cube state</text>
           <path class="edge" d="M100,54 H138"/>
           <rect x="138" y="26" width="168" height="58" rx="9" class="accent"/>
@@ -225,8 +271,8 @@ excerpt: "Two Shadow hands solve random Rubik's cubes in simulation without any 
           <path class="edgeAd" d="M435,128 V84"/>
           <path class="edge" d="M657,84 V250 H222 V84"/>
           <text x="440" y="270" text-anchor="middle" class="dim">check only after each CFOP stage (stickers + grip) — on failure, replan from the real state</text>
-        </svg>
-        <p class="cap">The agent never sees a finger; the skills never see the plan. The standard grip is the interface between them.</p>
+        </svg></div>
+        <p class="cap"><span class="m-only">(Swipe the figure sideways.) </span>The agent never sees a finger; the skills never see the plan. The standard grip is the interface between them.</p>
 
         <h2><span class="sn">03</span>The twelve moves</h2>
 
@@ -240,22 +286,30 @@ excerpt: "Two Shadow hands solve random Rubik's cubes in simulation without any 
         </p>
 
         <div class="vgrid">
-          <figure><video src="../../ShadowRubik/assets/m_R.mp4" autoplay muted loop playsinline></video><figcaption>R · 99.4%</figcaption></figure>
-          <figure><video src="../../ShadowRubik/assets/m_U.mp4" autoplay muted loop playsinline></video><figcaption>U · 95.7%</figcaption></figure>
-          <figure><video src="../../ShadowRubik/assets/m_F.mp4" autoplay muted loop playsinline></video><figcaption>F · 98.6%</figcaption></figure>
-          <figure><video src="../../ShadowRubik/assets/m_D.mp4" autoplay muted loop playsinline></video><figcaption>D · 93.6%</figcaption></figure>
+          <figure><video src="../../ShadowRubik/assets/m_R.mp4" poster="../../ShadowRubik/assets/m_R.jpg" autoplay muted loop playsinline preload="metadata"></video><figcaption><b>R</b>99.4%</figcaption></figure>
+          <figure><video src="../../ShadowRubik/assets/m_Rp.mp4" poster="../../ShadowRubik/assets/m_Rp.jpg" autoplay muted loop playsinline preload="metadata"></video><figcaption><b>R'</b>98.2%</figcaption></figure>
+          <figure><video src="../../ShadowRubik/assets/m_U.mp4" poster="../../ShadowRubik/assets/m_U.jpg" autoplay muted loop playsinline preload="metadata"></video><figcaption><b>U</b>95.7%</figcaption></figure>
+          <figure><video src="../../ShadowRubik/assets/m_Up.mp4" poster="../../ShadowRubik/assets/m_Up.jpg" autoplay muted loop playsinline preload="metadata"></video><figcaption><b>U'</b>99.2%</figcaption></figure>
+          <figure><video src="../../ShadowRubik/assets/m_L.mp4" poster="../../ShadowRubik/assets/m_L.jpg" autoplay muted loop playsinline preload="metadata"></video><figcaption><b>L</b>100%</figcaption></figure>
+          <figure><video src="../../ShadowRubik/assets/m_Lp.mp4" poster="../../ShadowRubik/assets/m_Lp.jpg" autoplay muted loop playsinline preload="metadata"></video><figcaption><b>L'</b>97.1%</figcaption></figure>
+          <figure><video src="../../ShadowRubik/assets/m_D.mp4" poster="../../ShadowRubik/assets/m_D.jpg" autoplay muted loop playsinline preload="metadata"></video><figcaption><b>D</b>93.6%</figcaption></figure>
+          <figure><video src="../../ShadowRubik/assets/m_Dp.mp4" poster="../../ShadowRubik/assets/m_Dp.jpg" autoplay muted loop playsinline preload="metadata"></video><figcaption><b>D'</b>100%</figcaption></figure>
+          <figure><video src="../../ShadowRubik/assets/m_F.mp4" poster="../../ShadowRubik/assets/m_F.jpg" autoplay muted loop playsinline preload="metadata"></video><figcaption><b>F</b>98.6%</figcaption></figure>
+          <figure><video src="../../ShadowRubik/assets/m_Fp.mp4" poster="../../ShadowRubik/assets/m_Fp.jpg" autoplay muted loop playsinline preload="metadata"></video><figcaption><b>F'</b>99.4%</figcaption></figure>
+          <figure><video src="../../ShadowRubik/assets/m_B.mp4" poster="../../ShadowRubik/assets/m_B.jpg" autoplay muted loop playsinline preload="metadata"></video><figcaption><b>B</b>100%</figcaption></figure>
+          <figure><video src="../../ShadowRubik/assets/m_Bp.mp4" poster="../../ShadowRubik/assets/m_Bp.jpg" autoplay muted loop playsinline preload="metadata"></video><figcaption><b>B'</b>95.9%</figcaption></figure>
         </div>
-        <p class="cap">Four of the twelve. Each clip is the whole move: turn, then come home.</p>
+        <p class="cap">All twelve face turns. Each clip is the whole move: turn, then come home. The number is how often it ends back in the standard grip over 512 games.</p>
 
-        <table class="num">
-          <tr><th>Move</th><th>How the hands do it</th><th style="text-align:right">back in grip</th><th style="text-align:right">time</th></tr>
-          <tr><td>R / R'</td><td>right wrist turns the R layer</td><td class="r">99.4 / 98.2%</td><td class="r">2.8 / 2.4 s</td></tr>
-          <tr><td>U / U'</td><td>right index flicks from the UBR edge / pushes back</td><td class="r">95.7 / 99.2%</td><td class="r">2.9 / 2.0 s</td></tr>
-          <tr><td>L / L'</td><td>mirror of R' / R, done by the left hand</td><td class="r">100 / 97.1%</td><td class="r">7.1 / 7.1 s</td></tr>
-          <tr><td>D / D'</td><td>ring fingers flick the bottom layer</td><td class="r">93.6 / 100%</td><td class="r">7.5 / 4.9 s</td></tr>
-          <tr><td>F / F'</td><td>regrip, right index flicks tangentially from the UFR corner / its mirror</td><td class="r">98.6 / 99.4%</td><td class="r">6.2 / 11.8 s</td></tr>
-          <tr><td>B / B'</td><td>regrip, right index lifts DBR while the thumb holds the cube / its mirror</td><td class="r">100 / 95.9%</td><td class="r">5.4 / 11.7 s</td></tr>
-        </table>
+        <div class="tablewrap"><table class="num moves">
+          <tr><th>Move</th><th>How the hands do it</th><th class="r">back in grip</th><th class="r">time</th></tr>
+          <tr><td>R / R'</td><td>right wrist turns the R layer</td><td class="r">99.4 / 98.2%</td><td class="r">2.8 / 2.4&nbsp;s</td></tr>
+          <tr><td>U / U'</td><td>right index flicks from the UBR edge / pushes back</td><td class="r">95.7 / 99.2%</td><td class="r">2.9 / 2.0&nbsp;s</td></tr>
+          <tr><td>L / L'</td><td>mirror of R' / R, done by the left hand</td><td class="r">100 / 97.1%</td><td class="r">7.1 / 7.1&nbsp;s</td></tr>
+          <tr><td>D / D'</td><td>ring fingers flick the bottom layer</td><td class="r">93.6 / 100%</td><td class="r">7.5 / 4.9&nbsp;s</td></tr>
+          <tr><td>F / F'</td><td>regrip, right index flicks tangentially from the UFR corner / its mirror</td><td class="r">98.6 / 99.4%</td><td class="r">6.2 / 11.8&nbsp;s</td></tr>
+          <tr><td>B / B'</td><td>regrip, right index lifts DBR while the thumb holds the cube / its mirror</td><td class="r">100 / 95.9%</td><td class="r">5.4 / 11.7&nbsp;s</td></tr>
+        </table></div>
         <p class="cap">Times are the move plus its way home, as recorded. The slow ones go through the mirrored grip and back.</p>
 
         <h2><span class="sn">04</span>What it actually took to make moves come home</h2>
@@ -286,6 +340,8 @@ excerpt: "Two Shadow hands solve random Rubik's cubes in simulation without any 
           R, B and F, run on the mirrored grip with the policy's observations and actions reflected, followed by a short
           regrip back to the standard grip. Four of twelve moves cost nothing beyond the regrip.
         </p>
+        <video class="vid" src="../../ShadowRubik/assets/demo_chain_L.mp4" poster="../../ShadowRubik/assets/demo_chain_L.jpg" controls muted loop playsinline preload="metadata"></video>
+        <p class="cap"><strong>L U L' R</strong> on the executor: for L and L' the hands pass through the two-handed grip into the mirrored grip, run the mirrored policy, and come back. Stickers are right after every move.</p>
         <p>
           <strong>Check rarely.</strong> A person solving a cube looks at it a handful of times, not after every turn.
           Our executor checks the stickers and the grip only at the end of each CFOP stage — seven times a solve — and
@@ -309,13 +365,15 @@ excerpt: "Two Shadow hands solve random Rubik's cubes in simulation without any 
           only spends them when they save several fast turns. On four random scrambles, motion time per solve fell from an
           average of 393&nbsp;s to <strong>240&nbsp;s</strong>, with every checkpoint still passing.
         </p>
-        <table class="num">
-          <tr><th>End-to-end, random scrambles (simulation)</th><th style="text-align:right">result</th></tr>
-          <tr><td>Nine scrambles (fixed seed, none picked), planner + executor</td><td class="r">9 / 9 solved</td></tr>
+        <div class="tablewrap"><table class="num">
+          <tr><th>End-to-end, random scrambles (simulation)</th><th class="r">result</th></tr>
+          <tr><td>Nine scrambles (fixed seed, none picked), planner + executor</td><td class="r">9 / 9&nbsp;solved</td></tr>
           <tr><td>Checkpoints (stickers match and hands in the standard grip)</td><td class="r">63 / 63</td></tr>
           <tr><td>Quarter turns per solve</td><td class="r">55–71</td></tr>
-          <tr><td>Motion time, success-and-time-aware planner (4 games)</td><td class="r">393 → 240 s</td></tr>
-        </table>
+          <tr><td>Motion time, success-and-time-aware planner (4 games)</td><td class="r">393 → 240&nbsp;s</td></tr>
+        </table></div>
+        <video class="vid" src="../../ShadowRubik/assets/demo_game.mp4" poster="../../ShadowRubik/assets/demo_game.jpg" controls muted loop playsinline preload="metadata"></video>
+        <p class="cap">One random scramble from start to finish: the planner's 55 quarter turns, 7 of 7 checkpoints, solved. Playback is sped up about 2.5× for normal motion and more for slow starts, returns and waits.</p>
 
         <h2><span class="sn">06</span>A language model can be the agent</h2>
 
@@ -325,12 +383,12 @@ excerpt: "Two Shadow hands solve random Rubik's cubes in simulation without any 
           turns the hands can do, and may try a sequence on a copy of the cube before answering. It gets no formula
           library and no hints from our planner. Its answer is checked on the logical cube and handed to the executor.
         </p>
-        <table class="num">
-          <tr><th>What the model sees</th><th>Tool</th><th style="text-align:right">outcome</th></tr>
-          <tr><td>Sticker net + "what is solved" line</td><td>try a sequence, text back</td><td class="r">solved; 7/7 stages right first time; 93–101 quarter turns; $2.4–3.6</td></tr>
-          <tr><td>Pictures of the cube from all sides, nothing else</td><td>try a sequence, a picture back</td><td class="r">solved; 8 asks (one F2L pair redone once); 89 quarter turns</td></tr>
-          <tr><td>Pictures only</td><td>none</td><td class="r">cross and first pair right first time; later stages blocked by the provider's safety filter, unfinished</td></tr>
-        </table>
+        <div class="tablewrap"><table class="num">
+          <tr><th style="width:30%">What the model sees</th><th style="width:24%">Tool</th><th>Outcome</th></tr>
+          <tr><td>Sticker net + "what is solved" line</td><td>try a sequence, text back</td><td class="o"><strong>Solved.</strong> 7/7 stages right first time; 93–101 quarter turns; $2.4–3.6</td></tr>
+          <tr><td>Pictures of the cube from all sides, nothing else</td><td>try a sequence, a picture back</td><td class="o"><strong>Solved.</strong> 8 asks (one F2L pair redone once); 89 quarter turns</td></tr>
+          <tr><td>Pictures only</td><td>none</td><td class="o"><strong>Unfinished.</strong> Cross and first pair right first time; later stages blocked by the provider's safety filter</td></tr>
+        </table></div>
         <p>
           The hands then executed the model's own 93-move solution: every checkpoint passed. The weak spot is honest and
           visible in the replay on the project page: the model does not know the F2L cases by heart, so it works each
@@ -338,6 +396,8 @@ excerpt: "Two Shadow hands solve random Rubik's cubes in simulation without any 
           the cases does it in about seven decisions. Closing that gap (letting the model look around first, check once,
           and recall cases instead of searching) is our next agent experiment.
         </p>
+        <video class="vid" src="../../ShadowRubik/assets/demo_llm.mp4" poster="../../ShadowRubik/assets/demo_llm.jpg" controls muted loop playsinline preload="metadata"></video>
+        <p class="cap">The hands executing the language model's own solution: 93 quarter turns, every checkpoint passed, cube solved. Same playback speed-up as above; the full think-aloud is in the <a href="../../ShadowRubik/#cot">agent replay</a>.</p>
 
         <h2><span class="sn">07</span>One network for all of it</h2>
 
@@ -360,13 +420,13 @@ excerpt: "Two Shadow hands solve random Rubik's cubes in simulation without any 
           centres, pair the edges, then finish as a 3×3. Our sticker-only Yau planner solves random 4×4 to 7×7 scrambles
           — 20 of 20 in our benchmark, five per order — and it is worth looking at <em>what</em> it asks for:
         </p>
-        <table class="num">
-          <tr><th>Order</th><th style="text-align:right">outer face turns</th><th style="text-align:right">single inner-layer turns</th><th style="text-align:right">rotations</th></tr>
+        <div class="tablewrap"><table class="num narrow">
+          <tr><th>Order</th><th class="r">outer face turns</th><th class="r">single inner-layer turns</th><th class="r">rotations</th></tr>
           <tr><td>4×4</td><td class="r">79.9%</td><td class="r">14.4%</td><td class="r">5.6%</td></tr>
           <tr><td>5×5</td><td class="r">77.6%</td><td class="r">18.5%</td><td class="r">3.9%</td></tr>
           <tr><td>6×6</td><td class="r">74.0%</td><td class="r">23.3%</td><td class="r">2.7%</td></tr>
           <tr><td>7×7</td><td class="r">72.0%</td><td class="r">26.1%</td><td class="r">2.0%</td></tr>
-        </table>
+        </table></div>
         <p>
           Three quarters of every big-cube solve is the moves the hands already have. What is new is one family — turn a
           single inner layer — and a few rotations. Under our design that is a handful of additional atomic skills, each
@@ -397,6 +457,8 @@ excerpt: "Two Shadow hands solve random Rubik's cubes in simulation without any 
           between the hands and its way home is improving, but it is not yet reliable; y, z, z' and x follow from it.
           The 3×3 solver does not need them — it was rewritten without rotations — but human-style big-cube solving will.
         </p>
+        <video class="vid" src="../../ShadowRubik/assets/demo_xp.mp4" poster="../../ShadowRubik/assets/demo_xp.jpg" controls muted loop playsinline preload="metadata"></video>
+        <p class="cap"><strong>x'</strong> (93.8%): the right wrist turns R' with the whole cube locked, the left ring finger supports it from below, and both hands land back in the standard grip — green front becomes yellow front. Left: first person; right: wide view.</p>
         <p>
           <strong>Perception is assumed.</strong> The agent is handed the cube state, or ideal renders of it. Real
           cube-state estimation, as both prior systems built, is still to do.
@@ -424,6 +486,25 @@ excerpt: "Two Shadow hands solve random Rubik's cubes in simulation without any 
           <a href="../">&larr; Back to blog</a> &nbsp;·&nbsp; <a href="../../ShadowRubik/">Project page</a>
         </p>
       </div>
+
+      <section class="post-comments">
+        <script src="https://giscus.app/client.js"
+                data-repo="jianzhou0420/jianzhou0420.github.io"
+                data-repo-id="R_kgDOKGTs0g"
+                data-category="Comments"
+                data-category-id="DIC_kwDOKGTs0s4DBBIZ"
+                data-mapping="pathname"
+                data-strict="0"
+                data-reactions-enabled="1"
+                data-emit-metadata="0"
+                data-input-position="bottom"
+                data-theme="light"
+                data-lang="en"
+                data-loading="lazy"
+                crossorigin="anonymous"
+                async>
+        </script>
+      </section>
     </article>
 
     <footer class="footer">&copy; Xunyi Zhao</footer>
