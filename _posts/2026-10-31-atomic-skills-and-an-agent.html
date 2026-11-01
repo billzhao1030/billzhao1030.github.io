@@ -1,7 +1,7 @@
 ---
 layout: null
 title: "Atomic Skills, One Grip, and an Agent — v1: the 3×3"
-excerpt: "Version 1 of ShadowRubik: two simulated Shadow hands solve random 3×3 Rubik's cubes the way people do — twelve RL-trained moves that always come home to one grip, chained by a CFOP agent or a language model. Bigger cubes come in later versions."
+excerpt: "Version 1 of ShadowRubik: two simulated Shadow hands solve random 3×3 Rubik's cubes the way people do — RL-trained atomic moves that always come home to one grip, chained by a CFOP agent or a language model. Bigger cubes come in later versions."
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -152,7 +152,7 @@ excerpt: "Version 1 of ShadowRubik: two simulated Shadow hands solve random 3×3
 
         <p class="lede">
           Two robot hands pick up a scrambled Rubik's cube and solve it — <em>the way a person does</em>.
-          No end-to-end policy, no 20-move optimal solver: twelve learned moves that always come home to the same grip,
+          No end-to-end policy, no 20-move optimal solver: learned atomic moves that always come home to the same grip,
           and an agent that plans with CFOP. Nine random scrambles, nine solves.
         </p>
 
@@ -168,7 +168,7 @@ excerpt: "Version 1 of ShadowRubik: two simulated Shadow hands solve random 3×3
         <p>Every move starts here and ends here. That is what lets moves chain.</p>
         <video class="vid narrow" src="../../ShadowRubik/assets/demo_grip.mp4" poster="../../ShadowRubik/assets/demo_grip.jpg" controls muted loop playsinline preload="metadata"></video>
 
-        <h2>Twelve moves, learned with RL</h2>
+        <h2>Atomic moves, learned with RL</h2>
         <p>Turn the layer, then return to the grip. Every face, both directions.</p>
         <div class="vgrid">
           <figure><video src="../../ShadowRubik/assets/m_R.mp4" poster="../../ShadowRubik/assets/m_R.jpg" autoplay muted loop playsinline preload="metadata"></video><figcaption>R</figcaption></figure>
@@ -211,7 +211,7 @@ excerpt: "Version 1 of ShadowRubik: two simulated Shadow hands solve random 3×3
         </div>
 
         <h2>How it works, in one picture</h2>
-        <div class="figscroll"><svg class="fig" viewBox="0 0 780 300" role="img" aria-label="Pipeline. The cube state goes to an agent (CFOP planner or a language model) which emits a sequence of atomic moves. An executor runs each move from a library of twelve face turns, each ending in the standard grip, on two Shadow hands on UR10e arms in simulation. After each CFOP stage the real state goes back to the agent.">
+        <div class="figscroll"><svg class="fig" viewBox="0 0 780 300" role="img" aria-label="Pipeline. The cube state goes to an agent (CFOP planner or a language model) which emits a sequence of atomic moves. An executor runs each move from a library of atomic moves, each ending in the standard grip, on two Shadow hands on UR10e arms in simulation. After each CFOP stage the real state goes back to the agent.">
           <text x="30" y="58" class="dim">cube state</text>
           <path class="edge" d="M100,54 H138"/>
           <rect x="138" y="26" width="168" height="58" rx="9" class="accent"/>
