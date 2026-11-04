@@ -156,8 +156,8 @@ excerpt: "Version 1 of ShadowRubik: two simulated Shadow hands solve random 3×3
           and an agent that plans with CFOP. Nine random scrambles, nine solves.
         </p>
 
-        <video class="vid" src="../../ShadowRubik/assets/grid9.mp4" poster="../../ShadowRubik/assets/grid9.jpg" autoplay controls muted loop playsinline></video>
-        <p class="cap">Nine random scrambles, solved. Two Shadow hands on UR10e arms, in simulation; sped up.</p>
+        <video class="vid" src="../../ShadowRubik/assets/grid9.mp4?v=2" poster="../../ShadowRubik/assets/grid9.jpg?v=2" autoplay controls muted loop playsinline></video>
+        <p class="cap">Nine random scrambles, each solved by Opus and done by the hands, whole-cube rotations included. Two Shadow hands on UR10e arms, in simulation; turns at about 2×, the way back to the grip at about 7×.</p>
 
         <div class="versions">
           <div class="v now"><i>v1 · now</i>The 3×3 cube, solved end to end.</div>
@@ -198,9 +198,9 @@ excerpt: "Version 1 of ShadowRubik: two simulated Shadow hands solve random 3×3
         <p class="cap">One random scramble, start to finish.</p>
 
         <h2>Or let a language model solve it</h2>
-        <p>Swap the planner for a language model. The hands don't notice.</p>
-        <video class="vid" src="../../ShadowRubik/assets/demo_llm.mp4" poster="../../ShadowRubik/assets/demo_llm.jpg" controls muted loop playsinline preload="metadata"></video>
-        <p class="cap">The hands executing the model's own solution.</p>
+        <p>Swap the planner for a language model. It looks once per CFOP stage, rotates the cube when that helps, and plays the algorithm it knows — seven answers per solve, no trial and error. The hands don't notice.</p>
+        <video class="vid" src="../../ShadowRubik/assets/demo_llm.mp4?v=2" poster="../../ShadowRubik/assets/demo_llm.jpg?v=2" controls muted loop playsinline preload="metadata"></video>
+        <p class="cap">The hands executing the model's own solution; its thought for each stage on top.</p>
 
         <h2>Play with it</h2>
         <p>Three interactive demos on the project page.</p>
@@ -228,7 +228,7 @@ excerpt: "Version 1 of ShadowRubik: two simulated Shadow hands solve random 3×3
           <text x="657" y="68" text-anchor="middle" class="dim">on UR10e arms · sim</text>
           <rect x="300" y="128" width="270" height="92" rx="10" class="ghostA"/>
           <text x="435" y="150" text-anchor="middle" class="at">atomic move library</text>
-          <text x="435" y="171" text-anchor="middle" class="mono">R R' U U' L L' D D' F F' B B'</text>
+          <text x="435" y="171" text-anchor="middle" class="mono">R R' U U' L L' D D' F F' B B' · x y z</text>
           <text x="435" y="191" text-anchor="middle" class="dim">reference trajectory + RL residual</text>
           <text x="435" y="208" text-anchor="middle" class="dim">every move ends in the standard grip</text>
           <path class="edgeAd" d="M435,128 V84"/>
@@ -238,7 +238,7 @@ excerpt: "Version 1 of ShadowRubik: two simulated Shadow hands solve random 3×3
         <p class="cap"><span class="m-only">(Swipe the figure sideways.) </span>The agent never sees a finger; the skills never see the plan. The standard grip is the interface between them.</p>
 
         <h2>Next up</h2>
-        <p>Whole-cube rotations are already coming in — the first steps toward bigger cubes in the next version.</p>
+        <p>Whole-cube rotations are in: x, x', y, y', z and z' each end in the standard grip, and the agent uses them in the solves above. Bigger cubes are next.</p>
         <video class="vid" src="../../ShadowRubik/assets/demo_xp.mp4" poster="../../ShadowRubik/assets/demo_xp.jpg" controls muted loop playsinline preload="metadata"></video>
         <p class="cap"><strong>x'</strong>: the whole cube turns over in hand, and both hands land back in the grip.</p>
         <img class="vid" src="../../ShadowRubik/assets/next_nxn.jpg" alt="The same hands holding a 7×7 cube, and first-person views of 4×4, 5×5, 6×6 and 7×7 cubes in the standard grip" loading="lazy">

@@ -255,6 +255,7 @@ footer ol { padding-left: 18px; } footer li { margin: 6px 0; }
 .clip p { margin: 10px 6px 4px; font-size: 14px; line-height: 1.5; color: var(--ink2); }
 .clip p b { color: var(--ink); }
 .agent-run { margin-top: 16px; }
+.agent-run video { aspect-ratio: 4 / 3; max-width: 760px; margin: 0 auto; object-fit: contain; }
 nav.top .btn { white-space: nowrap; }
 @media (max-width: 900px) { .clips { grid-template-columns: 1fr; } }
 @media (max-width: 620px) {
@@ -278,13 +279,13 @@ nav.top .btn { white-space: nowrap; }
 <header class="hero"><div class="wrap">
   <span class="eyebrow reveal"><span class="vtag">v1</span> 3×3 · Simulation · Shadow Hand × 2 · UR10e × 2</span>
   <h1 class="reveal"><span class="ln"><span class="grad">Atomic Moves</span>, <span class="grad">Agentic Hands</span></span><span class="ln">Robot hands learn the moves. An agent solves the cube.</span></h1>
-  <p class="lede reveal">Atomic moves learned with RL, each ending in the same grip. An agent plans <b>Cross → F2L → OLL → PLL</b>; the hands execute. CFOP, like a human cuber.</p>
-  <div class="hero-video glass reveal"><video src="assets/grid9.mp4" poster="assets/grid9.jpg" autoplay muted loop playsinline></video></div>
+  <p class="lede reveal">Atomic moves learned with RL, each ending in the same grip — whole-cube rotations included. An Opus agent looks once per stage, rotates the cube when it helps and plays the algorithm: <b>Cross → F2L → OLL → PLL</b>, like a human cuber.</p>
+  <div class="hero-video glass reveal"><video src="assets/grid9.mp4?v=2" poster="assets/grid9.jpg?v=2" autoplay muted loop playsinline></video></div>
   <div class="stats">
     <div class="stat glass reveal"><div class="n grad">9 / 9</div><div class="l">random scrambles solved end to end</div></div>
     <div class="stat glass reveal"><div class="n">1 grip</div><div class="l">every atomic move starts and ends in it</div></div>
     <div class="stat glass reveal"><div class="n">63 / 63</div><div class="l">checkpoints passed (stickers and grip)</div></div>
-    <div class="stat glass reveal"><div class="n">≈ 64</div><div class="l">quarter turns per solve on average</div></div>
+    <div class="stat glass reveal"><div class="n">≈ 70 + 5</div><div class="l">quarter turns + whole-cube rotations per solve</div></div>
   </div>
   <div class="cta reveal" style="margin:30px 0 0"><a class="btn primary" href="#replay">Explore the 3D replay</a><a class="btn ghost" href="#games">See nine random solves</a><a class="btn ghost" href="../blog/atomic-skills-and-an-agent/">Read the v1 post</a></div>
 
@@ -296,7 +297,7 @@ nav.top .btn { white-space: nowrap; }
   <h2 class="reveal">One project, version by version</h2>
   <div class="versions">
     <a class="ver-card glass reveal v-now" href="../blog/atomic-skills-and-an-agent/">
-      <img src="assets/grid9.jpg" alt="Nine random 3×3 scrambles solved by two Shadow hands" loading="lazy">
+      <img src="assets/grid9.jpg?v=2" alt="Nine random 3×3 scrambles solved by two Shadow hands" loading="lazy">
       <div class="vbody"><div class="vhead"><b>v1</b><span class="vstate">current</span></div>
         <h3>The 3×3, solved</h3><p>Atomic moves, one grip, a CFOP agent — or a language model.</p><span class="vlink">Read the v1 post →</span></div>
     </a>
@@ -380,7 +381,7 @@ nav.top .btn { white-space: nowrap; }
 <section id="games"><div class="wrap">
   <span class="eyebrow reveal">Nine random solves</span>
   <h2 class="reveal">Nine scrambles, nine solves</h2>
-  <p class="sub reveal">Random scrambles, nothing picked. Each recording next to a 3D cube replaying the same solution — click a card to step through it.</p>
+  <p class="sub reveal">Random scrambles, nothing picked. Opus solved each one — seven answers, no trial and error — and the hands did it, rotations and all. The clips play the turns at about 2× and the way back to the grip at about 7× (the legend in the corner says which). Each recording sits next to a 3D cube replaying the same moves — click a card to step through it.</p>
   <div class="games" id="gamesGrid"></div>
 </div></section>
 
@@ -399,15 +400,15 @@ nav.top .btn { white-space: nowrap; }
 <section id="agent"><div class="wrap">
   <span class="eyebrow reveal">The agent</span>
   <h2 class="reveal">The agent can be a planner — or a language model</h2>
-  <p class="sub reveal">Swap the planner for an Opus session. No formula library, no hints — the hands execute whatever it decides.</p>
-  <div class="clip glass reveal agent-run"><video src="assets/demo_llm.mp4" poster="assets/demo_llm.jpg" controls muted loop playsinline preload="metadata"></video><p><b>The hands executing Opus's own solution.</b> Solved.</p></div>
+  <p class="sub reveal">Swap the planner for an Opus session. It sees the cube as the hands hold it, answers each CFOP stage once — what it sees, a rotation or a U turn, then the algorithm it knows — and the hands execute it. No cube tool, no search.</p>
+  <div class="clip glass reveal agent-run"><video src="assets/demo_llm.mp4?v=2" poster="assets/demo_llm.jpg?v=2" controls muted loop playsinline preload="metadata"></video><p><b>The hands executing Opus's own solution</b>, its thought for each stage on top. Solved.</p></div>
 </div></section>
 
 
 <section id="cot"><div class="wrap">
   <span class="eyebrow reveal">Agent replay</span>
   <h2 class="reveal">Watch the model think its way through a solve</h2>
-  <p class="sub reveal">One CFOP stage at a time, trying sequences on a copy of the cube before it answers.</p>
+  <p class="sub reveal">One CFOP stage at a time: one look, one answer — what it sees, then the moves.</p>
   <div class="cotmeta reveal" id="cotMeta"></div>
   <div class="cot glass reveal">
     <div class="left">
@@ -468,7 +469,8 @@ function setProg(segs, stages, done) {
 
 // ---------------------------------------------------------------- a procedural 3x3 cube (white down, green front)
 const FACE_COL = { U: 0xffd500, D: 0xffffff, F: 0x009b48, B: 0x0046ad, R: 0xff5800, L: 0xb71234 };
-const SPEC = { R: [0, 1, -1], L: [0, -1, 1], U: [1, 1, -1], D: [1, -1, 1], F: [2, 1, -1], B: [2, -1, 1] };
+const SPEC = { R: [0, 1, -1], L: [0, -1, 1], U: [1, 1, -1], D: [1, -1, 1], F: [2, 1, -1], B: [2, -1, 1],
+  x: [0, 9, -1], y: [1, 9, -1], z: [2, 9, -1] };  // (x y z: the whole cube, as R / U / F)
 const AX = [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)];
 const parseMoves = s => s.trim().split(/\s+/).filter(Boolean).map(t => ({ f: t[0], k: t.includes("2") ? 2 : (t.includes("'") ? 3 : 1), name: t }));
 const bodyMat = new THREE.MeshStandardMaterial({ color: 0x14151b, roughness: .55, metalness: .05 });
@@ -511,7 +513,7 @@ class VCube {
     const W = this.canvas.width, H = this.canvas.height; if (!W || !H) return;
     this.ren.setSize(W, H, false); this.ren.render(this.scene, this.cam); this.c2d.clearRect(0, 0, W, H); this.c2d.drawImage(this.ren.domElement, 0, 0, W, H); }
   reset() { this.finish(); this.cubies.forEach(c => { c.position.copy(c.userData.home); c.quaternion.identity(); }); }
-  layer(f) { const [a, l] = SPEC[f]; return this.cubies.filter(c => Math.round(c.position.getComponent(a)) === l); }
+  layer(f) { const [a, l] = SPEC[f]; return l === 9 ? [...this.cubies] : this.cubies.filter(c => Math.round(c.position.getComponent(a)) === l); }
   instant(m) { const [a, , q] = SPEC[m.f]; const ang = q * (m.k === 3 ? -1 : m.k) * Math.PI / 2;
     const R = new THREE.Quaternion().setFromAxisAngle(AX[a], ang);
     this.layer(m.f).forEach(c => { c.position.applyQuaternion(R).round(); c.quaternion.premultiply(R); }); }
@@ -542,12 +544,12 @@ class GamePlayer {
 }
 
 // ---------------------------------------------------------------- nine games
-const games = await (await fetch("assets/games.json")).json();
+const games = await (await fetch("assets/games.json?v=2")).json();
 const grid = document.getElementById("gamesGrid"); const players = [];
 games.forEach((g, gi) => {
   const card = document.createElement("div"); card.className = "game glass reveal in";
   card.innerHTML = `<div class="pair"><video src="${g.video}" autoplay muted loop playsinline preload="metadata"></video><div class="cube3d"><span class="stagelbl">Cross</span></div></div>
-    <div class="meta"><div class="t"><b>Game ${g.id}</b><span class="tag">${g.moves.length} turns · ${g.checks} checks · ~${g.speed}× speed</span></div><code>${g.scramble}</code>
+    <div class="meta"><div class="t"><b>Game ${g.id}</b><span class="tag">${g.moves.length} moves (${g.rotations || 0} rotations) · ${g.checks} checks</span></div><code>${g.scramble}</code>
     <div class="minibar">${STAGES.map(() => "<i><b></b></i>").join("")}</div></div>`;
   grid.appendChild(card);
   const lbl = card.querySelector(".stagelbl"), bars = [...card.querySelectorAll(".minibar i")];
@@ -564,7 +566,7 @@ games.forEach((g, gi) => {
 const modal = document.getElementById("modal"), mSegs = makeProg(document.getElementById("mProg"));
 let mp = null;
 function openModal(gi) {
-  const g = games[gi]; modal.classList.add("open"); document.getElementById("mTitle").textContent = `Game ${g.id} — ${g.moves.length} quarter turns`;
+  const g = games[gi]; modal.classList.add("open"); document.getElementById("mTitle").textContent = `Game ${g.id} — ${g.moves.length} moves, ${g.rotations || 0} of them rotations`;
   const v = document.getElementById("mVideo"); v.src = g.video; v.play().catch(() => {});
   const box = document.getElementById("mCube"); box.querySelectorAll("canvas").forEach(c => c.remove());
   const seq = document.getElementById("mSeq"); let last = -1;
@@ -660,12 +662,12 @@ let rp = null, rpVisible = true; new IntersectionObserver(es => { rpVisible = es
 
 
 // ---------------------------------------------------------------- the agent replay (LLM chain of thought)
-const cot = await (await fetch("assets/agent_replay.json")).json();
+const cot = await (await fetch("assets/agent_replay.json?v=2")).json();
 {
   const meta = document.getElementById("cotMeta");
   const okSt = cot.stages.filter(s => s.ok);
   meta.innerHTML = `<span>Model <b>${cot.model}</b></span><span>Scramble <code>${cot.scramble}</code></span>
-    <span><b>${cot.asks}</b> asks · <b>${okSt.length}</b> stages</span><span><b>${cot.quarter_turns}</b> quarter turns</span>
+    <span><b>${cot.asks}</b> asks · <b>${okSt.length}</b> stages</span><span><b>${cot.quarter_turns}</b> quarter turns + <b>${cot.rotations || 0}</b> rotations</span>
     <span><b>${cot.minutes}</b> min thinking</span><span><b>$${cot.cost_usd}</b></span>`;
   const cube = new VCube(document.getElementById("cotCube"));
   cube.ctl.autoRotate = false;
@@ -694,7 +696,7 @@ const cot = await (await fetch("assets/agent_replay.json")).json();
       await whilePaused(t); el.innerHTML = esc(text.slice(0, i)); stream.scrollTop = stream.scrollHeight; await wait(16); }
     el.innerHTML = esc(text); el.classList.remove("caret"); }
   function header(g, k) { const last = g[g.length - 1], secs = g.reduce((a, s) => a + (s.seconds || 0), 0), tries = g.reduce((a, s) => a + s.items.filter(x => x.kind === "try").length, 0);
-    add("sh", `<b>${last.name}</b><span>${secs.toFixed(0)} s thinking · ${tries} tries · $${g.reduce((a, s) => a + s.cost, 0).toFixed(2)}${g.length > 1 ? " · " + g.length + " asks" : ""}</span>`); }
+    add("sh", `<b>${last.name}</b><span>${secs.toFixed(0)} s thinking · ${tries ? tries + " tries" : "first try"} · $${g.reduce((a, s) => a + s.cost, 0).toFixed(2)}${g.length > 1 ? " · " + g.length + " asks" : ""}</span>`); }
   function staticStage(k) { const g = groups[k]; header(g, k); g.forEach(s => { s.items.forEach(it => it.kind === "say" ? add("say", esc(it.text)) :
       add("try", it.show ? `<i>looks at the cube</i>` : `tries <code>${esc(it.moves)}</code> → <i>${esc(it.summary)}</i>`));
     add("ans" + (s.ok ? "" : " bad"), `${s.ok ? "✓" : "✗"} answer <code>${esc(s.moves)}</code><div class="why">${esc(s.why)}</div>`); }); }
@@ -722,7 +724,7 @@ const cot = await (await fetch("assets/agent_replay.json")).json();
         now.textContent = `Move ${doneTurns} / ${total} · ${m.name}`; }
       await wait(700);
     }
-    gi = groups.length; progress(total); badge.textContent = "Solved ✓"; now.textContent = `Solved in ${total} quarter turns`;
+    gi = groups.length; progress(total); badge.textContent = "Solved ✓"; now.textContent = `Solved in ${total} moves`;
   }
   chips.onclick = e => { const b = e.target.closest("button"); if (b) run(+b.dataset.i); };
   const pb = document.getElementById("cotPlay"); pb.onclick = () => { playing = !playing; pb.textContent = playing ? "❚❚ Pause" : "▶ Play"; pb.classList.toggle("on", playing); };
