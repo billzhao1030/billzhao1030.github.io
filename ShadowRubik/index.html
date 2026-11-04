@@ -311,7 +311,7 @@ nav.top .btn { white-space: nowrap; }
 <section id="replay"><div class="wrap">
   <span class="eyebrow reveal">Interactive</span>
   <h2 class="reveal">The real simulation, in your browser</h2>
-  <p class="sub reveal">One recorded solve — both hands, both arms, all 26 cubies — replayed in your browser. Drag to orbit, scrub the timeline.</p>
+  <p class="sub reveal">One recorded solve — game 1, Opus's solution with its whole-cube rotations — every body of it, both hands, both arms and all 26 cubies, replayed in your browser. Drag to orbit, scrub the timeline.</p>
   <div class="viewer glass reveal">
     <div class="stage" id="replayStage"><div class="loading" id="replayLoading">Loading the recording…</div>
       <div class="hint">Drag to orbit · scroll to zoom · right-drag to pan</div></div>
@@ -401,7 +401,7 @@ nav.top .btn { white-space: nowrap; }
   <span class="eyebrow reveal">The agent</span>
   <h2 class="reveal">The agent can be a planner — or a language model</h2>
   <p class="sub reveal">Swap the planner for an Opus session. It sees the cube as the hands hold it, answers each CFOP stage once — what it sees, a rotation or a U turn, then the algorithm it knows — and the hands execute it. No cube tool, no search.</p>
-  <div class="clip glass reveal agent-run"><video src="assets/demo_llm.mp4?v=2" poster="assets/demo_llm.jpg?v=2" controls muted loop playsinline preload="metadata"></video><p><b>The hands executing Opus's own solution</b>, its thought for each stage on top. Solved.</p></div>
+  <div class="clip glass reveal agent-run"><video src="assets/demo_llm.mp4?v=3" poster="assets/demo_llm.jpg?v=3" controls muted loop playsinline preload="metadata"></video><p><b>The hands executing Opus's own solution</b>, its thought for each stage on top. Solved.</p></div>
 </div></section>
 
 
@@ -607,8 +607,8 @@ new ResizeObserver(resizeR).observe(stage); resizeR();
 let rp = null, rpVisible = true; new IntersectionObserver(es => { rpVisible = es[0].isIntersecting; }).observe(stage);
 
 (async () => {
-  const meta = await (await fetch("assets/web3d/g6.json")).json();
-  const buf = await (await fetch("assets/web3d/g6.bin")).arrayBuffer();
+  const meta = await (await fetch("assets/web3d/g1.json")).json();
+  const buf = await (await fetch("assets/web3d/g1.bin")).arrayBuffer();
   const world = new THREE.Group(); world.rotation.x = -Math.PI / 2; R.scene.add(world);   // (MuJoCo is z-up)
   const NB = meta.bodies.length, F = meta.frames;
   const pos = new Int16Array(buf, meta.pos, F * NB * 3), quat = new Int16Array(buf, meta.quat, F * NB * 4), step = new Int16Array(buf, meta.step, F);
