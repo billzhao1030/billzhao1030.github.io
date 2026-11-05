@@ -156,8 +156,8 @@ excerpt: "Version 1 of ShadowRubik: two simulated Shadow hands solve random 3×3
           and an agent that plans with CFOP. Nine random scrambles, nine solves.
         </p>
 
-        <video class="vid" src="../../ShadowRubik/assets/grid9.mp4?v=2" poster="../../ShadowRubik/assets/grid9.jpg?v=2" autoplay controls muted loop playsinline></video>
-        <p class="cap">Nine random scrambles, each solved by Opus and done by the hands, whole-cube rotations included. Two Shadow hands on UR10e arms, in simulation; turns at about 2×, the way back to the grip at about 7×.</p>
+        <video class="vid" src="../../ShadowRubik/assets/grid9.mp4?v=4" poster="../../ShadowRubik/assets/grid9.jpg?v=4" autoplay controls muted loop playsinline></video>
+        <p class="cap">Nine random scrambles, each solved by Opus from the pattern and an algorithm library, and done by the hands, whole-cube rotations included. Two Shadow hands on UR10e arms, in simulation; turns at about 2×, the way back to the grip at about 4–5×.</p>
 
         <div class="versions">
           <div class="v now"><i>v1 · now</i>The 3×3 cube, solved end to end.</div>
@@ -198,9 +198,9 @@ excerpt: "Version 1 of ShadowRubik: two simulated Shadow hands solve random 3×3
         <p class="cap">One random scramble, start to finish.</p>
 
         <h2>Or let a language model solve it</h2>
-        <p>Swap the planner for a language model. It looks once per CFOP stage, rotates the cube when that helps, and plays the algorithm it knows — seven answers per solve, no trial and error. The hands don't notice.</p>
-        <video class="vid" src="../../ShadowRubik/assets/demo_llm.mp4?v=3" poster="../../ShadowRubik/assets/demo_llm.jpg?v=3" controls muted loop playsinline preload="metadata"></video>
-        <p class="cap">The hands executing the model's own solution; its thought for each stage on top.</p>
+        <p>Swap the planner for a language model. No optimal solver: like a speedcuber, it recognises the case at each CFOP stage — which F2L pair and where its pieces are, which OLL, which PLL — looks the algorithm up in a library, rotates the cube or turns U when that helps, and plays it. One answer per stage, and under five minutes of thinking for a whole solve on average (4.5 min; it took 14.6 when it worked every algorithm out in its head). Recognition is the model's own; the library only remembers algorithms. The hands don't notice.</p>
+        <video class="vid" src="../../ShadowRubik/assets/demo_llm.mp4?v=4" poster="../../ShadowRubik/assets/demo_llm.jpg?v=4" controls muted loop playsinline preload="metadata"></video>
+        <p class="cap">Game 1: the hands executing the model's solution — case recognised, algorithm looked up — its thought for each stage on top; the corner says the playback speed.</p>
 
         <h2>Play with it</h2>
         <p>Three interactive demos on the project page.</p>

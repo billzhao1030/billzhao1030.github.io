@@ -220,6 +220,11 @@ footer ol { padding-left: 18px; } footer li { margin: 6px 0; }
 .cot .stream .try { margin: 4px 0 4px 18px; font-size: 13px; color: var(--ink2); }
 .cot .stream .try code { background: rgba(108,92,255,.09); color: #3a2fb8; padding: 1px 6px; border-radius: 6px; }
 .cot .stream .try i { font-style: normal; color: var(--mute); }
+.cot .stream .lk { margin: 6px 0 6px 18px; font-size: 13px; color: var(--ink2); }
+.cot .stream .lk::before { content: "📖 "; }
+.cot .stream .lk code { background: rgba(56,189,248,.12); color: #0b6c95; padding: 1px 6px; border-radius: 6px; }
+.cot .stream .lk pre { margin: 6px 0 0; padding: 8px 10px; border-radius: 10px; background: rgba(15,18,34,.04); border: 1px solid var(--line);
+  font: 11.5px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; color: var(--ink2); max-height: 220px; overflow: auto; }
 .cot .stream .ans { margin: 10px 0 4px; padding: 10px 12px; border-radius: 12px; background: rgba(25,195,155,.09); border: 1px solid rgba(25,195,155,.25); font-size: 13.5px; }
 .cot .stream .ans.bad { background: rgba(255,94,168,.08); border-color: rgba(255,94,168,.25); }
 .cot .stream .ans code { font-weight: 600; }
@@ -279,13 +284,13 @@ nav.top .btn { white-space: nowrap; }
 <header class="hero"><div class="wrap">
   <span class="eyebrow reveal"><span class="vtag">v1</span> 3×3 · Simulation · Shadow Hand × 2 · UR10e × 2</span>
   <h1 class="reveal"><span class="ln"><span class="grad">Atomic Moves</span>, <span class="grad">Agentic Hands</span></span><span class="ln">Robot hands learn the moves. An agent solves the cube.</span></h1>
-  <p class="lede reveal">Atomic moves learned with RL, each ending in the same grip — whole-cube rotations included. An Opus agent looks once per stage, rotates the cube when it helps and plays the algorithm: <b>Cross → F2L → OLL → PLL</b>, like a human cuber.</p>
-  <div class="hero-video glass reveal"><video src="assets/grid9.mp4?v=2" poster="assets/grid9.jpg?v=2" autoplay muted loop playsinline></video></div>
+  <p class="lede reveal">Atomic moves learned with RL, each ending in the same grip — whole-cube rotations included. An Opus agent solves it like a human cuber — <b>recognise the pattern, recall the algorithm</b>, rotate, play it: <b>Cross → F2L → OLL → PLL</b>. No optimal solver, and <b>under five minutes of thinking per solve</b>.</p>
+  <div class="hero-video glass reveal"><video src="assets/grid9.mp4?v=4" poster="assets/grid9.jpg?v=4" autoplay muted loop playsinline></video></div>
   <div class="stats">
     <div class="stat glass reveal"><div class="n grad">9 / 9</div><div class="l">random scrambles solved end to end</div></div>
     <div class="stat glass reveal"><div class="n">1 grip</div><div class="l">every atomic move starts and ends in it</div></div>
-    <div class="stat glass reveal"><div class="n">63 / 63</div><div class="l">checkpoints passed (stickers and grip)</div></div>
-    <div class="stat glass reveal"><div class="n">≈ 70 + 5</div><div class="l">quarter turns + whole-cube rotations per solve</div></div>
+    <div class="stat glass reveal"><div class="n">62 / 62</div><div class="l">checkpoints passed (stickers and grip)</div></div>
+    <div class="stat glass reveal"><div class="n grad">4.5 min</div><div class="l">of model thinking per solve, on average — no optimal solver</div></div>
   </div>
   <div class="cta reveal" style="margin:30px 0 0"><a class="btn primary" href="#replay">Explore the 3D replay</a><a class="btn ghost" href="#games">See nine random solves</a><a class="btn ghost" href="../blog/atomic-skills-and-an-agent/">Read the v1 post</a></div>
 
@@ -297,7 +302,7 @@ nav.top .btn { white-space: nowrap; }
   <h2 class="reveal">One project, version by version</h2>
   <div class="versions">
     <a class="ver-card glass reveal v-now" href="../blog/atomic-skills-and-an-agent/">
-      <img src="assets/grid9.jpg?v=2" alt="Nine random 3×3 scrambles solved by two Shadow hands" loading="lazy">
+      <img src="assets/grid9.jpg?v=4" alt="Nine random 3×3 scrambles solved by two Shadow hands" loading="lazy">
       <div class="vbody"><div class="vhead"><b>v1</b><span class="vstate">current</span></div>
         <h3>The 3×3, solved</h3><p>Atomic moves, one grip, a CFOP agent — or a language model.</p><span class="vlink">Read the v1 post →</span></div>
     </a>
@@ -311,7 +316,7 @@ nav.top .btn { white-space: nowrap; }
 <section id="replay"><div class="wrap">
   <span class="eyebrow reveal">Interactive</span>
   <h2 class="reveal">The real simulation, in your browser</h2>
-  <p class="sub reveal">One recorded solve — game 1, Opus's solution with its whole-cube rotations — every body of it, both hands, both arms and all 26 cubies, replayed in your browser. Drag to orbit, scrub the timeline.</p>
+  <p class="sub reveal">One recorded solve — game 1, Opus's solution (pattern recognised, algorithms looked up) with its whole-cube rotations — every body of it, both hands, both arms and all 26 cubies, replayed in your browser. Drag to orbit, scrub the timeline.</p>
   <div class="viewer glass reveal">
     <div class="stage" id="replayStage"><div class="loading" id="replayLoading">Loading the recording…</div>
       <div class="hint">Drag to orbit · scroll to zoom · right-drag to pan</div></div>
@@ -340,7 +345,7 @@ nav.top .btn { white-space: nowrap; }
         <g transform="translate(40,40)"><rect width="210" height="110" rx="18" fill="#fff" stroke="#e3e6f2"/><circle cx="34" cy="34" r="16" fill="url(#gA)"/><text x="34" y="40" fill="#fff" font-size="15" font-weight="700">1</text>
           <text x="118" y="44" font-size="22" font-weight="700" fill="#0f1222">Look</text><text x="105" y="76" font-size="13" fill="#6b7088" font-family="Inter">full cube state</text><text x="105" y="94" font-size="13" fill="#6b7088" font-family="Inter">(7 looks per solve)</text></g>
         <g transform="translate(310,40)"><rect width="210" height="110" rx="18" fill="#fff" stroke="#e3e6f2"/><circle cx="34" cy="34" r="16" fill="url(#gA)"/><text x="34" y="40" fill="#fff" font-size="15" font-weight="700">2</text>
-          <text x="118" y="44" font-size="22" font-weight="700" fill="#0f1222">Plan</text><text x="105" y="76" font-size="13" fill="#6b7088" font-family="Inter">CFOP stage → formula</text><text x="105" y="94" font-size="13" fill="#6b7088" font-family="Inter">planner or LLM agent</text></g>
+          <text x="118" y="44" font-size="22" font-weight="700" fill="#0f1222">Plan</text><text x="105" y="76" font-size="13" fill="#6b7088" font-family="Inter">pattern → algorithm</text><text x="105" y="94" font-size="13" fill="#6b7088" font-family="Inter">planner or LLM agent</text></g>
         <g transform="translate(580,40)"><rect width="210" height="110" rx="18" fill="#fff" stroke="#e3e6f2"/><circle cx="34" cy="34" r="16" fill="url(#gA)"/><text x="34" y="40" fill="#fff" font-size="15" font-weight="700">3</text>
           <text x="118" y="44" font-size="22" font-weight="700" fill="#0f1222">Act</text><text x="105" y="76" font-size="13" fill="#6b7088" font-family="Inter">atomic moves, one by one</text><text x="105" y="94" font-size="13" fill="#6b7088" font-family="Inter">each ends in the grip</text></g>
         <g transform="translate(850,40)"><rect width="210" height="110" rx="18" fill="#fff" stroke="#e3e6f2"/><circle cx="34" cy="34" r="16" fill="url(#gA)"/><text x="34" y="40" fill="#fff" font-size="15" font-weight="700">4</text>
@@ -381,7 +386,7 @@ nav.top .btn { white-space: nowrap; }
 <section id="games"><div class="wrap">
   <span class="eyebrow reveal">Nine random solves</span>
   <h2 class="reveal">Nine scrambles, nine solves</h2>
-  <p class="sub reveal">Random scrambles, nothing picked. Opus solved each one — seven answers, no trial and error — and the hands did it, rotations and all. The clips play the turns at about 2× and the way back to the grip at about 7× (the legend in the corner says which). Each recording sits next to a 3D cube replaying the same moves — click a card to step through it.</p>
+  <p class="sub reveal">Random scrambles, nothing picked. Opus solved each one by pattern and library — one answer per stage, 2 to 7 minutes of thinking a game — and the hands did it, rotations and all. The clips play the turns at about 2× (2–2.5×), the way back to the grip at about 4–5× and pauses at most 8×, easing from one speed to the next (the legend in the corner gives each clip's numbers). Each recording sits next to a 3D cube replaying the same moves — click a card to step through it.</p>
   <div class="games" id="gamesGrid"></div>
 </div></section>
 
@@ -400,15 +405,21 @@ nav.top .btn { white-space: nowrap; }
 <section id="agent"><div class="wrap">
   <span class="eyebrow reveal">The agent</span>
   <h2 class="reveal">The agent can be a planner — or a language model</h2>
-  <p class="sub reveal">Swap the planner for an Opus session. It sees the cube as the hands hold it, answers each CFOP stage once — what it sees, a rotation or a U turn, then the algorithm it knows — and the hands execute it. No cube tool, no search.</p>
-  <div class="clip glass reveal agent-run"><video src="assets/demo_llm.mp4?v=3" poster="assets/demo_llm.jpg?v=3" controls muted loop playsinline preload="metadata"></video><p><b>The hands executing Opus's own solution</b>, its thought for each stage on top. Solved.</p></div>
+  <p class="sub reveal">Swap the planner for an Opus session — no optimal solver, no search. It works like a speedcuber: it looks at the cube as the hands hold it, <b>recognises the case</b> (which F2L pair and where its pieces are, which OLL, which PLL), <b>looks the algorithm up in a library</b>, then rotates the cube or turns U and plays it. Recognition is the model's; the library only remembers algorithms. A whole solve takes <b>about 4.5 minutes of thinking on average</b> (2–7 min a game; 14.6 min before, when it worked every algorithm out in its head); the hands' own time comes on top.</p>
+  <div class="stats" style="margin:18px 0 22px">
+    <div class="stat glass reveal"><div class="n grad">4.5 min</div><div class="l">thinking per solve, average (median 4.9) — was 14.6</div></div>
+    <div class="stat glass reveal"><div class="n">15 s</div><div class="l">per F2L pair (median) — was 135 s</div></div>
+    <div class="stat glass reveal"><div class="n">36 / 36</div><div class="l">F2L pairs right the first time</div></div>
+    <div class="stat glass reveal"><div class="n">9 / 9</div><div class="l">solved, one answer per stage (62 / 64 first time)</div></div>
+  </div>
+  <div class="clip glass reveal agent-run"><video src="assets/demo_llm.mp4?v=4" poster="assets/demo_llm.jpg?v=4" controls muted loop playsinline preload="metadata"></video><p><b>The hands executing Opus's solution</b> — recognised and looked up, stage by stage — its thought for each stage on top. Solved.</p></div>
 </div></section>
 
 
 <section id="cot"><div class="wrap">
   <span class="eyebrow reveal">Agent replay</span>
   <h2 class="reveal">Watch the model think its way through a solve</h2>
-  <p class="sub reveal">One CFOP stage at a time: one look, one answer — what it sees, then the moves.</p>
+  <p class="sub reveal">One CFOP stage at a time: what it sees, the case it looks up in the algorithm library (📖, with what the library answered), then the moves.</p>
   <div class="cotmeta reveal" id="cotMeta"></div>
   <div class="cot glass reveal">
     <div class="left">
@@ -419,7 +430,7 @@ nav.top .btn { white-space: nowrap; }
     </div>
     <div class="stream" id="cotStream"></div>
   </div>
-  <p class="reveal" style="color:var(--mute);font-size:13px;margin-top:12px">The 💭 lines are the think-aloud the model was asked to write for viewers before each tool call — not a transcript of its internal reasoning. Timing is compressed; the numbers above are the real per-stage times and costs.</p>
+  <p class="reveal" style="color:var(--mute);font-size:13px;margin-top:12px">The 💭 lines are the short note the model was asked to write for viewers with each answer — not a transcript of its internal reasoning. 📖 are its look-ups in the library (rubik/alg_lookup.py), which only stores algorithms and never reads the real cube. Timing is compressed; the numbers above are the real per-stage times and costs.</p>
 </div></section>
 
 <footer><div class="wrap">
@@ -544,12 +555,12 @@ class GamePlayer {
 }
 
 // ---------------------------------------------------------------- nine games
-const games = await (await fetch("assets/games.json?v=2")).json();
+const games = await (await fetch("assets/games.json?v=4")).json();
 const grid = document.getElementById("gamesGrid"); const players = [];
 games.forEach((g, gi) => {
   const card = document.createElement("div"); card.className = "game glass reveal in";
   card.innerHTML = `<div class="pair"><video src="${g.video}" autoplay muted loop playsinline preload="metadata"></video><div class="cube3d"><span class="stagelbl">Cross</span></div></div>
-    <div class="meta"><div class="t"><b>Game ${g.id}</b><span class="tag">${g.moves.length} moves (${g.rotations || 0} rotations) · ${g.checks} checks</span></div><code>${g.scramble}</code>
+    <div class="meta"><div class="t"><b>Game ${g.id}</b><span class="tag">${g.moves.length} moves (${g.rotations || 0} rotations) · ${g.checks} checks${g.think_minutes ? " · " + g.think_minutes + " min thinking" : ""}</span></div><code>${g.scramble}</code>
     <div class="minibar">${STAGES.map(() => "<i><b></b></i>").join("")}</div></div>`;
   grid.appendChild(card);
   const lbl = card.querySelector(".stagelbl"), bars = [...card.querySelectorAll(".minibar i")];
@@ -607,8 +618,8 @@ new ResizeObserver(resizeR).observe(stage); resizeR();
 let rp = null, rpVisible = true; new IntersectionObserver(es => { rpVisible = es[0].isIntersecting; }).observe(stage);
 
 (async () => {
-  const meta = await (await fetch("assets/web3d/g1.json")).json();
-  const buf = await (await fetch("assets/web3d/g1.bin")).arrayBuffer();
+  const meta = await (await fetch("assets/web3d/g1.json?v=4")).json();
+  const buf = await (await fetch("assets/web3d/g1.bin?v=4")).arrayBuffer();
   const world = new THREE.Group(); world.rotation.x = -Math.PI / 2; R.scene.add(world);   // (MuJoCo is z-up)
   const NB = meta.bodies.length, F = meta.frames;
   const pos = new Int16Array(buf, meta.pos, F * NB * 3), quat = new Int16Array(buf, meta.quat, F * NB * 4), step = new Int16Array(buf, meta.step, F);
@@ -662,7 +673,7 @@ let rp = null, rpVisible = true; new IntersectionObserver(es => { rpVisible = es
 
 
 // ---------------------------------------------------------------- the agent replay (LLM chain of thought)
-const cot = await (await fetch("assets/agent_replay.json?v=2")).json();
+const cot = await (await fetch("assets/agent_replay.json?v=4")).json();
 {
   const meta = document.getElementById("cotMeta");
   const okSt = cot.stages.filter(s => s.ok);
@@ -697,7 +708,9 @@ const cot = await (await fetch("assets/agent_replay.json?v=2")).json();
     el.innerHTML = esc(text); el.classList.remove("caret"); }
   function header(g, k) { const last = g[g.length - 1], secs = g.reduce((a, s) => a + (s.seconds || 0), 0), tries = g.reduce((a, s) => a + s.items.filter(x => x.kind === "try").length, 0);
     add("sh", `<b>${last.name}</b><span>${secs.toFixed(0)} s thinking · ${tries ? tries + " tries" : "first try"} · $${g.reduce((a, s) => a + s.cost, 0).toFixed(2)}${g.length > 1 ? " · " + g.length + " asks" : ""}</span>`); }
+  const lkHtml = it => `looks up <code>${esc(it.query)}</code> in the algorithm library<pre>${esc(it.out)}</pre>`;
   function staticStage(k) { const g = groups[k]; header(g, k); g.forEach(s => { s.items.forEach(it => it.kind === "say" ? add("say", esc(it.text)) :
+      it.kind === "lookup" ? add("lk", lkHtml(it)) :
       add("try", it.show ? `<i>looks at the cube</i>` : `tries <code>${esc(it.moves)}</code> → <i>${esc(it.summary)}</i>`));
     add("ans" + (s.ok ? "" : " bad"), `${s.ok ? "✓" : "✗"} answer <code>${esc(s.moves)}</code><div class="why">${esc(s.why)}</div>`); }); }
   async function run(from) {
@@ -709,6 +722,7 @@ const cot = await (await fetch("assets/agent_replay.json?v=2")).json();
       for (const s of g) {
         for (const it of s.items) { if (t !== token) return; await whilePaused(t);
           if (it.kind === "say") { await type(add("say", ""), it.text, t); await wait(250); continue; }
+          if (it.kind === "lookup") { add("lk", lkHtml(it)); await wait(1400); continue; }
           if (it.show) { add("try", `<i>looks at the cube</i>`); await wait(300); continue; }
           add("try", `tries <code>${esc(it.moves)}</code> → <i>${esc(it.summary)}</i>`);
           const ms = parseMoves(it.moves); badge.textContent = "preview: " + it.moves; badge.className = "badge try";
